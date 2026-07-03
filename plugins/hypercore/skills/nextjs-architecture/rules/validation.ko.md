@@ -13,6 +13,7 @@ find app src/app -maxdepth 5 -type f \( -name 'page.tsx' -o -name 'route.ts' -o 
 rg -n "^['\"]use client['\"]|server-only|client-only|cookies\(|headers\(|process\.env|NEXT_PUBLIC_" app src/app src/components src/lib src/services 2>/dev/null
 rg -n "cacheComponents|use cache|cacheTag|cacheLife|connection\(|updateTag|revalidateTag|revalidatePath|refresh\(|redirect\(" next.config.* app src/app src/lib src/services 2>/dev/null
 rg -n "export async function (GET|POST|PUT|PATCH|DELETE)|NextResponse\.next\(|RouteContext" app src/app 2>/dev/null
+rg -n "drizzle|drizzle.config|schema|migrate|push|pull|prepared|relations|RQB" drizzle.config.* src/db db src/modules src/services 2>/dev/null
 find . -maxdepth 2 \( -name 'proxy.ts' -o -name 'middleware.ts' -o -name 'middleware.js' \)
 rg -n "NEXT_PUBLIC_.*(SECRET|TOKEN|PASSWORD|DATABASE_URL|PRIVATE)|process\.env\.(?!NEXT_PUBLIC_)" app src/app src/components 2>/dev/null
 ```
@@ -27,10 +28,16 @@ grep 결과만으로 판단하지 말고 relevant topic rules와 함께 해석�
 find skills/nextjs-architecture -maxdepth 3 -type f | sort
 wc -l skills/nextjs-architecture/SKILL.md skills/nextjs-architecture/SKILL.ko.md
 rg -n 'instruction_contract|activation_examples|routing_rule|rules/validation|current-docs-2026-06-02' skills/nextjs-architecture/SKILL.md skills/nextjs-architecture/SKILL.ko.md
-rg -n 'checked_at|Next.js 16|cacheComponents|use cache: remote|proxy.ts|middleware|NEXT_PUBLIC|Server Actions|Route Handlers' skills/nextjs-architecture/references/official
-rg -n 'src/lib|src/services|direct leaf|repo-local convention|not official Next.js requirement' skills/nextjs-architecture/rules/project-structure.md skills/nextjs-architecture/rules/project-structure.ko.md
-rg -n 'Deprecated feature-folder guidance is absent|src/services|direct leaf|current-docs-2026-06-02' skills/nextjs-architecture/rules/validation.md skills/nextjs-architecture/rules/validation.ko.md
+rg -n 'rules/services|rules/hooks|rules/db|drizzle-docs' skills/nextjs-architecture/SKILL.md skills/nextjs-architecture/SKILL.ko.md
+rg -n 'checked_at|Next.js 16|cacheComponents|use cache: remote|proxy.ts|middleware|NEXT_PUBLIC|Server Actions|Route Handlers|Drizzle schema|drizzle.config.ts|drizzle-kit generate|RQB' skills/nextjs-architecture/references/official
+rg -n 'src/modules|src/lib|src/services|src/db|src/server|src/integrations|src/config|direct leaf|Hypercore local convention|not official Next.js requirement' skills/nextjs-architecture/rules/project-structure.md skills/nextjs-architecture/rules/project-structure.ko.md
+rg -n 'DAL|DTO|server-only service|provider|authorization' skills/nextjs-architecture/rules/services.md skills/nextjs-architecture/rules/services.ko.md
+rg -n 'client orchestration|hooks|server/data layers|Drizzle schema|private env' skills/nextjs-architecture/rules/hooks.md skills/nextjs-architecture/rules/hooks.ko.md
+rg -n 'Drizzle schema|drizzle.config.ts|generate|migrate|prepared statements|validation integrations|RQB' skills/nextjs-architecture/rules/db.md skills/nextjs-architecture/rules/db.ko.md
+rg -n 'Deprecated feature-folder guidance is absent|src/services|src/modules|src/db|direct leaf|current-docs-2026-06-02|Korean parity|mirror' skills/nextjs-architecture/rules/validation.md skills/nextjs-architecture/rules/validation.ko.md
 node skills/nextjs-architecture/scripts/validate-nextjs-architecture-skill.mjs
+node scripts/validate-codex-plugin.mjs
+diff -qr skills/nextjs-architecture plugins/hypercore/skills/nextjs-architecture
 ```
 
 Must pass:
@@ -41,7 +48,24 @@ Must pass:
 - current official snapshot `references/official/current-docs-2026-06-02.ko.md`는 `SKILL.ko.md`에서 직접 link되며 API drift가 중요할 때 사용됨.
 - Hypercore/repo-local conventions가 그렇게 label됨.
 - project-structure guidance가 `app`, `src/app`, `pages`, `src/pages`, private folders, shared nested folders, touched shared root direct leaf file 금지를 다룸.
-- `src/lib`, `src/services` 같은 shared nested folders는 official Next.js law가 아니라 Hypercore/repo-local convention으로 label됨.
+- `src/modules`, `src/lib`, `src/services`, `src/db`, `src/server`, `src/integrations`, `src/config` 같은 shared nested folders는 official Next.js law가 아니라 Hypercore/repo-local convention으로 label됨.
+- services guidance가 DAL/service/provider boundaries, DTO, authorization delegation, server-only helper splits를 다룸.
+- hooks guidance가 Next.js client orchestration boundaries를 다루고 hooks가 server/data layers를 넘으면 안 된다고 명시함.
+- DB guidance가 Drizzle schema/config/migrations, connection lifecycle, prepared statements, RQB relations/tables at `drizzle()` init, validation integrations를 다룸.
+- Official Drizzle facts는 긴 core section이 아니라 `references/official/drizzle-docs.md`와 `.ko.md`에 있음.
 - Deprecated feature-folder guidance is absent from this skill.
 - Cache Components, Server Actions, Route Handlers, Proxy, env, Server/Client boundary guidance가 current-docs compatible함.
 - English/Korean entrypoint의 trigger, boundary, workflow, contract, read order가 일치함.
+- English/Korean sibling files는 structurally and semantically aligned됨. Korean parity checks는 services/hooks/db/Drizzle phrases를 포함함.
+- `plugins/hypercore/skills/nextjs-architecture/**`는 `skills/nextjs-architecture/**`의 exact mirror임.
+
+## Readback Evidence
+
+completion을 보고하기 전에 다음을 기록합니다:
+
+- 검증하는 scenario name과 claim
+- exact invocation
+- exit code, missing-file count, diff result, validator JSON 같은 binary observable
+- captured artifact path
+
+이 skill folder 변경에서는 edit 후 changed English/Korean sibling files를 read back하고 links, headings, rule responsibilities가 맞는지 확인한 뒤 plugin mirror를 sync합니다.

@@ -1,11 +1,14 @@
 ---
 name: nextjs-architecture
-description: "[Hyper] Next.js 프로젝트, 특히 App Router 또는 App Router 마이그레이션 작업에 사용합니다. 현재 공식 Next.js 아키텍처 규칙에 따라 project/folder structure, nested shared `src/lib` / `src/services` organization, 라우트/파일 규칙, Server/Client Component 경계, Cache Components와 데이터 freshness, 내부 UI 쓰기용 Server Actions, HTTP-native 엔드포인트용 Route Handlers, 최후 수단으로서 Proxy, 플랫폼/env 안전성을 강제합니다."
+description: "[Hyper] Next.js 프로젝트, 특히 App Router 또는 App Router 마이그레이션 작업에 사용합니다. 현재 공식 Next.js 아키텍처 규칙에 따라 project/folder structure, Hypercore local `src/modules` / `src/services` / `src/db` organization, Drizzle boundaries, hooks, Server/Client Component 경계, Cache Components와 데이터 freshness, Server Actions, Route Handlers, Proxy, 플랫폼/env 안전성을 강제합니다."
 compatibility: Next.js 애플리케이션에서 저장소 검사, 공식 Next.js 문서 확인, 직접 코드 편집과 함께 사용할 때 가장 적합합니다.
 ---
 
 @architecture-rules.ko.md
 @rules/project-structure.ko.md
+@rules/services.ko.md
+@rules/hooks.ko.md
+@rules/db.ko.md
 @rules/routes.ko.md
 @rules/execution-model.ko.md
 @rules/data-fetching.ko.md
@@ -15,6 +18,7 @@ compatibility: Next.js 애플리케이션에서 저장소 검사, 공식 Next.js
 @rules/validation.ko.md
 @references/official/nextjs-docs.ko.md
 @references/official/current-docs-2026-06-02.ko.md
+@references/official/drizzle-docs.ko.md
 
 # Next.js Architecture Enforcement
 
@@ -32,14 +36,15 @@ compatibility: Next.js 애플리케이션에서 저장소 검사, 공식 Next.js
 
 - repository가 Next.js project인지 확인하고 App Router, Pages Router, mixed mode를 식별한 뒤 architecture rules를 적용합니다.
 - file conventions, Server/Client Component boundaries, data/cache behavior, Server Actions, Route Handlers, Proxy, env/platform safety에 대한 official Next.js behavior를 강제합니다.
-- `src/lib/<domain>/`, `src/services/<domain-or-provider>/` 같은 nested shared folders에 대한 Hypercore/repo-local convention을 적용하되 official Next.js law처럼 표현하지 않습니다.
+- `src/modules/<domain>/`, `src/services/<domain>/`, `src/db/<area>/`, `src/server/<area>/`, `src/integrations/<provider>/`, `src/config/<area>/` 같은 nested shared folders에 대한 Hypercore/repo-local convention을 적용하되 official Next.js law처럼 표현하지 않습니다.
+- Drizzle, DAL/service boundaries, client hook orchestration은 이 entrypoint를 비대하게 만들지 않고 focused rule files로 route합니다.
 - version-sensitive official facts는 `references/official/`에 보관해 core skill을 lean하게 유지하고 current docs를 독립적으로 refresh할 수 있게 합니다.
 
 </purpose>
 
 <routing_rule>
 
-existing Next.js project의 architecture enforcement, implementation guidance, review에 사용합니다. 특히 App Router work, App Router migration, Server/Client boundaries, cache/freshness, Server Actions, Route Handlers, Proxy, env/platform safety, nested shared-folder organization이 포함됩니다.
+existing Next.js project의 architecture enforcement, implementation guidance, review에 사용합니다. 특히 App Router work, App Router migration, Server/Client boundaries, cache/freshness, Server Actions, Route Handlers, Proxy, env/platform safety, service/DAL boundaries, client hook orchestration, Drizzle/DB placement, nested shared-folder organization이 포함됩니다.
 
 generic React architecture, Remix/TanStack Start project, docs-only summary, architecture boundary를 건드리지 않는 copy-only edit에는 quick safety check 이상으로 사용하지 않습니다. Pages Router-only project에서는 shared Next.js safety/platform checks를 적용하되 migration 요청이 없으면 App Router-only file conventions를 강제하지 않습니다.
 
@@ -81,6 +86,9 @@ generic React architecture, Remix/TanStack Start project, docs-only summary, arc
 | webhook, feed, CORS endpoint, public API, XML, JSON, stream 추가 | Route Handler | Server Action |
 | UI 초기 페이지 데이터 가져오기 | Server Component | client-first fetching |
 | interactivity, browser API, client hook 추가 | 좁은 Client Component | root-level `'use client'` |
+| Server Action 주변 client orchestration 추가 | action을 호출하는 client hook | DB/DAL/server-only code를 import하는 hook |
+| domain logic, provider calls, authorization 추가 | server-only service/DAL layer | route file 또는 Client Component ownership |
+| Drizzle schema, migrations, repositories, DB client 추가 | `rules/db.ko.md` + server-only `src/db` convention | Client hooks 또는 Route Handler request lifecycle |
 | Next.js 16+에서 반복 데이터/UI 캐시 | `cacheComponents` + `use cache` / `cacheTag` / `cacheLife` | 오래된 `fetch` 기본값 가정 |
 | mutation 후 UI 갱신 | `updateTag`, `revalidateTag`, `revalidatePath`, `refresh`, redirect flow | 문서화되지 않은 freshness |
 | 많은 request에서 render 전 redirect/rewrite | 먼저 `next.config.*`, 필요하면 Proxy | generic middleware로서 Proxy |
@@ -95,6 +103,8 @@ Positive examples:
 - "Add a Route Handler for a webhook and verify it follows the current Next.js docs."
 - "Next.js 16 cacheComponents 기준으로 data fetching 규칙을 점검해줘."
 - "Next.js App Router에서 src/lib/auth/session.ts와 src/services/billing/mutations.ts처럼 nested shared folders로 정리해줘."
+- "Add Drizzle schema and migrations to this Next.js app without leaking DB access into client hooks."
+- "Split this Next.js form into client hooks, Server Actions, and a server-only service/DAL."
 
 Negative examples:
 
@@ -135,14 +145,17 @@ test -f next.config.ts -o -f next.config.mjs -o -f next.config.js
 그다음 touched surface에 필요한 rule file만 읽습니다:
 
 - `rules/routes.md` — file conventions, segment rules, route groups, private folders, parallel/intercepted route 주의점
-- `rules/project-structure.md` — top-level project shape, `src/`, shared code placement, nested `src/lib`, repo-local organization conventions
+- `rules/project-structure.md` — top-level project shape, `src/`, shared code placement, nested `src/modules`, `src/services`, `src/db`, `src/server`, `src/integrations`, `src/config`, repo-local organization conventions
+- `rules/services.md` — DAL/service/provider boundaries, DTOs, authorization delegation, server-only helper splits
+- `rules/hooks.md` — client hook orchestration boundaries와 hooks가 server/data layers를 넘지 말아야 할 위치
+- `rules/db.md` — Drizzle schema/config/migrations, connection lifecycle, relations/RQB, validation integrations, server-only DB placement
 - `rules/execution-model.md` — Server/Client Components, `'use client'`, providers, serializable props, `server-only` / `client-only`
 - `rules/data-fetching.md` — server-first reads, streaming, Cache Components, `use cache` / `use cache: remote` / `use cache: private`, cache tags, revalidation, dynamic rendering
 - `rules/server-actions.md` — `use server`, forms, validation, auth/authz, DAL delegation, `updateTag` / revalidation / redirect ordering
 - `rules/route-handlers.md` — `route.ts`, HTTP methods, caching intent, params, non-UI responses, CORS/webhooks
 - `rules/platform.md` — env, `next.config.*`, `typedRoutes`, Proxy, route segment config, deployment-sensitive settings
 
-drift-sensitive behavior는 먼저 `references/official/current-docs-2026-06-02.ko.md`, 그다음 `references/official/nextjs-docs.ko.md`도 확인합니다. browser-readable markdown이 필요하면 official pages를 `https://r.jina.ai/https://nextjs.org/docs/...`로 가져옵니다.
+drift-sensitive Next.js behavior는 먼저 `references/official/current-docs-2026-06-02.ko.md`, 그다음 `references/official/nextjs-docs.ko.md`도 확인합니다. browser-readable markdown이 필요하면 official pages를 `https://r.jina.ai/https://nextjs.org/docs/...`로 가져옵니다. Drizzle-specific behavior는 `references/official/drizzle-docs.ko.md`를 읽습니다.
 
 ## Step 3: Pre-Change Gates
 
@@ -160,7 +173,7 @@ drift-sensitive behavior는 먼저 `references/official/current-docs-2026-06-02.
 | 같은 route segment에 `route.ts`와 `page.tsx`를 생성 | 차단 |
 | route group을 URL 변경 수단처럼 사용 | 차단 |
 | private implementation file을 `_folder` 대신 routable segment로 노출 | 차단 |
-| nested domain/provider grouping이 touched code를 더 명확하게 하는데 shared `src/lib` / `src/services` organization을 flat/direct-leaf로 강제 | 경고. nested grouping 권장 |
+| nested domain/provider grouping이 touched code를 더 명확하게 하는데 shared `src/modules` / `src/services` / `src/db` / `src/server` / `src/integrations` / `src/config` organization을 flat/direct-leaf로 강제 | 경고. nested grouping 권장 |
 | repo-local folder preference를 official Next.js law처럼 보고 | 차단 |
 | parallel/intercepted routes를 layout slot 또는 hard-navigation 동작 검토 없이 추가 | 위험도에 따라 경고/차단 |
 
@@ -173,6 +186,7 @@ drift-sensitive behavior는 먼저 `references/official/current-docs-2026-06-02.
 | Client Component가 DB code, private env, `cookies()`, `headers()`, server-only helper import | 차단 |
 | Server→Client props가 넓거나 secret-bearing 또는 non-serializable | 차단 |
 | Provider가 필요한 범위보다 넓게 감쌈 | 경고 |
+| Client hook이 DB, Drizzle schema, DAL, private env, `cookies()`, `headers()`, server-only provider clients를 import | 차단 |
 
 ### Gate 3: Data Fetching, Cache, and Freshness
 
@@ -193,6 +207,7 @@ drift-sensitive behavior는 먼저 `references/official/current-docs-2026-06-02.
 | Action이 `FormData`, params, headers, search params를 검증/재확인 없이 신뢰 | 차단 |
 | Action이 page-level auth check에만 의존 | 차단 |
 | Action이 raw DB row 또는 broad internal object 반환 | 차단 |
+| Action이 authz, DTO shaping, provider orchestration에 필요한 server-only service/DAL boundary를 우회 | 위험도에 따라 경고/차단 |
 | 필요한 revalidation/tag update 전 `redirect()` 실행 | 차단 |
 
 ### Gate 5: Route Handlers and Proxy

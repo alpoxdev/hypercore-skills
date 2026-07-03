@@ -26,9 +26,11 @@ Brownfield adoption rule: untouched legacy `pages/` code는 자동 실패가 아
 - `use cache`는 request-time APIs를 직접 읽을 수 없습니다. serializable value를 인자로 넘기고, 정당화된 durable shared cache에는 `use cache: remote`, experimental `use cache: private`는 예외적으로 취급합니다.
 - 새 request-time dynamic work에는 `connection()`을 사용합니다. `unstable_noStore`는 `connection()`을 위해 deprecated되었습니다.
 - Server Actions는 UI/forms/events에서 호출되는 Server Functions입니다. 모든 action을 reachable POST surface로 보고 내부에서 auth/authz를 재확인합니다.
+- 공식 data-security guidance는 sensitive data에 대해 server-only DAL, authorization checks, minimal DTO를 권장합니다. Server Components는 boundary가 안전하면 ORM/database를 직접 query할 수 있지만, non-trivial logic에는 local architecture가 여전히 DAL을 요구할 수 있습니다.
 - `updateTag`는 read-your-own-writes용 Server Action-only API입니다. `revalidateTag`는 Server Actions와 Route Handlers에서 사용할 수 있고 stale-while-revalidate에는 `'max'` 같은 두 번째 인자를 사용해야 합니다. 단일 인자 form은 deprecated입니다.
 - Route Handlers는 HTTP-native endpoints용이며 standard Web `Request`/`Response` APIs와 method exports를 지원합니다. Cache Components에서는 `GET` handlers가 UI routes와 같은 prerendering model을 따르며 `use cache`는 handler body가 아니라 helper에 둬야 합니다.
 - 기존 `middleware` convention은 `proxy.ts`로 대체되어 deprecated입니다. Proxy는 last-resort network-boundary 도구이고 Node.js runtime이 기본이며 static하고 좁은 matcher가 필요합니다.
+- Drizzle schema/config/migrations와 connection lifecycle은 독립적인 DB architecture concern입니다. generic services guidance 안에 숨기지 말고 `rules/db.md`에 둡니다.
 
 ---
 
@@ -45,6 +47,26 @@ Brownfield adoption rule: untouched legacy `pages/` code는 자동 실패가 아
 
 ---
 
+## Layer Taxonomy
+
+| Layer | Classification | Default responsibility |
+|---|---|---|
+| `app/` 또는 `src/app/` route segments | Official routing surface | UI routes, layouts, special files, segment-local private folders |
+| Server Components | Official rendering/data surface | initial reads, server-rendered UI, 안전한 direct server-only DAL/ORM calls |
+| Client Components and hooks | Official client boundary + Hypercore convention | interactivity, browser APIs, UI state, client orchestration only |
+| Server Actions | Official mutation surface | validation, auth/authz, DTO return shaping, freshness가 있는 UI-originated writes |
+| Route Handlers | Official HTTP endpoint surface | webhooks, feeds, CORS, streams, public machine-readable responses |
+| `src/modules/<domain>/<feature>/` | Hypercore local convention | domain feature orchestration, reusable actions/queries/schemas/DTOs |
+| `src/services/<domain>/` | Hypercore local convention | service naming을 선호하는 repo의 domain service entrypoints |
+| `src/db/<area>/` | Hypercore local convention | Drizzle schema, client, repositories, migrations, transaction helpers |
+| `src/server/<area>/` | Hypercore local convention | request/session/server runtime utilities |
+| `src/integrations/<provider>/` | Hypercore local convention | external SDK clients, webhook schemas, provider-specific mapping |
+| `src/config/<area>/` | Hypercore local convention | env/runtime config, feature flags, deployment config |
+
+`src/modules`, `src/services`, `src/db`, `src/server`, `src/integrations`, `src/config`를 official Next.js requirements로 보고하지 않습니다. ownership과 runtime boundaries를 보이게 하는 Hypercore local folder conventions입니다.
+
+---
+
 ## Forbidden
 
 | Category | Forbidden |
@@ -52,7 +74,10 @@ Brownfield adoption rule: untouched legacy `pages/` code는 자동 실패가 아
 | Routing | 같은 route segment의 `page.tsx`와 `route.ts` |
 | Client Boundary | 실제 interaction 필요 없는 broad top-level `'use client'` |
 | Secrets | Client Components에서 private env, DB clients, server-only modules import |
+| Hooks | Client hooks가 Drizzle schema/client, DAL, private env, request APIs, provider secrets import |
 | Data Safety | Server Components에서 Client Components로 broad raw records 전달 |
+| Services | client-visible boundaries를 넘어 raw DB rows 또는 provider payloads 반환 |
+| Drizzle | request lifecycle code에서 migrations 실행 또는 schema/config drift 숨김 |
 | Cache Intent | 이유를 이해하지 못한 implicit caching 또는 dynamic rendering 의존 |
 | Cache Components | serializable inputs 전달 또는 정당화된 experimental `use cache: private` 예외 없이 `use cache` scope 안에서 runtime request APIs 읽기 |
 | Cache Components | 새 dynamic work에 `connection()` 대신 `unstable_noStore` 추가 |
@@ -73,10 +98,14 @@ Brownfield adoption rule: untouched legacy `pages/` code는 자동 실패가 아
 | Routing | special files를 valid route segments에 배치 |
 | Boundaries | Client Components는 좁게, props는 serializable하게 유지 |
 | Safety | privileged modules에 `server-only` 또는 명확한 server boundary 사용 |
+| Services | Server Actions 또는 delegated server-only services에서 validate, authorize, DTO shaping 수행 |
+| Hooks | hooks는 client orchestration only로 유지하고 server/data layers를 넘지 않음 |
+| DB | Drizzle client/schema/repositories는 server-only로 유지하고 `drizzle.config.ts` schema/out을 명시 |
 | Cache | data/UI가 uncached, `use cache` cached, 예외적 remote/private cached, tag-revalidated, path-revalidated, refreshed 중 무엇인지 명시 |
 | Auth | 각 Server Action 또는 delegated server-only layer에서 authentication/authorization 재확인 |
 | Platform | env handling, route segment config, Proxy, Next config를 명시적으로 유지 |
 | Reporting | repo-local conventions를 framework law가 아닌 convention으로 표시 |
+| Shared folders | `src/modules`, `src/lib`, `src/services`, `src/db`, `src/server`, `src/integrations`, `src/config`, `lib`, `services` 아래 new touched shared code는 explicit exception이 없으면 nested domain/provider grouping 사용 |
 
 ---
 
@@ -99,7 +128,10 @@ Default surface order:
 
 ## Rule Files
 
-- `rules/project-structure.ko.md` — touched `src/lib` / `src/services` shared root 아래 direct leaf files 금지 포함
+- `rules/project-structure.ko.md` — touched `src/modules` / `src/services` / `src/db` shared root 아래 direct leaf files 금지 포함
+- `rules/services.ko.md`
+- `rules/hooks.ko.md`
+- `rules/db.ko.md`
 - `rules/routes.md`
 - `rules/execution-model.md`
 - `rules/data-fetching.md`
@@ -108,5 +140,6 @@ Default surface order:
 - `rules/platform.md`
 - `references/official/current-docs-2026-06-02.ko.md`
 - `references/official/nextjs-docs.ko.md`
+- `references/official/drizzle-docs.ko.md`
 
 항상 이 파일부터 읽고, active change를 다루는 가장 작은 rule set만 추가로 읽습니다.

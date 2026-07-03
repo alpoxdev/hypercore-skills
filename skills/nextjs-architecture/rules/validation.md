@@ -20,6 +20,7 @@ rg -n "^['\"]use client['\"]|server-only|client-only|cookies\(|headers\(|process
 # Cache, mutation freshness, and route handler checks
 rg -n "cacheComponents|use cache|cacheTag|cacheLife|connection\(|updateTag|revalidateTag|revalidatePath|refresh\(|redirect\(" next.config.* app src/app src/lib src/services 2>/dev/null
 rg -n "export async function (GET|POST|PUT|PATCH|DELETE)|NextResponse\.next\(|RouteContext" app src/app 2>/dev/null
+rg -n "drizzle|drizzle.config|schema|migrate|push|pull|prepared|relations|RQB" drizzle.config.* src/db db src/modules src/services 2>/dev/null
 
 # Proxy / env checks
 find . -maxdepth 2 \( -name 'proxy.ts' -o -name 'middleware.ts' -o -name 'middleware.js' \)
@@ -36,10 +37,16 @@ For edits to this skill itself:
 find skills/nextjs-architecture -maxdepth 3 -type f | sort
 wc -l skills/nextjs-architecture/SKILL.md skills/nextjs-architecture/SKILL.ko.md
 rg -n 'instruction_contract|activation_examples|routing_rule|rules/validation|current-docs-2026-06-02' skills/nextjs-architecture/SKILL.md skills/nextjs-architecture/SKILL.ko.md
-rg -n 'checked_at|Next.js 16|cacheComponents|use cache: remote|proxy.ts|middleware|NEXT_PUBLIC|Server Actions|Route Handlers' skills/nextjs-architecture/references/official
-rg -n 'src/lib|src/services|direct leaf|repo-local convention|not official Next.js requirement' skills/nextjs-architecture/rules/project-structure.md skills/nextjs-architecture/rules/project-structure.ko.md
-rg -n 'Deprecated feature-folder guidance is absent|src/services|direct leaf|current-docs-2026-06-02' skills/nextjs-architecture/rules/validation.md skills/nextjs-architecture/rules/validation.ko.md
+rg -n 'rules/services|rules/hooks|rules/db|drizzle-docs' skills/nextjs-architecture/SKILL.md skills/nextjs-architecture/SKILL.ko.md
+rg -n 'checked_at|Next.js 16|cacheComponents|use cache: remote|proxy.ts|middleware|NEXT_PUBLIC|Server Actions|Route Handlers|Drizzle schema|drizzle.config.ts|drizzle-kit generate|RQB' skills/nextjs-architecture/references/official
+rg -n 'src/modules|src/lib|src/services|src/db|src/server|src/integrations|src/config|direct leaf|Hypercore local convention|not official Next.js requirement' skills/nextjs-architecture/rules/project-structure.md skills/nextjs-architecture/rules/project-structure.ko.md
+rg -n 'DAL|DTO|server-only service|provider|authorization' skills/nextjs-architecture/rules/services.md skills/nextjs-architecture/rules/services.ko.md
+rg -n 'client orchestration|hooks|server/data layers|Drizzle schema|private env' skills/nextjs-architecture/rules/hooks.md skills/nextjs-architecture/rules/hooks.ko.md
+rg -n 'Drizzle schema|drizzle.config.ts|generate|migrate|prepared statements|validation integrations|RQB' skills/nextjs-architecture/rules/db.md skills/nextjs-architecture/rules/db.ko.md
+rg -n 'Deprecated feature-folder guidance is absent|src/services|src/modules|src/db|direct leaf|current-docs-2026-06-02|Korean parity|mirror' skills/nextjs-architecture/rules/validation.md skills/nextjs-architecture/rules/validation.ko.md
 node skills/nextjs-architecture/scripts/validate-nextjs-architecture-skill.mjs
+node scripts/validate-codex-plugin.mjs
+diff -qr skills/nextjs-architecture plugins/hypercore/skills/nextjs-architecture
 ```
 
 Must pass:
@@ -50,10 +57,27 @@ Must pass:
 - Current official snapshot `references/official/current-docs-2026-06-02.md` is directly linked from `SKILL.md` and used when API drift matters.
 - Hypercore/repo-local conventions are labelled as such.
 - Project-structure guidance handles `app`, `src/app`, `pages`, `src/pages`, private folders, shared nested folders, and no-new-direct-leaf-files under touched shared roots.
-- Shared nested folders such as `src/lib` and `src/services` are labelled as Hypercore/repo-local convention, not official Next.js law.
+- Shared nested folders such as `src/modules`, `src/lib`, `src/services`, `src/db`, `src/server`, `src/integrations`, and `src/config` are labelled as Hypercore/repo-local convention, not official Next.js law.
+- Services guidance covers DAL/service/provider boundaries, DTOs, authorization delegation, and server-only helper splits.
+- Hooks guidance covers Next.js client orchestration boundaries and explicitly says hooks must not cross server/data layers.
+- DB guidance covers Drizzle schema/config/migrations, connection lifecycle, prepared statements, RQB relations/tables at `drizzle()` init, and validation integrations.
+- Official Drizzle facts live in `references/official/drizzle-docs.md` and `.ko.md`, not in long core sections.
 - Deprecated feature-folder guidance is absent from this skill.
 - Cache Components, Server Actions, Route Handlers, Proxy, env, and Server/Client boundary guidance remain current-docs compatible.
 - English and Korean entrypoints have aligned trigger, boundary, workflow, contract, and read order.
+- English and Korean sibling files are structurally and semantically aligned; Korean parity checks include services/hooks/db/Drizzle phrases.
+- `plugins/hypercore/skills/nextjs-architecture/**` is an exact mirror of `skills/nextjs-architecture/**`.
+
+## Readback Evidence
+
+Before reporting completion, record:
+
+- scenario name and claim being verified
+- exact invocation
+- binary observable such as exit code, missing-file count, diff result, or validator JSON
+- captured artifact path
+
+For this skill folder, read back the changed English/Korean sibling files after edits and verify that links, headings, and rule responsibilities match before syncing the plugin mirror.
 
 ## Trigger Tests
 
