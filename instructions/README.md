@@ -7,6 +7,7 @@
 | 영역 | 파일 | 목적 |
 |---|---|---|
 | Context Engineering | [`context-engineering/CONTEXT_ENGINEERING.md`](context-engineering/CONTEXT_ENGINEERING.md) | 프롬프트/컨텍스트/도구 지시를 런타임 중립적으로 설계 |
+| CLI Runtime Profiles | [`cli/README.md`](cli/README.md) | skill이 Claude Code, Codex, GJC, OpenCode의 질문·승인·도구 기능을 안전하게 선택 |
 | Prompt Authoring | [`context-engineering/references/prompt-authoring.md`](context-engineering/references/prompt-authoring.md) | 역할 수행 프롬프트를 실행 계약으로 작성하는 실전 템플릿 |
 | Skill Authoring | [`skill/SKILL_AUTHORING.md`](skill/SKILL_AUTHORING.md) | 재사용 가능한 skill 폴더를 트리거·구조·검증 가능한 실행 패키지로 설계 |
 | Skill Prompt/Loop/Eval | [`skill/references/prompt-loop-eval.md`](skill/references/prompt-loop-eval.md) | skill을 단일 프롬프트가 아니라 반복·검증 가능한 작은 프로그램으로 설계 |
@@ -39,6 +40,7 @@
 ```
 
 작업이 특정 런타임에 묶이면 [`context-engineering/references/runtime-profiles.md`](context-engineering/references/runtime-profiles.md)를 추가로 읽는다. 병렬 작업, subagent, background agent, agent team을 사용할 때는 [`context-engineering/references/parallel-workflows.md`](context-engineering/references/parallel-workflows.md)를 함께 읽는다.
+CLI별 질문·승인·도구 기능을 skill에서 사용하려면 [`cli/README.md`](cli/README.md)와 해당 하위 런타임 프로필을 함께 읽는다.
 
 
 Skill을 새로 만들거나 `skills/*`를 refactor할 때는 [`skill/SKILL_AUTHORING.md`](skill/SKILL_AUTHORING.md)를 읽고, prompt/loop/eval 설계가 필요하면 [`skill/references/prompt-loop-eval.md`](skill/references/prompt-loop-eval.md)를 함께 읽는다. 필요에 따라 `skill/references/`의 anatomy, trigger, progressive disclosure, resource placement, validation 문서를 추가로 읽는다.
