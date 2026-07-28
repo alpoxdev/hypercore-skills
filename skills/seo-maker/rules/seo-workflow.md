@@ -17,12 +17,13 @@ Output: scope summary with target list and focus areas.
 
 Establish what can actually be measured before scoring:
 
-- Access level: live URL, local-only files, Search Console, analytics, field Core Web Vitals, AI citation probe access
-- Evidence grade for each method: `official`, `field`, `tool`, `lab`, `synthetic`, or `heuristic`
-- Confidence impact: lower confidence when relying on local static scans instead of live crawl, Search Console, or field data
+- Access level: live URL, local-only files, Search Console, analytics, field Core Web Vitals, AI citation probe access, and available tools
+- Evidence class for each method: exactly one of `official`, `live`, `field`, `tool`, `lab`, `synthetic`, or `heuristic`
+- Comparable evaluator: target set, scoring rubric, tool/version, dates, and pass/fail checks
+- Confidence impact and capability fallback: explain unavailable live, field, probe, or tool access and the strongest lower-grade method used
 - Measurement methods to record in `results.json.measurement_methods`
 
-Do not compare a field-data audit with a lab-only or local-only audit without recording the confidence difference.
+Do not compare field-data, live, lab, tool, synthetic, or local-only results as though they were equivalent. Record unavailable checks as `unknown`, irrelevant checks as `not-applicable`, and exclude `not-applicable` checks from score denominators. A heuristic is not an official failure.
 
 ## 3. Technical SEO Phase
 
@@ -43,28 +44,28 @@ Tools: `Glob`, `Grep`, `Read` for file scanning. `WebFetch` for live URL analysi
 ## 4. Platform Policy Phase
 
 Inspect crawler and AI/search visibility controls separately by platform:
-
 - Googlebot and standard robots directives for indexing and snippets
 - Google-Extended for Google AI training/product controls where relevant
-- OAI-SearchBot for ChatGPT Search inclusion; GPTBot for OpenAI training; ChatGPT-User for user-triggered fetches
+- OAI-SearchBot for ChatGPT Search inclusion, GPTBot for OpenAI training, and ChatGPT-User for user-triggered fetches; audit each separately because a rule for one does not imply a rule for another
 - PerplexityBot, ClaudeBot, and other AI crawlers when robots.txt or server rules mention them
 - `nosnippet`, `data-nosnippet`, `max-snippet`, `noindex`, canonical, and X-Robots-Tag effects
-- `llms.txt` as an optional machine-readable map, not a guaranteed ranking or citation mechanism
+- `llms.txt` only as an optional proposal/content map, not a standard or ranking/citation requirement
+- Google AI features using ordinary SEO fundamentals: assess relevant indexability and snippet eligibility, without prescribing special AI schema or text files; eligibility does not guarantee inclusion
 
-Record policy findings with high confidence only when backed by official docs or directly observed files/headers.
+Record policy findings with high confidence only when backed by an applicable official source or directly observed files/headers. For source-sensitive claims, add a source-ledger entry with URL, date, applicable claim, evidence class, and limitation.
 
 ## 5. On-Page SEO Phase
 
 Scan for:
 
-- `<title>` — exists, unique per page, under 60 characters, includes primary keyword
-- `<meta name="description">` — exists, 150–160 characters, compelling, includes keyword
-- Heading hierarchy — single `<h1>` per page, logical `h2`→`h3`→`h4` nesting
-- Image alt text — all `<img>` have descriptive `alt` attributes
-- Open Graph tags — `og:title`, `og:description`, `og:image`, `og:url`
-- Twitter Card tags — `twitter:card`, `twitter:title`, `twitter:description`
-- Internal links — descriptive anchor text, contextual relevance, 3–5 per 1,000 words
-- URL slug — descriptive, keyword-relevant, no unnecessary parameters
+- `<title>` — present, unique where pages have distinct intent, accurate and useful for the result context; length and keyword placement are heuristic observations, not official failures
+- `<meta name="description">` — present where supported and useful, accurate and compelling; character counts and keyword placement are heuristic observations, not official failures
+- Heading hierarchy — meaningful, accessible structure appropriate to the page; multiple or absent `h1` elements require contextual review, not an automatic failure
+- Image alt text — meaningful non-decorative images have appropriate text alternatives
+- Open Graph tags — `og:title`, `og:description`, `og:image`, `og:url` when the sharing surface is in scope
+- Twitter Card tags — `twitter:card`, `twitter:title`, `twitter:description` when the sharing surface is in scope
+- Internal links — descriptive anchor text and contextual relevance; link density is a heuristic observation, not a requirement
+- URL slug — descriptive and stable when the URL is under project control; query parameters are assessed by purpose
 
 Tools: `Grep` for pattern matching (`<title>`, `<meta`, `<h1>`, `alt=`), `Read` for page content.
 
@@ -72,14 +73,14 @@ Tools: `Grep` for pattern matching (`<title>`, `<meta`, `<h1>`, `alt=`), `Read` 
 
 Evaluate for:
 
-- E-E-A-T signals — experience, expertise, authoritativeness, trustworthiness
-- Keyword placement — title, first paragraph, headings, naturally distributed
-- Keyword and entity usage — natural placement in title, intro, headings, body, and alt text without stuffing or fixed-density targets
-- Content depth — sufficient coverage of the topic, minimum 300+ words for indexable pages
-- Readability — short paragraphs, clear structure, scannable with headings
-- Freshness — dates present, content not stale
-- Uniqueness — no obvious duplicate content across pages
-- AI content — if AI-generated, evidence of human editing and value-add
+- E-E-A-T signals — experience, expertise, authoritativeness, trustworthiness where relevant
+- Keyword placement — natural alignment with the page's intent, not forced repetition
+- Keyword and entity usage — natural placement where useful without stuffing or fixed-density targets
+- Content depth — sufficient coverage for the user intent and page type; word count is a heuristic observation, not a minimum requirement
+- Readability — structure and language appropriate to the intended audience and format
+- Freshness — dates and updates appropriate to the topic's time sensitivity
+- Uniqueness — no harmful duplicate content across pages
+- AI content — when relevant, evidence of review and value-add rather than a blanket AI-content rule
 
 Tools: `Read` for content analysis, `WebSearch` for competitor/SERP context if needed.
 
@@ -87,50 +88,48 @@ Tools: `Read` for content analysis, `WebSearch` for competitor/SERP context if n
 
 Evaluate readiness for AI direct answers and Featured Snippets:
 
-- **Q&A format** — Does the content place concise visible answer blocks for key questions near the top of the relevant content? Fixed length targets are heuristic.
-- **Featured Snippet optimization** — Is the structure suitable for definition, list, and table snippets?
-- **Voice search readiness** — Are headings and subheadings written as natural-language questions?
-- **Answer extraction ease** — Do short paragraphs (2-3 sentences) and clear H2/H3 structure make answers easy for AI systems to extract?
-- **FAQ/Q&A structure** — Is there visible FAQ/Q&A content, and does the audit distinguish Google FAQ rich result eligibility from answer-friendly content?
-- **Platform-specific content fit** — Is the content suitable for ChatGPT (encyclopedic), Perplexity (community/contextual), and Google AI Overviews (multimodal) preferences?
+- **Q&A format** — Whether concise visible answer blocks serve relevant user questions; placement and length are heuristics.
+- **Featured Snippet readiness** — Whether visible structure could be eligible for definition, list, or table snippets; this is not a guarantee.
+- **Voice search readiness** — Whether natural-language questions help the target audience; it is a contextual heuristic.
+- **Answer extraction ease** — Whether clear structure and concise passages help readers and systems; sentence counts are heuristic.
+- **FAQ/Q&A structure** — Whether visible FAQ/Q&A content is useful, while distinguishing Google FAQ rich-result eligibility from answer-friendly content.
+- **Platform observations** — Do not prescribe fixed content preferences for ChatGPT, Perplexity, or Google AI Overviews. Record any platform-specific probe as dated, volatile live or synthetic evidence.
 
 Tools: `Grep` for Q&A patterns, heading structures. `Read` for content analysis. See `references/aeo-geo-guide.md` for strategy details.
 
 ## 8. GEO Phase (Generative Engine Optimization)
 
-Evaluate readiness for AI citation in generative responses:
-
+Evaluate readiness for possible citation in generative responses; never promise a citation:
 - **GEO CORE assessment**:
   - **Context** — Does the topic include sufficient context and background?
   - **Organization** — Does the content have clear hierarchy and extractable formatting?
   - **Reliability** — Does it include verifiable statistics, citations, and expert opinions?
   - **Exclusivity** — Does it include proprietary data, original research, or a unique perspective?
 - **Entity authority** — Topic cluster structure and knowledge consistency across multiple content pieces.
-- **Citable statements** — Short, independently citable statements, including statistics where relevant.
+- **Citable statements** — Short, independently supportable statements, including statistics where relevant.
 - **Content freshness** — Updated dates and source dates appropriate to the topic's time sensitivity.
-- **llms.txt** — Presence of an optional LLM-facing content map and its consistency with canonical URLs and sitemaps.
-- **Schema markup AI trust signal** — Whether JSON-LD matches visible entity information. This does not guarantee AI citation.
+- **llms.txt** — An optional proposed LLM-facing content map; its absence is not a standard, ranking, or citation failure.
+- **Schema markup** — Whether JSON-LD matches visible entity information. This does not guarantee AI citation.
 
-Tools: `Grep` for citation patterns, statistics. `Read` for content freshness. `Glob` for llms.txt. See `references/aeo-geo-guide.md` for GEO CORE framework and platform benchmarks.
+Tools: `Grep` for citation patterns and statistics, `Read` for content freshness, and `Glob` for `llms.txt`. If named tools or live probes are unavailable, record the capability fallback and resulting unknowns rather than simulating a result.
 
 Optional high-confidence extensions when access allows:
-
-- **Query fan-out simulator** — generate 10-30 subqueries from the target topic and map missing coverage before recommending content expansion.
-- **AI citation probe** — run or prepare a stable prompt set for ChatGPT, Perplexity, Gemini, or other engines; record engine, date, sample size, cited URLs, brand mentions, and unresolved volatility.
+- **Query fan-out simulator** — generate a bounded, documented subquery set and map missing coverage before recommending content expansion.
+- **AI citation probe** — run or prepare a stable, comparable prompt set for ChatGPT, Perplexity, Gemini, or other engines; record engine, date, sample size, prompts, cited URLs, brand mentions, evidence class, and unresolved volatility.
 
 ## 9. Score Optimization Phase (Optimize Mode Only)
 
-Run this phase when the user asks for the highest score, max score, perfect score, or repeated improvement.
+Run this phase when the user asks for the highest score, max score, perfect score, or repeated improvement. It is a bounded process, not an infinite loop.
 
-1. **Baseline first** — before changing files or recommendations, write the current category average, `overall_grade`, critical-finding count, and target score to `results.json.score_history[0]`.
-2. **Stable evaluator** — keep the same scoring categories and pass/fail checks for all iterations. If the evaluator changes, record a reset event and do not compare the new score with old runs.
+1. **Baseline and budget first** — before changing files or recommendations, record the current category average, `overall_grade`, critical-finding count, target score, finite iteration budget (default three), and regression guards in `results.json.score_history[0]`.
+2. **Stable evaluator** — keep the same comparable target set, scoring categories, evidence classes, tools/versions, and pass/fail checks for all iterations. If the evaluator changes, record a reset event and do not compare the new score with old runs.
 3. **One change per iteration** — choose one high-impact change or one tightly related recommendation set. Avoid bundling unrelated technical, content, and AEO/GEO changes in the same iteration.
-4. **Re-audit after every change** — update category scores, findings, quick wins, and evidence. Append an iteration record with `iteration`, `changed`, `score`, `critical_count`, `decision`, and `evidence`.
-5. **Keep best run** — if the score improves or critical findings decrease without score regression, mark the iteration `kept` and update `best_run`. If not, rollback/revert code changes where possible or mark the iteration `discarded`.
-6. **Continue/stop gates** — continue while score improves. Stop only when target score passes, a validator/architect review approves, user stops, budget is exhausted, or the score plateaus for 3 consecutive iterations.
-7. **Completion artifact** — finish with `results.json.status: "complete"`, populated `score_history`, populated `best_run`, and validator evidence explaining why the final score is the best available run.
+4. **Comparable re-audit** — update category scores, findings, quick wins, evidence class, capability limits, and unknown/not-applicable states. Append an iteration record with `iteration`, `changed`, `score`, `critical_count`, `decision`, and `evidence`.
+5. **Guard and discard** — keep an iteration only when comparable evidence improves without a regression guard. Otherwise rollback/revert code changes where possible or mark the iteration `discarded`; preserve `best_run`.
+6. **Stop gates** — stop at the target, finite budget, plateau, guard failure, no safe local fix, required external credential/business decision, or user stop. Record the stop reason.
+7. **Completion artifact** — finish with `results.json.status: "complete"`, populated `score_history`, populated `best_run`, and evidence explaining why the final result is the best comparable verified run.
 
-Do not interpret “infinite loop” literally. The correct behavior is persistent measured continuation with rollback, plateau detection, and artifact-gated completion.
+Do not fake a perfect score or promise ranking, AI-feature inclusion, or citation. Report unknowns and capability limits.
 
 ## 10. Report Phase
 
@@ -142,7 +141,7 @@ Compile findings into `report.md`:
 4. Prioritized action items sorted by impact
 5. Quick wins section for low-effort/high-impact fixes
 
-Write evidence and raw data to `sources.md`.
+Write evidence and raw data to `sources.md` as a source ledger. For each official or external source-sensitive claim, record URL, accessed or published date, applicable claim, evidence class, and scope or availability limitation.
 
 ## Optimize Mode Rules
 

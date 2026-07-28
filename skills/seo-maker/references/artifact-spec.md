@@ -147,10 +147,10 @@ Canonical generated assets:
 
 Every non-obvious finding should include:
 
-- `evidence_grade`: `official`, `field`, `tool`, `lab`, `synthetic`, or `heuristic`.
+- `evidence_grade`: `official`, `live`, `field`, `tool`, `lab`, `synthetic`, or `heuristic`.
 - `confidence`: `high`, `medium`, or `low`.
 - `measurement_method`: the scan, tool, probe, or source used to produce the finding.
-- `source_tier`: `official-doc`, `observed-file`, `field-data`, `tool-output`, `synthetic-probe`, or `research-backed-heuristic`.
+- `source_tier`: `official-doc`, `observed-file`, `live-observation`, `field-data`, `tool-output`, `lab-result`, `synthetic-probe`, or `research-backed-heuristic`.
 
 Use high confidence for official docs, direct file/header observations, or field data. Use lower confidence for local-only static scans, lab-only performance, synthetic AI prompt probes, and heuristic AEO/GEO advice.
 
@@ -165,8 +165,8 @@ Use high confidence for official docs, direct file/header observations, or field
 
 When `mode` is `optimize` or the user asked for highest/max/perfect score, add these fields to `results.json`:
 
-- `target_score` — numeric goal, default `95` unless the user specified another target.
-- `score_history[]` — ordered iteration log. Each item includes `iteration`, `score`, `grade`, `critical_count`, `decision`, `changed`, and `evidence`.
+- `target_score` — optional user-defined or evaluator-defined goal; record its rationale and do not default to an arbitrary “perfect” threshold.
+- `score_history[]` — ordered iteration log. Each item includes `iteration`, `score`, `grade`, `critical_count`, `decision`, `changed`, `evidence`, `evaluator_version`, and `guard`.
 - `best_run` — the highest-scoring kept iteration. Required before completion.
 - `validator` — artifact-gated completion evidence, such as `{ "status": "passed" }` or an architect review verdict.
 - `plateau` — optional object with `consecutive_iterations` and `reason` when completion is due to no further score gains.
@@ -177,6 +177,8 @@ Rules:
 2. Later scores are comparable only when the evaluator stayed stable. If scoring changes, record a reset event.
 3. `best_run` must not point to a discarded iteration.
 4. If code changes were made, validator evidence should include the relevant test/build/lint command output summary.
+5. A higher rubric score is not sufficient when an indexing, correctness, accessibility, policy, or project guard regresses.
+6. `unknown` and `not-applicable` categories never become numeric zeroes.
 
 ### Status values
 
@@ -186,7 +188,7 @@ Rules:
 
 ### Default category list
 
-Seven categories, each scored from 0-100. Report `measurement_confidence` separately from the score:
+Seven default categories. Each category records `status: "measured" | "unknown" | "not-applicable"`, `score: 0..100 | null`, evidence, and confidence. The numeric rubric is an internal prioritization aid, not a Google or AI-platform ranking score.
 
 1. Technical SEO
 2. On-Page SEO
@@ -255,7 +257,7 @@ Generate it from the existing `assets/report.template.md`. It is a Markdown rend
 
 ### Grade Calculation
 
-Average category score:
+Average only comparable categories whose `status` is `measured`. Record the included categories, weights, evaluator version, and evidence availability. If the category set, weights, or evaluator changes, start a new baseline instead of reporting a delta.
 
 | Average | Grade |
 |---------|-------|

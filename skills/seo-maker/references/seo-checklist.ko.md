@@ -5,8 +5,8 @@
 ## 측정 및 신뢰도 체크리스트
 
 - [ ] 접근 수준 기록: live URL, local files, Search Console, analytics, field Core Web Vitals, AI citation probe.
-- [ ] 각 증거 채널에 `official`, `field`, `tool`, `lab`, `synthetic`, `heuristic` 라벨이 있음.
-- [ ] 누락된 live/field/probe data는 숨기지 않고 신뢰도를 낮춤.
+- [ ] 각 증거 채널에 `official`, `live`, `field`, `tool`, `lab`, `synthetic`, `heuristic` 라벨이 있음.
+- [ ] 누락된 live/field/probe data는 숨기거나 0점 처리하지 않고 이유와 함께 `unknown` 또는 `not-applicable`로 기록함.
 - [ ] 발견사항에 `evidence_grade`, `confidence`, `measurement_method`, `source_tier`가 포함됨.
 
 ## Technical SEO 체크리스트

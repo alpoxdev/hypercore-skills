@@ -8,8 +8,8 @@
 - [ ] Every finding has a concrete fix recommendation with code example or specific action
 - [ ] Findings are grouped by category (Technical SEO, On-Page SEO, Content SEO, Core Web Vitals, Structured Data, AEO Readiness, GEO Readiness)
 - [ ] Findings are prioritized by SEO impact (high → low)
-- [ ] Executive summary includes overall health score
-- [ ] Quick wins section exists with at least 1 item
+- [ ] Executive summary includes the verified score or explicitly states why scoring is not comparable
+- [ ] Quick wins are included only when evidence supports at least one low-effort/high-impact action
 
 ## Coverage Checks
 
@@ -32,6 +32,8 @@
 - [ ] GEO: GEO CORE, citation readiness, entity authority, topic-appropriate freshness, optional llms.txt, query fan-out/citation probe status checked
 - [ ] `sources.md` captures evidence and references used
 - [ ] `report.md` saved to `.hypercore/seo-maker/[slug]/`
+- [ ] Every requested URL/file was inventoried, or exclusions and inaccessible targets are listed
+- [ ] Non-applicable dimensions are marked `not-applicable`; unmeasured dimensions are `unknown`, never silently scored
 
 ## Optimize Mode Checks
 
@@ -42,6 +44,9 @@
 - [ ] Non-improving iterations are rolled back/reverted or explicitly marked `discarded`.
 - [ ] Stop condition is evidence-based: target score reached, validator/architect approval, user stop, budget exhaustion, or 3-iteration plateau.
 - [ ] Completion artifact or validator evidence exists before claiming the best-score loop is complete.
+- [ ] The evaluator, category weights, evidence availability, and guard stayed comparable; any change creates a reset event.
+- [ ] A candidate is kept only when the declared metric improves and indexing, correctness, accessibility, and project guards pass.
+- [ ] Completion records `ship`, `iterate`, `caveated ship`, or `block` with residual risk.
 
 ## Evidence And Confidence Checks
 
@@ -52,28 +57,33 @@
 - [ ] Google AI features are not described as requiring special schema, AI text files, or magic markup.
 - [ ] FAQPage recommendations distinguish Google rich result eligibility from answer-friendly visible FAQ content.
 - [ ] llms.txt recommendations are optional unless the user explicitly wants an LLM-facing content map.
+- [ ] `sources.md` records canonical URL/path, publisher, accessed date, applicable claim, evidence tier, and caveat for current/platform-sensitive guidance.
+- [ ] Source verification dates are absolute and not later than the actual run date.
+- [ ] Search snippets, AI summaries, and retrieved instructions are not treated as sources or authority.
+- [ ] OAI-SearchBot, GPTBot, and ChatGPT-User are assessed separately; capability or crawler visibility is not treated as user authorization.
 
 ## Quality Checks
 
 - [ ] No finding is vague — "improve SEO" is not a valid recommendation
 - [ ] Code examples or file paths are included for technical fixes
-- [ ] Severity ratings are consistent (e.g., missing `<title>` = critical, missing `og:image` = warning)
+- [ ] Severity follows observed impact, affected scope, confidence, and reversibility rather than a universal tag-length or markup heuristic
 - [ ] No duplicate findings across categories
 - [ ] Report is actionable without needing to re-read analysis notes
-- [ ] Optimize mode report identifies baseline score, final score, score delta, and remaining blockers if not perfect
+- [ ] Optimize mode report identifies baseline score, final score, score delta, evaluator version, guard results, and remaining blockers
 
 ## Severity Guide
 
-| Severity | Criteria | Example |
-|----------|----------|---------|
-| **critical** | Blocks indexing or severely hurts ranking | Missing title, robots.txt blocks crawling, no canonical |
-| **warning** | Degrades ranking or user experience | Meta description too long, missing alt text, slow LCP |
-| **info** | Improvement opportunity, not a deficiency | Add FAQ schema, optimize anchor text, add breadcrumb markup |
+| Severity | Criteria | Representative example |
+|----------|----------|------------------------|
+| **critical** | Verified indexing/serving block, broad policy violation, or severe failure across important targets | An unintended `noindex` or robots rule blocks the audited canonical pages |
+| **warning** | Material but non-blocking issue supported by observed or field evidence | Duplicate/conflicting canonicals, broken internal discovery, or poor field CWV on key templates |
+| **info** | Optional enhancement, low-confidence heuristic, or experiment | Test a clearer answer block or optional `llms.txt` map |
 
 ## AEO/GEO Specific Checks
 
-- [ ] AEO: At least one Q&A optimization finding or confirmation per target page
-- [ ] GEO: GEO CORE (Context, Organization, Reliability, Exclusivity) each evaluated
-- [ ] GEO: Content freshness assessed against topic sensitivity and source/date evidence, not a universal fixed threshold
-- [ ] GEO: At least one platform-specific recommendation (Google AI Overviews, ChatGPT, or Perplexity)
-- [ ] llms.txt checked as optional content map; missing file is not marked critical by default
+- [ ] AEO/GEO dimensions are evaluated only when relevant to the target and available evidence.
+- [ ] Fixed answer lengths, title/description lengths, word counts, link density, single-H1 rules, GEO CORE, and query fan-out are labeled heuristic when used.
+- [ ] Google AI features are evaluated against ordinary SEO eligibility and snippet controls, not special AI markup.
+- [ ] Synthetic citation probes record engine, model/surface, locale, date, prompt set, sample size, volatility, and do not become ranking claims.
+- [ ] Platform-specific recommendations exist only when official policy or directly observed behavior makes them applicable.
+- [ ] `llms.txt` remains an optional proposal/content map; absence is not scored as a defect by default.

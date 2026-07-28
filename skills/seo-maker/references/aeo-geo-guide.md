@@ -1,7 +1,7 @@
 # AEO/GEO/LLMO Strategy Guide
 
 **Purpose**: AI search optimization reference for AEO/GEO phases.
-**Last verified**: 2026-04-29 from Google Search Central, OpenAI crawler docs, web.dev, arXiv GEO research, and llms.txt reference material.
+**Last verified**: 2026-07-28 from Google Search Central, OpenAI crawler docs, web.dev, arXiv GEO research, and the llms.txt proposal.
 
 ## Evidence Discipline
 
@@ -22,8 +22,8 @@ Do not present heuristic or synthetic findings as guaranteed ranking/citation fa
 
 - Google says AI Overviews and AI Mode use the same foundational SEO practices as Search; there are no extra technical requirements, special schema.org types or special schema.org markup, or AI text files required for inclusion.
 - A page still needs to be indexed and snippet-eligible to appear as a supporting link in Google AI features.
-- OpenAI separates `OAI-SearchBot` for ChatGPT Search inclusion from `GPTBot` for model training. These should be audited and recommended separately.
-- `llms.txt` is useful as a machine-readable content map, but it is not a W3C/IETF standard and is not a guaranteed major-provider fetch contract as of 2026-04-29.
+- OpenAI separates `OAI-SearchBot` for ChatGPT Search inclusion, `GPTBot` for model training, and `ChatGPT-User` for user-triggered fetches. Audit these independently; robots behavior and purpose differ.
+- `llms.txt` is an informal proposal and optional machine-readable content map, not a W3C/IETF standard, ranking factor, or guaranteed major-provider fetch contract as of 2026-07-28.
 
 ## Terminology
 
@@ -60,9 +60,10 @@ Do not present heuristic or synthetic findings as guaranteed ranking/citation fa
 
 ## GEO Strategy
 
-GEO is partly experimental and should be measured with query sets or citation probes when possible.
+GEO is experimental. The 2023 GEO paper reports gains only within its benchmark and setup; do not generalize its “up to 40%” result to live engines or a client site. Prefer field evidence or repeatable citation probes and label the rest heuristic.
 
-### GEO CORE Framework
+### GEO CORE Framework (`heuristic`)
+This is a local audit mnemonic, not an official platform framework or validated ranking model.
 
 | Dimension | What to inspect | Evidence examples |
 |-----------|-----------------|-------------------|
@@ -80,7 +81,7 @@ GEO is partly experimental and should be measured with query sets or citation pr
 
 ### Query fan-out simulator
 
-When optimizing a topic for AI search, generate 10-30 subqueries across:
+When a coverage experiment is useful, generate a proportionate subquery set across the following categories. `10–30` is an optional working range for broad topics, not a required platform behavior:
 
 - definitions and beginner questions
 - comparisons and alternatives
@@ -109,7 +110,7 @@ If probing is unavailable, save the prompt pack as `not-run` rather than pretend
 | OAI-SearchBot | ChatGPT Search inclusion | Allow when ChatGPT Search visibility is desired |
 | GPTBot | OpenAI model training | Can be allowed or blocked independently from OAI-SearchBot |
 | ChatGPT-User | User-triggered fetches | Not a normal automatic search crawler; document separately |
-| PerplexityBot / ClaudeBot | AI retrieval/crawling where documented or observed | Audit robots/server rules, but label recommendations by evidence tier |
+| PerplexityBot / ClaudeBot | AI retrieval/crawling only where currently documented or directly observed | Re-check current official policy before recommending a rule; otherwise record `unknown` |
 
 ## llms.txt
 
@@ -129,7 +130,7 @@ Use `llms.txt` as an optional, low-risk content map:
 Rules:
 
 - Do not mark missing `llms.txt` as critical by default.
-- Recommend it most strongly for documentation sites, developer tools, API references, and content-heavy products.
+- Consider it for documentation sites, developer tools, API references, or content-heavy products only when a maintained content map has clear user or retrieval value.
 - Keep it aligned with canonical URLs and sitemap priorities.
 
 ## Measurement KPIs
@@ -152,3 +153,12 @@ Rules:
 5. Audit platform crawler policies, including OAI-SearchBot vs GPTBot separation.
 6. Optionally add `llms.txt` for content maps.
 7. Run query fan-out and citation probes when access allows, then iterate using `score_history` and `best_run`.
+
+## Source Ledger
+
+| Source | Accessed | Supports | Caveat |
+|---|---|---|---|
+| https://developers.google.com/search/docs/appearance/ai-features | 2026-07-28 | Ordinary SEO requirements for AI features, snippet eligibility, query fan-out, controls | No inclusion, traffic, or citation guarantee |
+| https://developers.openai.com/api/docs/bots | 2026-07-28 | OAI-SearchBot/GPTBot/ChatGPT-User purpose separation | Bot strings and policies can change |
+| https://llmstxt.org/ | 2026-07-28 | Format and stated intent of the llms.txt proposal | Proposal, not a standards-body or ranking contract |
+| https://arxiv.org/abs/2311.09735 | 2026-07-28 | Origin and benchmark scope of GEO research | 2023 benchmark result is not a live-engine guarantee |

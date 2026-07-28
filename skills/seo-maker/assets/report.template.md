@@ -47,19 +47,19 @@
 
 | # | Finding | Location | evidence_grade | Confidence | measurement_method | source_tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| T1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| T1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| T2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| T2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| T3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| T3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -69,19 +69,19 @@
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| O1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| O1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| O2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| O2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| O3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| O3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -91,19 +91,19 @@
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| C1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| C1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| C2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| C2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| C3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| C3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -113,19 +113,19 @@
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| W1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| W1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| W2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| W2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| W3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| W3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -135,19 +135,19 @@
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| S1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| S1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| S2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| S2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| S3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| S3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -157,19 +157,19 @@
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| A1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| A1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| A2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| A2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| A3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| A3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -188,19 +188,19 @@
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| G1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| G1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| G2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| G2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | Finding | Location | Evidence Grade | Confidence | Method | Source Tier | Recommendation |
 |---|---------|----------|----------------|------------|--------|-------------|----------------|
-| G3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| G3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 

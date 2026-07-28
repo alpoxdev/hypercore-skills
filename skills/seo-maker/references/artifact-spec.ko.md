@@ -147,10 +147,10 @@ SEO 감사 실행의 결과 워크스페이스를 만들거나 검토할 때 이
 
 명확하지 않은 모든 발견사항은 다음을 포함해야 한다:
 
-- `evidence_grade`: `official`, `field`, `tool`, `lab`, `synthetic`, `heuristic`.
+- `evidence_grade`: `official`, `live`, `field`, `tool`, `lab`, `synthetic`, `heuristic`.
 - `confidence`: `high`, `medium`, `low`.
 - `measurement_method`: 발견사항을 만든 스캔, 도구, probe, 출처.
-- `source_tier`: `official-doc`, `observed-file`, `field-data`, `tool-output`, `synthetic-probe`, `research-backed-heuristic`.
+- `source_tier`: `official-doc`, `observed-file`, `live-observation`, `field-data`, `tool-output`, `lab-result`, `synthetic-probe`, `research-backed-heuristic`.
 
 공식 문서, 직접 파일/헤더 관찰, field data에는 높은 신뢰도를 사용한다. 로컬 전용 정적 스캔, lab-only performance, synthetic AI prompt probe, heuristic AEO/GEO 조언에는 더 낮은 신뢰도를 사용한다.
 
@@ -165,8 +165,8 @@ SEO 감사 실행의 결과 워크스페이스를 만들거나 검토할 때 이
 
 `mode`가 `optimize`이거나 사용자가 highest/max/perfect score를 요청했을 때 `results.json`에 다음 필드를 추가한다:
 
-- `target_score` — 숫자 목표. 사용자가 다른 목표를 지정하지 않으면 기본값은 `95`.
-- `score_history[]` — 순서가 있는 iteration log. 각 항목은 `iteration`, `score`, `grade`, `critical_count`, `decision`, `changed`, `evidence`를 포함한다.
+- `target_score` — optional user-defined 또는 evaluator-defined goal. 근거를 기록하고 임의의 “perfect” threshold를 기본값으로 두지 않는다.
+- `score_history[]` — 순서가 있는 iteration log. 각 항목은 `iteration`, `score`, `grade`, `critical_count`, `decision`, `changed`, `evidence`, `evaluator_version`, `guard`를 포함한다.
 - `best_run` — 가장 높은 점수를 받은 kept iteration. 완료 전 필수.
 - `validator` — `{ "status": "passed" }` 또는 architect review verdict 같은 artifact-gated completion evidence.
 - `plateau` — 점수 향상이 더 없어 완료할 때 `consecutive_iterations`와 `reason`을 담는 선택 객체.
@@ -177,6 +177,8 @@ SEO 감사 실행의 결과 워크스페이스를 만들거나 검토할 때 이
 2. 이후 점수는 evaluator가 안정적으로 유지될 때만 비교 가능하다. scoring이 바뀌면 reset event를 기록한다.
 3. `best_run`은 discarded iteration을 가리키면 안 된다.
 4. 코드 변경이 있었다면 validator evidence에는 관련 test/build/lint 명령 출력 요약이 포함되어야 한다.
+5. 더 높은 rubric score만으로는 충분하지 않다. Indexing, correctness, accessibility, policy, project guard가 regression하면 keep하지 않는다.
+6. `unknown`과 `not-applicable` category를 numeric zero로 바꾸지 않는다.
 
 ### 상태 값
 
@@ -186,7 +188,7 @@ SEO 감사 실행의 결과 워크스페이스를 만들거나 검토할 때 이
 
 ### 기본 카테고리 목록
 
-7개 카테고리, 각각 0-100 점수. 점수와 별도로 `measurement_confidence`를 보고해야 한다:
+7개 default category를 사용한다. 각 category는 `status: "measured" | "unknown" | "not-applicable"`, `score: 0..100 | null`, evidence, confidence를 기록한다. Numeric rubric은 internal prioritization aid이며 Google/AI-platform ranking score가 아니다.
 
 1. Technical SEO
 2. On-Page SEO
@@ -255,7 +257,7 @@ window.__SEO_RESULTS__ = { /* results.json과 동일한 내용 */ };
 
 ### Grade 계산
 
-카테고리 점수 평균:
+`status`가 `measured`인 comparable category만 평균낸다. 포함된 category, weights, evaluator version, evidence availability를 기록한다. Category set, weights, evaluator가 바뀌면 delta를 보고하지 말고 새 baseline을 시작한다.
 
 | Average | Grade |
 |---------|-------|

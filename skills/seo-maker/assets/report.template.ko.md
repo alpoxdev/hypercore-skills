@@ -47,19 +47,19 @@
 
 | # | 발견사항 | 위치 | evidence_grade | 신뢰도 | measurement_method | source_tier | 권장사항 |
 |---|----------|------|----------------|--------|--------------------|-------------|----------|
-| T1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| T1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| T2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| T2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| T3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| T3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -69,19 +69,19 @@
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| O1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| O1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| O2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| O2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| O3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| O3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -91,19 +91,19 @@
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| C1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| C1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| C2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| C2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| C3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| C3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -113,19 +113,19 @@
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| W1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| W1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| W2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| W2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| W3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| W3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -135,19 +135,19 @@
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| S1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| S1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| S2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| S2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| S3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| S3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -157,19 +157,19 @@
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| A1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| A1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| A2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| A2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| A3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| A3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 
@@ -188,19 +188,19 @@
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| G1 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| G1 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Warning
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| G2 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| G2 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ### Info
 
 | # | 발견사항 | 위치 | 증거 등급 | 신뢰도 | 방법 | 출처 계층 | 권장사항 |
 |---|----------|------|-----------|--------|------|-----------|----------|
-| G3 | [finding] | [file/url] | [official/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
+| G3 | [finding] | [file/url] | [official/live/field/tool/lab/synthetic/heuristic] | [high/medium/low] | [method] | [source_tier] | [fix] |
 
 ---
 

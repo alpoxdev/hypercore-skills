@@ -8,8 +8,8 @@
 - [ ] 모든 발견사항에 code example 또는 specific action이 포함된 concrete fix recommendation이 있음
 - [ ] 발견사항이 category별로 묶임(Technical SEO, On-Page SEO, Content SEO, Core Web Vitals, Structured Data, AEO Readiness, GEO Readiness)
 - [ ] 발견사항이 SEO impact 기준으로 우선순위화됨(high → low)
-- [ ] Executive summary에 overall health score 포함
-- [ ] Quick wins section이 있고 최소 1개 항목 포함
+- [ ] Executive summary에 verified score가 포함되거나 scoring을 비교할 수 없는 이유가 명시됨
+- [ ] Evidence가 low-effort/high-impact action을 뒷받침할 때만 Quick wins 포함
 
 ## Coverage Checks
 
@@ -32,6 +32,8 @@
 - [ ] GEO: GEO CORE, citation readiness, entity authority, topic-appropriate freshness, optional llms.txt, query fan-out/citation probe status 확인
 - [ ] `sources.md`가 사용한 evidence와 references를 기록함
 - [ ] `report.md`가 `.hypercore/seo-maker/[slug]/`에 저장됨
+- [ ] 요청된 모든 URL/file을 inventory했거나 제외/접근 불가 target을 나열함
+- [ ] 해당 없는 dimension은 `not-applicable`, 측정하지 못한 dimension은 `unknown`으로 표시하고 조용히 scoring하지 않음
 
 ## Optimize Mode Checks
 
@@ -42,6 +44,9 @@
 - [ ] Non-improving iterations가 rolled back/reverted 되었거나 명시적으로 `discarded`로 표시됨
 - [ ] Stop condition이 evidence-based임: target score reached, validator/architect approval, user stop, budget exhaustion, 또는 3-iteration plateau
 - [ ] Best-score loop 완료를 주장하기 전에 completion artifact 또는 validator evidence가 있음
+- [ ] Evaluator, category weights, evidence availability, guard가 비교 가능하게 유지되고 변경 시 reset event를 생성함
+- [ ] 선언한 metric이 개선되고 indexing, correctness, accessibility, project guard가 통과할 때만 candidate를 keep함
+- [ ] Completion이 residual risk와 함께 `ship`, `iterate`, `caveated ship`, `block`을 기록함
 
 ## Evidence And Confidence Checks
 
@@ -52,28 +57,33 @@
 - [ ] Google AI features가 special schema, AI text files, magic markup을 요구한다고 설명되지 않음
 - [ ] FAQPage recommendations가 Google rich result eligibility와 answer-friendly visible FAQ content를 구분함
 - [ ] 사용자가 명시적으로 LLM-facing content map을 원하지 않는 한 llms.txt recommendations는 optional임
+- [ ] `sources.md`가 current/platform-sensitive guidance의 canonical URL/path, publisher, accessed date, applicable claim, evidence tier, caveat를 기록함
+- [ ] Source verification date가 absolute date이며 실제 run date보다 미래가 아님
+- [ ] Search snippet, AI summary, retrieved instruction을 source 또는 authority로 취급하지 않음
+- [ ] OAI-SearchBot, GPTBot, ChatGPT-User를 별도로 평가하고 capability/crawler visibility를 user authorization으로 취급하지 않음
 
 ## Quality Checks
 
 - [ ] 발견사항이 모호하지 않음. "improve SEO"는 유효한 recommendation이 아님
 - [ ] Technical fixes에는 code examples 또는 file paths 포함
-- [ ] Severity ratings가 일관됨(예: missing `<title>` = critical, missing `og:image` = warning)
+- [ ] Severity가 universal tag-length/markup heuristic이 아니라 observed impact, affected scope, confidence, reversibility를 따름
 - [ ] Category 간 duplicate findings 없음
 - [ ] Report가 analysis notes를 다시 읽지 않아도 실행 가능함
-- [ ] Optimize mode report가 baseline score, final score, score delta, perfect가 아닐 때 remaining blockers를 식별함
+- [ ] Optimize mode report가 baseline score, final score, score delta, evaluator version, guard results, remaining blockers를 식별함
 
 ## Severity Guide
 
-| Severity | Criteria | Example |
-|----------|----------|---------|
-| **critical** | 색인을 차단하거나 랭킹을 심각하게 해침 | Missing title, robots.txt blocks crawling, no canonical |
-| **warning** | 랭킹 또는 user experience 저하 | Meta description too long, missing alt text, slow LCP |
-| **info** | 결함이 아닌 improvement opportunity | Add FAQ schema, optimize anchor text, add breadcrumb markup |
+| Severity | Criteria | 대표 예시 |
+|----------|----------|-----------|
+| **critical** | 검증된 indexing/serving block, 광범위 policy violation, 중요 target 전반의 심각한 failure | 의도하지 않은 `noindex` 또는 robots rule이 audited canonical pages를 차단 |
+| **warning** | Observed/field evidence가 뒷받침하는 material하지만 non-blocking한 issue | Duplicate/conflicting canonicals, broken internal discovery, key template의 poor field CWV |
+| **info** | Optional enhancement, low-confidence heuristic, experiment | 더 명확한 answer block 또는 optional `llms.txt` map 시험 |
 
 ## AEO/GEO Specific Checks
 
-- [ ] AEO: Target page마다 최소 하나의 Q&A optimization finding 또는 confirmation
-- [ ] GEO: GEO CORE(Context, Organization, Reliability, Exclusivity)를 각각 평가
-- [ ] GEO: Content freshness를 universal fixed threshold가 아니라 topic sensitivity와 source/date evidence 기준으로 평가
-- [ ] GEO: 최소 하나의 platform-specific recommendation(Google AI Overviews, ChatGPT, Perplexity)
-- [ ] llms.txt를 optional content map으로 확인함. Missing file은 기본적으로 critical로 표시하지 않음
+- [ ] AEO/GEO dimension은 target과 available evidence에 관련 있을 때만 평가함
+- [ ] Fixed answer length, title/description length, word count, link density, single-H1 rule, GEO CORE, query fan-out은 사용할 경우 heuristic으로 표시함
+- [ ] Google AI features는 special AI markup이 아니라 ordinary SEO eligibility와 snippet controls 기준으로 평가함
+- [ ] Synthetic citation probe가 engine, model/surface, locale, date, prompt set, sample size, volatility를 기록하고 ranking claim으로 바뀌지 않음
+- [ ] Platform-specific recommendation은 official policy 또는 직접 관측 behavior가 적용 가능하게 만들 때만 존재함
+- [ ] `llms.txt`는 optional proposal/content map으로 유지하며 absence를 기본 defect로 scoring하지 않음

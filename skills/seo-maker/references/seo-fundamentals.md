@@ -1,7 +1,8 @@
 # SEO Fundamentals Reference
 
 **Purpose**: Core SEO knowledge for audit analysis. Load when evaluating findings against standards.
-**Last verified**: 2026-04-29 against Google Search Central and web.dev guidance.
+**Last verified**: 2026-07-28 against Google Search Essentials, Google structured-data policies, Google AI-features guidance, and web.dev Core Web Vitals guidance.
+**Evidence note**: Official requirements are platform policy, not guaranteed ranking outcomes. Re-check the applicable page before making a current/platform-sensitive recommendation.
 
 ## Search Essentials
 
@@ -72,7 +73,7 @@ Do not present this as a universal ranking-factor order. Use it as a practical a
 
 ## Schema Markup Types
 
-Common JSON-LD schemas to consider. Always validate that structured data matches visible page content and uses the most specific applicable type.
+Common Schema.org types to consider. Schema.org validity and Google rich-result eligibility are separate: confirm the current Google Search Gallery and type-specific policy before scoring a missing type. Structured data must match visible page content and use the most specific applicable type.
 
 | Type | When to Use | Caveat |
 |------|-------------|--------|
@@ -84,9 +85,9 @@ Common JSON-LD schemas to consider. Always validate that structured data matches
 | `Product` | Ecommerce product pages | Price/availability/reviews must match visible content |
 | `Review` | Review content/testimonials | Avoid fake or hidden reviews |
 | `BreadcrumbList` | Navigation breadcrumbs | Match visible or logical site hierarchy |
-| `WebSite` | Site-level search box and identity | Use with Organization where appropriate |
+| `WebSite` | Site identity and supported site-level properties | Do not promise a particular visual search feature |
 | `LocalBusiness` | Local business pages | Keep address/hours consistent with visible content and profiles |
-| `HowTo` | Step-by-step content | Use only where steps are visible and genuinely instructional |
+| `HowTo` | Semantic step-by-step content where genuinely useful | Do not imply current Google rich-result eligibility without checking the live feature documentation |
 
 ## Keyword And Intent Strategy
 
@@ -103,7 +104,7 @@ Common JSON-LD schemas to consider. Always validate that structured data matches
 
 ## Entity And Trust Signals
 
-AI and search systems benefit from clear entities, but do not claim deterministic AI citation gains from schema alone.
+Clear, consistent entity information improves machine readability and auditability, but its effect on rankings or AI citations is not deterministic.
 
 ### Inspect
 
@@ -117,6 +118,15 @@ AI and search systems benefit from clear entities, but do not claim deterministi
 - Claiming that schema guarantees AI citations or rich results.
 - Marking up invisible, misleading, or irrelevant content.
 - Treating domain authority, entity authority, or freshness as single magic levers.
+
+## Source Ledger
+
+| Source | Accessed | Supports | Caveat |
+|---|---|---|---|
+| https://developers.google.com/search/docs/essentials | 2026-07-28 | Search eligibility, spam policy, people-first and crawlable-content baseline | Eligibility and best practices do not guarantee indexing or ranking |
+| https://developers.google.com/search/docs/appearance/structured-data/sd-policies | 2026-07-28 | Visible-content parity, specificity, supported formats, no rich-result guarantee | Type-specific eligibility changes; check current feature docs |
+| https://developers.google.com/search/docs/appearance/ai-features | 2026-07-28 | No special AI schema/text-file requirement; indexed and snippet-eligible supporting pages | Google AI surfaces and reporting can change |
+| https://web.dev/articles/vitals | 2026-07-28 | LCP/INP/CLS thresholds, 75th-percentile field measurement | Lab results do not substitute for field data |
 
 ## Measurement Tools
 

@@ -211,26 +211,36 @@
     function renderCategories(categories) {
       const wrap = document.getElementById("category-grid");
       if (!categories || !categories.length) { wrap.innerHTML = '<div class="empty">아직 카테고리 데이터가 없습니다.</div>'; return; }
-      wrap.innerHTML = categories.map(c => `
+      wrap.innerHTML = categories.map(c => {
+        const measured = c.status !== "unknown" && c.status !== "not-applicable" && Number.isFinite(c.score);
+        const label = measured ? `${c.score}<small>/100</small>` : `<small>${c.status || "unknown"}</small>`;
+        const width = measured ? c.score : 0;
+        const color = measured ? barColor(c.score) : "var(--muted)";
+        return `
         <div class="cat-card">
           <span class="cat-name">${c.name}</span>
-          <span class="cat-score">${c.score}<small>/100</small></span>
-          <div class="cat-bar"><div class="cat-bar-fill" style="width:${c.score}%;background:${barColor(c.score)}"></div></div>
+          <span class="cat-score">${label}</span>
+          <div class="cat-bar"><div class="cat-bar-fill" style="width:${width}%;background:${color}"></div></div>
         </div>
-      `).join("");
+      `}).join("");
     }
 
     function renderRadar(categories) {
       const ctx = document.getElementById("radar-chart");
       if (radarChart) radarChart.destroy();
-      if (!categories || !categories.length) return;
+      const measured = (categories || []).filter(c =>
+        c.status !== "unknown" &&
+        c.status !== "not-applicable" &&
+        Number.isFinite(c.score)
+      );
+      if (measured.length < 3) return;
       radarChart = new Chart(ctx, {
         type: "radar",
         data: {
-          labels: categories.map(c => c.name),
+          labels: measured.map(c => c.name),
           datasets: [{
             label: "Score",
-            data: categories.map(c => c.score),
+            data: measured.map(c => c.score),
             borderColor: "var(--accent)",
             backgroundColor: "rgba(124, 58, 237, 0.15)",
             pointBackgroundColor: "var(--accent)",

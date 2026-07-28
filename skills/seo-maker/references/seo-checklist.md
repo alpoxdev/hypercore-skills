@@ -5,8 +5,8 @@
 ## Measurement & Confidence Checklist
 
 - [ ] Access level recorded: live URL, local files, Search Console, analytics, field Core Web Vitals, AI citation probe.
-- [ ] Each evidence channel labeled as `official`, `field`, `tool`, `lab`, `synthetic`, or `heuristic`.
-- [ ] Missing live/field/probe data lowers confidence instead of being hidden.
+- [ ] Each evidence channel labeled as `official`, `live`, `field`, `tool`, `lab`, `synthetic`, or `heuristic`.
+- [ ] Missing live/field/probe data is recorded as `unknown` or `not-applicable` with a reason instead of being hidden or scored as zero.
 - [ ] Findings include `evidence_grade`, `confidence`, `measurement_method`, and `source_tier`.
 
 ## Technical SEO Checklist

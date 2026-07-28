@@ -29,7 +29,7 @@ compatibility: 로컬 파일 검색/수정 도구와 경쟁사/SERP/AI 인용 �
 - GEO(Generative Engine Optimization) — AI 생성 응답에서의 인용 가능성을 점검한다.
 - 우선순위가 매겨진 개선안 리포트를 `.hypercore/seo-maker/[slug]/`에 저장한다.
 - 기존 리포트를 업데이트하여 SEO 개선 이력을 추적한다.
-- 사용자가 최고 점수/만점/무한 반복을 요청하면 점수 최적화 루프로 audit → fix recommendation/application → re-audit를 반복하고 최고 결과만 유지한다.
+- 사용자가 최고 점수/만점/무한 반복을 요청하면 유한한 예산과 중단 게이트가 있는 최적화 과정으로 audit → fix recommendation/application → re-audit를 수행하고, 비교 가능한 최고 검증 결과만 유지한다. 순위, AI 기능 포함, 인용을 보장하지 않는다.
 
 </purpose>
 
@@ -104,10 +104,12 @@ SEO 분석, 감사, 최적화 리포트가 주된 산출물일 때 `seo-maker`�
 - `<head>` 영역의 title, meta description, Open Graph, Twitter Card
 - heading 계층 구조 (`h1`-`h6`)
 - 이미지 alt 텍스트, 내부 링크 구조
-- Schema.org JSON-LD 마크업 (AI 신뢰 신호 역할 포함)
-- AEO 요소 — Q&A 포맷, 직접 답변 구조, Featured Snippet 최적화
-- GEO 요소 — 인용 가능한 문장 구조, 통계/출처 포함, 엔터티 권위
-- LLMO 요소 — `llms.txt`, AI 크롤러 접근성, 콘텐츠 신선도
+- Schema.org JSON-LD 마크업 (보이는 콘텐츠와의 일치 여부 포함)
+- AEO 요소 — Q&A 포맷, 직접 답변 구조, Featured Snippet 준비도
+- GEO 요소 — 출처가 있는 검증 가능한 주장, 엔터티 권위, 인용 준비도. 인용을 보장하지 않는다.
+- LLMO 요소 — AI 크롤러 접근성, 콘텐츠 신선도, 선택적 `llms.txt`. `llms.txt`는 표준이나 랭킹/인용 요건이 아닌 선택적 제안이다.
+- Platform policy — Googlebot, Google-Extended, OAI-SearchBot, GPTBot, ChatGPT-User를 목적별로 별도 점검하고 하나의 bot rule을 다른 bot에 적용하지 않는다.
+- Google AI 기능 — 일반 SEO 기본 원칙과 관련 있는 index/snippet eligibility를 점검한다. 특별 AI schema나 text file을 요구하지 않으며, 적격한 indexed/snippet-eligible 페이지도 포함이 보장되지는 않는다.
 
 </supported_targets>
 
@@ -136,19 +138,17 @@ Complexity: [simple/complex] — [한 줄 이유]
 
 ## 점수 최적화 모드
 
-사용자가 최고 점수, 만점, max score, 무한 반복을 요청하면 이 모드를 사용한다. 여기서 “무한”은 위험한 무제한 루프가 아니라 안전 게이트가 있는 지속 반복으로 해석한다.
+사용자가 최고 점수, 만점, max score, 무한 반복을 요청하면 이 모드를 사용한다. 여기서 “무한”은 위험한 무제한 루프가 아니라 유한한 예산과 안전 게이트가 있는 반복으로 해석한다.
 
 필수 루프 규율:
+1. 변경 전에 유한한 iteration budget(사용자가 더 작은 한도를 정하지 않으면 기본 3회), 목표, stable evaluator, baseline score, regression guard를 확정하고 `results.json`에 기록한다.
+2. 한 iteration에는 하나의 고영향 변경 또는 권장 조치 묶음만 선택하고, 적용 또는 명시한 뒤 비교 가능한 범위만 다시 감사한다.
+3. 결과에는 evidence class, capability limitation, `unknown`/`not-applicable` 상태를 기록한다.
+4. 비교 가능한 evidence가 개선되고 regression guard를 통과할 때만 변경을 유지한다. 그렇지 않으면 가능한 경우 rollback/revert하고 `discarded`로 표시하며 이전 `best_run`을 유지한다.
+5. 목표 달성, budget 소진, plateau, guard failure, 안전한 로컬 수정 부재, 외부 credential/business decision 필요, 사용자 중단 중 하나에서 멈추고 stop reason을 기록한다.
+6. `results.json`에 `score_history`, `best_run`, iteration notes, discarded iteration, validator evidence를 기록하고, `report.md`에는 사람이 읽는 요약을 남긴다.
 
-1. 변경 전에 baseline score를 확정한다. category score, overall grade, 현재 점수를 `results.json`에 기록한다.
-2. 목표 점수를 정한다. 기본 목표는 평균 category score `>= 95` 및 `critical` finding 0개다. 사용자가 더 엄격한 목표를 주면 그것을 따른다.
-3. 한 iteration에는 하나의 고영향 변경 또는 권장 조치 묶음만 선택하고, 적용 또는 명시한 뒤 영향 범위를 다시 감사한다.
-4. 최고 결과를 유지한다. 새 iteration이 점수를 낮추거나 unresolved critical finding을 늘리면 rollback/revert하거나 `discarded`로 표시하고 이전 `best_run`을 유지한다.
-5. 개선이 발견되는 동안 자동으로 계속한다. validator 통과, 사용자 중단, 예산 소진, 또는 3회 연속 plateau일 때만 멈춘다.
-6. `results.json`에 `score_history`, `best_run`, iteration notes, validator evidence를 기록하고, `report.md`에는 사람이 읽는 요약을 남긴다.
-7. 코드 변경을 동반한 최적화라면 완료 선언 전 관련 test/build/lint를 실행한다.
-
-완료는 artifact-gated다. `results.json.status`가 `complete`이고, `best_run`이 채워져 있으며, 최종 점수 또는 plateau 조건을 증명하는 검증 evidence가 있을 때만 완료라고 말한다.
+완료는 artifact-gated다. `results.json.status`가 `complete`이고, `best_run`이 채워져 있으며, 최종 결과가 비교 가능한 최고 검증 결과인 근거와 stop reason이 있을 때만 완료라고 말한다. 외부 evidence가 없으면 unknown과 capability limit을 보고하며, 순위·AI 기능 포함·인용을 보장하지 않는다.
 
 </optimize_loop>
 
@@ -159,11 +159,14 @@ Complexity: [simple/complex] — [한 줄 이유]
 어떤 프로젝트든 점수화 전에 감사 맥락을 먼저 분류한다:
 
 - `target_type`: `live-url`, `local-static`, `nextjs`, `react-spa`, `docs-site`, `ecommerce`, `blog`, `app-with-marketing-pages`
-- `access_level`: live URL, local files only, Search Console available, analytics available, AI citation probe available
+- `access_level`: live URL, local files only, Search Console available, analytics available, field Core Web Vitals available, AI citation probe available, available tools
 - `allowed_action`: `audit-only`, `recommend`, `edit-code`, `optimize-loop`
 - `measurement_confidence`: live URL, Search Console, field Core Web Vitals, AI citation probe가 없으면 confidence를 낮춘다
+- `evaluator`: comparable target set, scoring rubric, tools/versions, dates, evidence channels
 
-부족한 evidence를 숨기지 않는다. 정적 파일, lab data, synthetic probe, heuristic 기반 권장이라면 `results.json`에 그렇게 표시한다.
+모든 finding과 score input은 정확히 하나의 `official`, `live`, `field`, `tool`, `lab`, `synthetic`, `heuristic`으로 분류한다. local scan은 live/field evidence가 아니며 tool/lab result는 official requirement가 아니다. 사용할 수 없는 검사는 `unknown`, 관련 없는 검사는 `not-applicable`으로 기록하고 `not-applicable`은 category denominator에서 제외한다.
+
+부족한 evidence를 숨기지 않는다. 정적 파일, lab data, synthetic probe, heuristic 기반 권장은 `results.json`에 그렇게 표시한다. live browsing, Search Console, field data, AI probe, named tool을 쓸 수 없으면 가장 강한 낮은 등급의 방법을 사용하고 capability limitation과 fallback을 밝히며 live performance, ranking, inclusion, citation을 주장하지 않는다.
 
 </universal_intake>
 
@@ -185,7 +188,7 @@ Complexity: [simple/complex] — [한 줄 이유]
 - `dashboard.html`은 [assets/dashboard-template.html](assets/dashboard-template.html)에서 렌더한 self-contained 대시보다.
 - `results.js`는 `results.json`의 `file://` 폴백이다.
 - `report.md`는 결과와 권장 조치를 담은 SEO 감사 리포트다.
-- `sources.md`는 사용한 근거, 도구 출력, 참고 링크를 기록한다.
+- `sources.md`는 source ledger다. 각 external 또는 official source-sensitive claim에 URL, accessed 또는 published date, applicable claim, evidence class, scope/availability limitation을 기록한다.
 - `flow.json`은 complex 경로에서 단계 상태를 추적한다.
 - 폴더가 아직 없으면 기본적으로 [assets/report.template.ko.md](assets/report.template.ko.md)로 report를 만든다. 영어가 명시적으로 필요할 때만 [assets/report.template.md](assets/report.template.md)를 사용한다.
 - `results.json`이 확정되면 `scripts/render-dashboard.sh <artifact-dir>`로 dashboard를 렌더한다.
@@ -283,10 +286,10 @@ complex로 분류되면 `flow.json`을 쓰고 각 단계가 진행될 때마다 
 - 모든 report는 `.hypercore/seo-maker/[slug]/` 아래에 저장한다.
 - slug는 가능하면 ASCII kebab-case를 사용한다.
 - 모든 finding에는 severity(`critical`/`warning`/`info`)와 구체적 fix recommendation이 있어야 한다.
-- 모든 non-obvious finding에는 `evidence_grade`, `confidence`, `measurement_method`, `source_tier`를 포함한다.
-- 공식 플랫폼 요구사항, 실험적 GEO 연구, heuristic AEO/GEO 전술을 구분한다.
-- Optimize mode에서는 reset event를 기록하지 않는 한 같은 eval set을 유지한다.
-- Optimize mode에서는 iteration마다 하나의 변경만 적용하고, 점수 상승 변경만 유지한다. 단, 점수 회귀 없는 검증된 단순화는 유지할 수 있다.
+- 모든 non-obvious finding에는 `evidence_grade`, `confidence`, `measurement_method`, `source_tier`를 포함하며, evidence class는 `official`/`live`/`field`/`tool`/`lab`/`synthetic`/`heuristic` 중 하나다.
+- 공식 플랫폼 요구사항, live/field/tool/lab/synthetic 관찰, heuristic AEO/GEO 전술을 구분한다. heuristic을 official failure로 점수화하지 않는다.
+- Optimize mode에서는 reset event를 기록하지 않는 한 동일한 comparable eval set, scoring categories, evidence class, tool/version, pass/fail check을 유지한다.
+- Optimize mode에서는 iteration마다 하나의 변경만 적용하고, regression guard 없이 비교 가능한 evidence가 개선된 변경만 유지한다.
 - 권장 조치는 SEO 영향도 순으로 정렬한다. (high → low)
 - E-E-A-T와 Core Web Vitals 기준은 `references/seo-fundamentals.md`를 따른다.
 - AI 검색 준비도를 볼 때는 `references/aeo-geo-guide.md`를 따른다.
@@ -313,10 +316,10 @@ complex로 분류되면 `flow.json`을 쓰고 각 단계가 진행될 때마다 
 
 - 모든 critical 또는 warning finding에는 evidence가 있다.
 - Recommendation은 engineer, marketer, content owner가 실행할 수 있을 만큼 구체적이다.
-- Score는 assumption이 아니라 observed evidence에서 도출한다.
-- Google AI 기능을 special schema, AI text file, magic markup이 반드시 필요한 것처럼 설명하지 않는다.
+- Score는 `unknown`과 `not-applicable`을 명시적으로 처리한 observed evidence에서 도출하며, assumption이나 heuristic official failure에서 도출하지 않는다.
+- Google AI 기능은 일반 SEO 기본 원칙을 사용하며, 관련 indexed/snippet-eligible 페이지도 포함이 보장되지는 않고 special schema나 AI text file이 필요하지 않다고 설명한다.
 - FAQPage 권장은 Google rich-result eligibility와 answer-friendly visible FAQ content를 구분한다.
-- Unknown은 명시적으로 표시한다.
-- Optimize mode는 baseline score, 변경/권장 조치, re-audit evidence, best verified result를 기록한다.
+- `sources.md`는 URL, date, applicable claim, evidence class, limitation이 있는 source ledger다.
+- Optimize mode는 baseline, evaluator, finite budget, guard, 변경/권장 조치, re-audit evidence, discarded iteration, stop reason, best comparable verified result를 기록한다.
 
 </validation>

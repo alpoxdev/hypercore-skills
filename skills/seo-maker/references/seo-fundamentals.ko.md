@@ -1,7 +1,8 @@
 # SEO 기본 레퍼런스
 
 **목적**: 감사 분석을 위한 핵심 SEO 지식. 발견사항을 기준과 비교해 평가할 때 로드한다.
-**최종 확인**: 2026-04-29, Google Search Central 및 web.dev 가이드 기준.
+**최종 확인**: 2026-07-28, Google Search Essentials, Google structured-data policies, Google AI-features guidance, web.dev Core Web Vitals guidance 기준.
+**근거 메모**: Official requirement는 platform policy이며 ranking outcome을 보장하지 않는다. Current/platform-sensitive recommendation 전에는 applicable page를 다시 확인한다.
 
 ## Search Essentials
 
@@ -72,7 +73,7 @@ Field data가 있을 때 실제 사용자 전체의 75th percentile에서 Core W
 
 ## Schema Markup Types
 
-고려할 수 있는 일반 JSON-LD schema. Structured data가 보이는 page content와 일치하고 가장 구체적인 applicable type을 사용하는지 항상 검증한다.
+고려할 수 있는 일반 Schema.org type이다. Schema.org validity와 Google rich-result eligibility는 별개이므로 missing type을 scoring하기 전에 현재 Google Search Gallery와 type-specific policy를 확인한다. Structured data는 visible page content와 일치하고 가장 구체적인 applicable type을 사용해야 한다.
 
 | Type | 사용할 때 | 주의사항 |
 |------|-----------|----------|
@@ -84,9 +85,9 @@ Field data가 있을 때 실제 사용자 전체의 75th percentile에서 Core W
 | `Product` | Ecommerce product pages | Price/availability/reviews가 visible content와 일치해야 함 |
 | `Review` | Review content/testimonials | Fake 또는 hidden reviews 금지 |
 | `BreadcrumbList` | Navigation breadcrumbs | Visible 또는 logical site hierarchy와 일치 |
-| `WebSite` | Site-level search box와 identity | 적절한 경우 Organization과 함께 사용 |
+| `WebSite` | Site identity와 지원되는 site-level properties | 특정 visual search feature를 보장하지 않음 |
 | `LocalBusiness` | Local business pages | Address/hours를 visible content 및 profiles와 일관되게 유지 |
-| `HowTo` | Step-by-step content | Steps가 visible하고 실제 instruction일 때만 사용 |
+| `HowTo` | 실제로 유용한 semantic step-by-step content | Live feature documentation 확인 없이 현재 Google rich-result eligibility를 암시하지 않음 |
 
 ## Keyword And Intent Strategy
 
@@ -103,7 +104,7 @@ Field data가 있을 때 실제 사용자 전체의 75th percentile에서 Core W
 
 ## Entity And Trust Signals
 
-AI와 search systems는 명확한 entities에서 이점을 얻지만 schema만으로 deterministic AI citation gains가 생긴다고 주장하지 않는다.
+명확하고 일관된 entity information은 machine readability와 auditability를 높이지만 ranking 또는 AI citation 효과는 deterministic하지 않다.
 
 ### 점검
 
@@ -117,6 +118,15 @@ AI와 search systems는 명확한 entities에서 이점을 얻지만 schema만�
 - Schema가 AI citations 또는 rich results를 보장한다고 주장하기.
 - Invisible, misleading, irrelevant content를 마크업하기.
 - Domain authority, entity authority, freshness를 하나의 magic lever로 취급하기.
+
+## Source Ledger
+
+| Source | Accessed | Supports | Caveat |
+|---|---|---|---|
+| https://developers.google.com/search/docs/essentials | 2026-07-28 | Search eligibility, spam policy, people-first/crawlable-content baseline | Eligibility와 best practice가 indexing/ranking을 보장하지 않음 |
+| https://developers.google.com/search/docs/appearance/structured-data/sd-policies | 2026-07-28 | Visible-content parity, specificity, supported formats, no rich-result guarantee | Type-specific eligibility는 변하므로 current feature docs 확인 필요 |
+| https://developers.google.com/search/docs/appearance/ai-features | 2026-07-28 | Special AI schema/text-file requirement 부재, indexed/snippet-eligible supporting pages | Google AI surface/reporting은 변할 수 있음 |
+| https://web.dev/articles/vitals | 2026-07-28 | LCP/INP/CLS thresholds, 75th-percentile field measurement | Lab result는 field data를 대체하지 않음 |
 
 ## 측정 도구
 

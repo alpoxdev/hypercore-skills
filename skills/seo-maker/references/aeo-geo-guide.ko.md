@@ -1,7 +1,7 @@
 # AEO/GEO/LLMO 전략 가이드
 
 **목적**: AEO/GEO 단계에서 사용하는 AI 검색 최적화 레퍼런스.
-**최종 확인**: 2026-04-29, Google Search Central, OpenAI 크롤러 문서, web.dev, arXiv GEO 연구, llms.txt 참고 자료 기준.
+**최종 확인**: 2026-07-28, Google Search Central, OpenAI crawler docs, web.dev, arXiv GEO research, llms.txt proposal 기준.
 
 ## 증거 규율
 
@@ -22,8 +22,8 @@
 
 - Google은 AI Overviews와 AI Mode가 Search와 동일한 기본 SEO 관행을 사용한다고 설명한다. 포함을 위한 추가 기술 요구사항, 특별한 schema.org 타입 또는 특별한 schema.org 마크업, AI 텍스트 파일은 없다.
 - Google AI 기능에서 지원 링크로 표시되려면 페이지가 여전히 색인 가능하고 snippet 대상이어야 한다.
-- OpenAI는 ChatGPT Search 포함을 위한 `OAI-SearchBot`과 모델 학습을 위한 `GPTBot`을 분리한다. 둘은 별도로 감사하고 권장해야 한다.
-- `llms.txt`는 기계가 읽을 수 있는 콘텐츠 맵으로 유용하지만, 2026-04-29 기준 W3C/IETF 표준도 아니고 주요 제공자가 반드시 가져가는 fetch 계약도 아니다.
+- OpenAI는 ChatGPT Search 포함용 `OAI-SearchBot`, model training용 `GPTBot`, user-triggered fetch용 `ChatGPT-User`를 분리한다. Robots behavior와 purpose가 다르므로 독립적으로 감사한다.
+- `llms.txt`는 informal proposal이자 optional machine-readable content map이며, 2026-07-28 기준 W3C/IETF standard, ranking factor, 주요 provider의 guaranteed fetch contract가 아니다.
 
 ## 용어
 
@@ -60,9 +60,10 @@
 
 ## GEO 전략
 
-GEO는 부분적으로 실험적이며 가능하면 query set 또는 citation probe로 측정해야 한다.
+GEO는 experimental하다. 2023 GEO paper의 gain은 해당 benchmark/setup에만 해당하므로 “up to 40%” 결과를 live engine이나 client site에 일반화하지 않는다. Field evidence 또는 repeatable citation probe를 우선하고 나머지는 heuristic으로 표시한다.
 
-### GEO CORE 프레임워크
+### GEO CORE 프레임워크(`heuristic`)
+이는 local audit mnemonic이며 official platform framework나 validated ranking model이 아니다.
 
 | 차원 | 점검 항목 | 증거 예시 |
 |------|-----------|-----------|
@@ -80,7 +81,7 @@ GEO는 부분적으로 실험적이며 가능하면 query set 또는 citation pr
 
 ### Query fan-out simulator
 
-AI 검색을 위해 주제를 최적화할 때 다음 범주에서 10-30개의 하위 쿼리를 생성한다:
+Coverage experiment가 유용하면 아래 category에서 proportionate subquery set을 생성한다. `10–30`은 broad topic의 optional working range이며 required platform behavior가 아니다:
 
 - 정의와 입문 질문
 - 비교와 대안
@@ -109,7 +110,7 @@ Probe를 사용할 수 없으면 신호가 있는 것처럼 꾸미지 말고 pro
 | OAI-SearchBot | ChatGPT Search 포함 | ChatGPT Search visibility를 원하면 허용 |
 | GPTBot | OpenAI 모델 학습 | OAI-SearchBot과 독립적으로 허용 또는 차단 가능 |
 | ChatGPT-User | 사용자 트리거 fetch | 일반 자동 search crawler가 아니므로 별도 문서화 |
-| PerplexityBot / ClaudeBot | 문서화되었거나 관찰되는 AI 검색/크롤링 | robots/server rules를 감사하되 권장사항에 증거 계층 표시 |
+| PerplexityBot / ClaudeBot | 현재 문서화되었거나 직접 관측된 경우의 AI retrieval/crawling | Rule 권장 전 current official policy를 다시 확인하고 그렇지 않으면 `unknown` 기록 |
 
 ## llms.txt
 
@@ -129,7 +130,7 @@ Probe를 사용할 수 없으면 신호가 있는 것처럼 꾸미지 말고 pro
 규칙:
 
 - 누락된 `llms.txt`를 기본적으로 critical로 표시하지 않는다.
-- 문서 사이트, 개발자 도구, API reference, 콘텐츠가 많은 제품에서 가장 강하게 권장한다.
+- Maintained content map에 명확한 user/retrieval value가 있을 때만 docs site, developer tool, API reference, content-heavy product에서 고려한다.
 - canonical URL 및 sitemap 우선순위와 일치시킨다.
 
 ## 측정 KPI
@@ -152,3 +153,12 @@ Probe를 사용할 수 없으면 신호가 있는 것처럼 꾸미지 말고 pro
 5. OAI-SearchBot과 GPTBot 분리를 포함해 플랫폼 crawler 정책을 감사한다.
 6. 콘텐츠 맵을 위해 선택적으로 `llms.txt`를 추가한다.
 7. 접근 권한이 허용되면 query fan-out과 citation probes를 실행한 뒤 `score_history`와 `best_run`으로 반복 개선한다.
+
+## Source Ledger
+
+| Source | Accessed | Supports | Caveat |
+|---|---|---|---|
+| https://developers.google.com/search/docs/appearance/ai-features | 2026-07-28 | AI features의 ordinary SEO requirements, snippet eligibility, query fan-out, controls | Inclusion, traffic, citation guarantee 없음 |
+| https://developers.openai.com/api/docs/bots | 2026-07-28 | OAI-SearchBot/GPTBot/ChatGPT-User purpose separation | Bot string과 policy는 변할 수 있음 |
+| https://llmstxt.org/ | 2026-07-28 | llms.txt proposal의 format과 stated intent | Standards-body/ranking contract가 아닌 proposal |
+| https://arxiv.org/abs/2311.09735 | 2026-07-28 | GEO research의 origin과 benchmark scope | 2023 benchmark result는 live-engine guarantee가 아님 |
