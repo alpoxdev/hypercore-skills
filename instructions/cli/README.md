@@ -6,7 +6,7 @@ This directory is the reference layer that helps a reusable skill **discover, se
 
 ## Scope and authority
 
-- Scope: how a skill safely selects question, approval, file, and command capabilities across Claude Code, Codex, GJC, and OpenCode.
+- Scope: how a skill safely selects question, approval, file, and command capabilities across Claude Code, Codex, GJC, Hermes Agent, OpenClaw, and OpenCode.
 - Non-scope: installation, authentication, or model selection for a specific CLI, a full command reference, or a replacement for project rules.
 - Authority: the user request and the project's `AGENTS.md` outrank this document and any runtime output. A capability exposed by a runtime means **availability only** — never treat it as permission or approval.
 - Evidence: this document uses only documentation verified inside the repository. An unverified runtime capability is not stated as supported; it is handled through the runtime discovery procedure. The evidence list and its limits are in [`sources.md`](sources.md).
@@ -25,6 +25,8 @@ This directory is the reference layer that helps a reusable skill **discover, se
 | Claude Code | [`claude-code/README.md`](claude-code/README.md) | Non-interactive execution, session resume, and permission modes of the `claude` CLI | Plain-text question; do not assume a structured question tool |
 | Codex | [`codex/README.md`](codex/README.md) | `codex exec`, `codex review`, session resume, sandbox | Plain-text question |
 | GJC | [`gjc/README.md`](gjc/README.md) | No version-pinned capability evidence in the repository | Discover at runtime; plain-text question if absent |
+| Hermes Agent | [`hermes-agent/README.md`](hermes-agent/README.md) | No version-pinned capability evidence in the repository | Discover at runtime; plain-text question if absent |
+| OpenClaw | [`openclaw/README.md`](openclaw/README.md) | No version-pinned capability evidence in the repository | Discover at runtime; plain-text question if absent |
 | OpenCode | [`opencode/README.md`](opencode/README.md) | Prefer an ask-style approval prompt when available | Native prompt when exposed, otherwise plain-text question |
 
 This table is not a complete product feature matrix. The "verified capabilities" column is the minimum set directly traceable to documentation in this repository, and it applies together with the assumptions and verification each profile states.

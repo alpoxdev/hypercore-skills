@@ -9,7 +9,7 @@ This folder is the LLM working-instruction layer for this project. Its purpose i
 | Area | File | Purpose |
 |---|---|---|
 | Context Engineering | [`context-engineering/CONTEXT_ENGINEERING.md`](context-engineering/CONTEXT_ENGINEERING.md) | Design prompt, context, and tool instructions in a runtime-neutral way |
-| CLI Runtime Profiles | [`cli/README.md`](cli/README.md) | Let a skill safely select question, approval, and tool capabilities across Claude Code, Codex, GJC, and OpenCode |
+| CLI Runtime Profiles | [`cli/README.md`](cli/README.md) | Let a skill safely select question, approval, and tool capabilities across Claude Code, Codex, GJC, Hermes Agent, OpenClaw, and OpenCode |
 | Prompt Authoring | [`context-engineering/references/prompt-authoring.md`](context-engineering/references/prompt-authoring.md) | Practical template for writing a role prompt as an execution contract |
 | Skill Authoring | [`skill/SKILL_AUTHORING.md`](skill/SKILL_AUTHORING.md) | Design a reusable skill folder as a triggerable, structured, verifiable execution package |
 | Skill Prompt/Loop/Eval | [`skill/references/prompt-loop-eval.md`](skill/references/prompt-loop-eval.md) | Design a skill as a small iterable, verifiable program rather than a single prompt |

@@ -9,7 +9,7 @@
 | 영역 | 파일 | 목적 |
 |---|---|---|
 | Context Engineering | [`context-engineering/CONTEXT_ENGINEERING.ko.md`](context-engineering/CONTEXT_ENGINEERING.ko.md) | 프롬프트/컨텍스트/도구 지시를 런타임 중립적으로 설계 |
-| CLI Runtime Profiles | [`cli/README.ko.md`](cli/README.ko.md) | skill이 Claude Code, Codex, GJC, OpenCode의 질문·승인·도구 기능을 안전하게 선택 |
+| CLI Runtime Profiles | [`cli/README.ko.md`](cli/README.ko.md) | skill이 Claude Code, Codex, GJC, Hermes Agent, OpenClaw, OpenCode의 질문·승인·도구 기능을 안전하게 선택 |
 | Prompt Authoring | [`context-engineering/references/prompt-authoring.ko.md`](context-engineering/references/prompt-authoring.ko.md) | 역할 수행 프롬프트를 실행 계약으로 작성하는 실전 템플릿 |
 | Skill Authoring | [`skill/SKILL_AUTHORING.ko.md`](skill/SKILL_AUTHORING.ko.md) | 재사용 가능한 skill 폴더를 트리거·구조·검증 가능한 실행 패키지로 설계 |
 | Skill Prompt/Loop/Eval | [`skill/references/prompt-loop-eval.ko.md`](skill/references/prompt-loop-eval.ko.md) | skill을 단일 프롬프트가 아니라 반복·검증 가능한 작은 프로그램으로 설계 |

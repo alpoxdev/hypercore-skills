@@ -4,10 +4,10 @@
 
 ## Investigation scope and limits
 
-- Date checked: 2026-07-14
+- Date checked: 2026-07-28
 - Channel: documentation inside the project repository only
 - Excluded: home-directory settings, global skills, external web documentation, and live help from an installed CLI
-- Conclusion: this ledger records not a complete product feature list but the minimum capabilities and boundaries the current repository directly supports. Some GJC and OpenCode capabilities have no local evidence, so those profiles handle them through runtime discovery and fallback.
+- Conclusion: this ledger records not a complete product feature list but the minimum capabilities and boundaries the current repository directly supports. GJC, Hermes Agent, OpenClaw, and some OpenCode capabilities have no local evidence, so those profiles handle them through runtime discovery and fallback.
 
 ## Source ledger
 
@@ -21,7 +21,7 @@
 | 6 | Codex skill | [`../../skills/codex/SKILL.md`](../../skills/codex/SKILL.md) | Local skill | `codex exec`, `codex review`, session resume, sandbox selection rules | `codex/README.md` |
 | 7 | Git commit skill | [`../../skills/git-commit/SKILL.md`](../../skills/git-commit/SKILL.md) | Local skill | On OpenCode, prefer a native ask-style approval prompt when available, otherwise fall back to plain text | `opencode/README.md` |
 
-> ⚠️ `AGENTS.md` and `CLAUDE.md` are covered by `.gitignore:41-42` and are therefore **not version controlled** (checked 2026-07-29; `git ls-files` returns 0 results). Evidence #1 of this ledger exists only in the current clone and the reference breaks in another clone. Whether to make them tracked is a separate decision about repository convention and is not settled in this document.
+> ⚠️ `AGENTS.md` and `CLAUDE.md` are covered by `.gitignore:41-42` and are therefore **not version controlled** (checked 2026-07-28; `git ls-files` returns 0 results). Evidence #1 of this ledger exists only in the current clone and the reference breaks in another clone. Whether to make them tracked is a separate decision about repository convention and is not settled in this document.
 
 ## Claim-source matrix
 
@@ -33,6 +33,7 @@
 | Plain-text questions are used on Codex | 6, 7 | Medium | This is an operating rule of the repository's skills. It makes no general product claim about the absence of a native question tool. |
 | OpenCode can prefer a native ask-style approval prompt when exposed | 7 | Medium | The only evidence is one conditional instruction in a local skill. Other OpenCode capabilities are unverified. |
 | GJC's static tool list cannot be settled from evidence in this repository | Searches of `instructions`, `skills`, and `README.md` in the repository | High | Proof of absence is limited to the repository scope. |
+| Hermes Agent and OpenClaw product-specific capabilities cannot be established from this repository | Searches of `instructions`, `skills`, and `README.md` in the repository | High | The absence finding is limited to the repository; external web documentation and installed CLIs are excluded by project scope. |
 
 ## Update conditions
 
