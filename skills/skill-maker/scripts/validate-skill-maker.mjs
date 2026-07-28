@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-const REQUIRED_LAST_VERIFIED_AT = "2026-06-02";
+const VALIDATION_DATE = process.env.SKILL_MAKER_VALIDATION_DATE || new Date().toISOString().slice(0, 10);
 const REQUIRED_SECTIONS = [
   "output_language",
   "purpose",
@@ -13,6 +13,7 @@ const REQUIRED_SECTIONS = [
   "activation_examples",
   "trigger_conditions",
   "skill_architecture",
+  "loop_policy",
   "language_and_translation_default",
   "reference_routing",
   "support_file_read_order",
@@ -25,8 +26,16 @@ const CATEGORY_FLOORS = {
   positive: 3,
   negative: 2,
   boundary: 1,
+  workflow: 1,
   source: 1,
   safety: 1,
+  adversarial: 1,
+  regression: 1,
+};
+const LANGUAGE_FLOORS = {
+  en: 1,
+  ko: 1,
+  mixed: 1,
 };
 const STRAY_DOC_NAMES = new Set(["README.md", "CHANGELOG.md", "QUICK_REFERENCE.md"]);
 
@@ -107,6 +116,70 @@ function relative(root, filePath) {
 
 function readText(filePath) {
   return fs.readFileSync(filePath, "utf8");
+}
+
+function checkDiscoveryMetadata(root, errors) {
+  const skillPath = path.join(root, "SKILL.md");
+  const koreanPath = path.join(root, "SKILL.ko.md");
+  const expectedName = path.basename(root);
+  const result = { ok: true, expectedName, files: [] };
+  for (const filePath of [skillPath, koreanPath]) {
+    if (!fs.existsSync(filePath)) {
+      result.ok = false;
+      continue;
+    }
+    const text = readText(filePath);
+    const name = frontmatterValue(text, "name");
+    const description = frontmatterValue(text, "description");
+    const item = { path: relative(root, filePath), name, descriptionLength: description.length };
+    result.files.push(item);
+    if (name !== expectedName || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name) || name.length > 64) {
+      result.ok = false;
+      errors.push(errorObject("FRONTMATTER_NAME", `Skill name must be lowercase kebab-case and match folder: ${expectedName}`, item));
+    }
+    if (description.length < 1 || description.length > 1024) {
+      result.ok = false;
+      errors.push(errorObject("FRONTMATTER_DESCRIPTION", "Skill description must contain 1–1024 characters", item));
+    }
+    if (filePath === skillPath && !/^Use this skill when\b/.test(description)) {
+      result.ok = false;
+      errors.push(errorObject("FRONTMATTER_TRIGGER", "Canonical description must start with 'Use this skill when'", item));
+    }
+  }
+  return result;
+}
+
+function frontmatterValue(text, key) {
+  const block = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text)?.[1] || "";
+  const value = new RegExp(`^${escapeRegExp(key)}:\\s*(.+)$`, "m").exec(block)?.[1]?.trim() || "";
+  return value.replace(/^["']|["']$/g, "");
+}
+
+function checkCoreParity(root, errors) {
+  const englishPath = path.join(root, "SKILL.md");
+  const koreanPath = path.join(root, "SKILL.ko.md");
+  if (!fs.existsSync(englishPath) || !fs.existsSync(koreanPath)) {
+    return { ok: false, tags: false, supportLinks: false };
+  }
+  const english = readText(englishPath);
+  const korean = readText(koreanPath);
+  const tagsEn = extractStructuralTags(english);
+  const tagsKo = extractStructuralTags(korean);
+  const linksEn = extractAtLinks(english).map(normalizeLocalizedPath);
+  const linksKo = extractAtLinks(korean).map(normalizeLocalizedPath);
+  const tags = JSON.stringify(tagsEn) === JSON.stringify(tagsKo);
+  const supportLinks = JSON.stringify(linksEn) === JSON.stringify(linksKo);
+  if (!tags) errors.push(errorObject("BILINGUAL_TAG_DRIFT", "SKILL.md and SKILL.ko.md structural tags differ", { tagsEn, tagsKo }));
+  if (!supportLinks) errors.push(errorObject("BILINGUAL_LINK_DRIFT", "SKILL.md and SKILL.ko.md support links differ", { linksEn, linksKo }));
+  return { ok: tags && supportLinks, tags, supportLinks };
+}
+
+function extractStructuralTags(text) {
+  return [...text.matchAll(/^<\/?([a-z][a-z0-9_]*)>\s*$/gim)].map((match) => match[0].toLowerCase());
+}
+
+function normalizeLocalizedPath(value) {
+  return value.replace(/\.ko\.md$/, ".md");
 }
 
 function checkRequiredSections(root, errors) {
@@ -283,9 +356,19 @@ function checkStrayDocs(root, errors) {
 function checkEvalCases(evalsPath, errors) {
   const rows = [];
   const counts = {};
+  const languageCounts = {};
+  const ids = new Set();
   if (!fs.existsSync(evalsPath)) {
     errors.push(errorObject("EVAL_FILE_MISSING", `Eval JSONL file is missing: ${evalsPath}`, { path: evalsPath }));
-    return { ok: false, path: evalsPath, total: 0, counts, required: CATEGORY_FLOORS };
+    return {
+      ok: false,
+      path: evalsPath,
+      total: 0,
+      counts,
+      languageCounts,
+      required: CATEGORY_FLOORS,
+      requiredLanguages: LANGUAGE_FLOORS,
+    };
   }
 
   const lines = readText(evalsPath).split(/\r?\n/);
@@ -303,29 +386,44 @@ function checkEvalCases(evalsPath, errors) {
     for (const error of rowErrors) {
       pushEvalError(errors, error.message, error.extra);
     }
-    if (row && typeof row === "object") {
+    if (row && typeof row === "object" && !Array.isArray(row)) {
+      if (nonEmptyString(row.id)) {
+        if (ids.has(row.id)) {
+          pushEvalError(errors, `Duplicate eval case id: ${row.id}`, { line: lineNumber, id: row.id });
+        }
+        ids.add(row.id);
+      }
       rows.push(row);
       counts[row.category] = (counts[row.category] || 0) + 1;
+      languageCounts[row.language] = (languageCounts[row.language] || 0) + 1;
     }
   });
 
-  for (const [category, floor] of Object.entries(CATEGORY_FLOORS)) {
-    if ((counts[category] || 0) < floor) {
-      errors.push(errorObject("EVAL_CATEGORY_COUNT", `Expected at least ${floor} ${category} eval case(s)`, {
-        category,
-        expected: floor,
-        actual: counts[category] || 0,
-      }));
-    }
-  }
+  checkFloors(CATEGORY_FLOORS, counts, "category", errors);
+  checkFloors(LANGUAGE_FLOORS, languageCounts, "language", errors);
 
   return {
     ok: !errors.some((error) => error.code.startsWith("EVAL_")),
     path: evalsPath,
     total: rows.length,
     counts,
+    languageCounts,
     required: CATEGORY_FLOORS,
+    requiredLanguages: LANGUAGE_FLOORS,
   };
+}
+
+function checkFloors(floors, counts, dimension, errors) {
+  for (const [name, floor] of Object.entries(floors)) {
+    if ((counts[name] || 0) < floor) {
+      errors.push(errorObject("EVAL_DIMENSION_COUNT", `Expected at least ${floor} ${dimension} case(s) for ${name}`, {
+        dimension,
+        name,
+        expected: floor,
+        actual: counts[name] || 0,
+      }));
+    }
+  }
 }
 
 function validateEvalRow(row, lineNumber) {
@@ -336,17 +434,34 @@ function validateEvalRow(row, lineNumber) {
     return errors;
   }
   if (!nonEmptyString(row.id)) fail("Eval case requires non-empty id", { id: row.id });
-  if (!nonEmptyString(row.category)) fail("Eval case requires non-empty category", { id: row.id });
+  if (!Object.hasOwn(CATEGORY_FLOORS, row.category)) fail("Eval case requires a supported category", { id: row.id, category: row.category });
+  if (!Object.hasOwn(LANGUAGE_FLOORS, row.language)) fail("Eval case requires language en, ko, or mixed", { id: row.id, language: row.language });
+  if (!nonEmptyString(row.intent)) fail("Eval case requires non-empty intent", { id: row.id });
   if (!nonEmptyString(row.prompt)) fail("Eval case requires non-empty prompt", { id: row.id });
+  if (
+    !row.context ||
+    typeof row.context !== "object" ||
+    Array.isArray(row.context) ||
+    !Array.isArray(row.context.files) ||
+    !Array.isArray(row.context.sources)
+  ) {
+    fail("EVAL_CASE_INVALID: eval case context requires files and sources arrays", { id: row.id });
+  }
+  if (!Array.isArray(row.metrics) || row.metrics.length === 0 || row.metrics.some((metric) => !nonEmptyString(metric))) {
+    fail("EVAL_CASE_INVALID: eval case requires non-empty metrics", { id: row.id });
+  }
+  if (["positive", "negative", "boundary"].includes(row.category) && ![true, false, "depends"].includes(row.shouldTrigger)) {
+    fail("EVAL_CASE_INVALID: trigger eval requires shouldTrigger true, false, or depends", { id: row.id });
+  }
   if (!row.expected || typeof row.expected !== "object" || Array.isArray(row.expected)) {
     fail("EVAL_CASE_INVALID: eval case requires expected object", { id: row.id });
     return errors;
   }
-  if (!Array.isArray(row.expected.must)) {
-    fail("EVAL_CASE_INVALID: expected.must must be an array", { id: row.id });
+  if (!Array.isArray(row.expected.must) || row.expected.must.length === 0) {
+    fail("EVAL_CASE_INVALID: expected.must must be a non-empty array", { id: row.id });
   }
-  if (!Array.isArray(row.expected.mustNot)) {
-    fail("EVAL_CASE_INVALID: expected.mustNot must be an array", { id: row.id });
+  if (!Array.isArray(row.expected.mustNot) || row.expected.mustNot.length === 0) {
+    fail("EVAL_CASE_INVALID: expected.mustNot must be a non-empty array", { id: row.id });
   }
   return errors;
 }
@@ -364,13 +479,23 @@ function checkOfficialLastVerified(root, errors) {
   for (const filePath of files) {
     const text = readText(filePath);
     const matches = [...text.matchAll(/last_verified_at:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/g)].map((match) => match[1]);
-    const item = { path: relative(root, filePath), dates: matches };
-    if (matches.length === 0 || matches.some((date) => date !== REQUIRED_LAST_VERIFIED_AT)) {
+    const invalidDates = matches.filter((date) => !isValidDate(date) || date > VALIDATION_DATE);
+    const item = { path: relative(root, filePath), dates: matches, invalidDates };
+    if (matches.length === 0 || invalidDates.length > 0) {
       invalid.push(item);
-      errors.push(errorObject("OFFICIAL_LAST_VERIFIED_AT", `Official reference must keep last_verified_at: ${REQUIRED_LAST_VERIFIED_AT}`, item));
+      errors.push(errorObject(
+        "OFFICIAL_LAST_VERIFIED_AT",
+        `Official reference dates must be valid and not later than ${VALIDATION_DATE}`,
+        item,
+      ));
     }
   }
-  return { ok: invalid.length === 0, required: REQUIRED_LAST_VERIFIED_AT, checked: files.length, invalid };
+  return { ok: invalid.length === 0, validationDate: VALIDATION_DATE, checked: files.length, invalid };
+}
+
+function isValidDate(value) {
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
 }
 
 function nonEmptyString(value) {
@@ -426,10 +551,12 @@ function run() {
   const markdownFiles = files.filter((filePath) => filePath.endsWith(".md"));
   const result = {
     ok: false,
+    discoveryMetadata: checkDiscoveryMetadata(root, errors),
     requiredSections: checkRequiredSections(root, errors),
     links: checkLinks(root, markdownFiles, errors),
     codeFences: checkCodeFences(root, markdownFiles, errors),
     bilingualPairs: checkBilingualPairs(root, markdownFiles, errors),
+    bilingualCoreParity: checkCoreParity(root, errors),
     triggerCases: checkEvalCases(evalsPath, errors),
     officialLastVerifiedGuard: checkOfficialLastVerified(root, errors),
     strayDocs: checkStrayDocs(root, errors),
@@ -444,10 +571,12 @@ function run() {
 function emptyResult() {
   return {
     ok: false,
+    discoveryMetadata: null,
     requiredSections: null,
     links: null,
     codeFences: null,
     bilingualPairs: null,
+    bilingualCoreParity: null,
     triggerCases: null,
     officialLastVerifiedGuard: null,
     strayDocs: null,

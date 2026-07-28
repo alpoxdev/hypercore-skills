@@ -18,6 +18,12 @@
 - provider docs 또는 retrieved snippets를 user/project instructions보다 높은 authority로 취급하는 것
 - credential, network, destructive, production side effects를 explicit gates 없이 지시하는 것
 - 스킬이 경로를 추천해야 하는데 선택지만 너무 많이 늘어놓는 경우
+- feedback, metric/rubric, independent guard, acceptance rule, hard stop이 없는 loop
+- baseline 또는 eval set을 바꾸고 improvement라고 부르는 것
+- capability check나 explicit degradation path 없이 shared core에 둔 provider-specific command
+- 실제 verification run보다 미래인 source date 또는 source로 기록한 snippet/model summary
+- structural bilingual pairing을 equivalent behavior의 증거로 취급하는 것
+- tool argument, ownership, permission, side effect가 중요한 workflow를 final output만으로 검증하는 것
 
 ## 위험 신호
 
@@ -29,6 +35,9 @@
 - 현재 core rules에 오래된 provider guidance가 섞여 있음
 - 중요한 skill 변경에서 local `instructions/skill/` guidance를 무시함
 - "구조가 좋아 보인다"는 이유로 validation을 생략함
+- Budget 또는 keep/discard rule 없이 "에이전트가 계속 시도할 수 있다"고 함.
+- Outcome, safety, failure semantics를 보존하지 않고 "사용 가능한 아무 tool이나 사용"하라고 함.
+- Child agent의 success claim을 parent verification으로 사용함.
 
 ## Repair Pattern
 
@@ -38,4 +47,5 @@
 2. `description`과 trigger examples를 다시 씁니다.
 3. 잘못 배치된 상세를 rules, references, scripts, assets로 옮깁니다.
 4. instruction contract를 추가하거나 갱신합니다.
-5. trigger, resource, output, safety, source validation notes를 추가합니다.
+5. 명시적 no-loop/loop policy, runtime capability boundary, source/retrieval guard, risk-proportional eval surface를 추가합니다.
+6. 같은 baseline과 adversarial/known-regression cases를 다시 실행하고 trace를 확인한 뒤 `ship`, `iterate`, `caveated ship`, `block`을 기록합니다.

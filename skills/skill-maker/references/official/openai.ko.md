@@ -18,7 +18,7 @@
 ## Codex Agent Skills
 
 - source_url: https://learn.chatgpt.com/docs/build-skills
-- last_verified_at: 2026-07-29
+- last_verified_at: 2026-06-02
 - applies_to: skill package shape, `name`/`description`, resources, scripts, progressive disclosure
 - summary: Codex skills는 instructions, resources, optional scripts를 패키징해 Codex가 reusable workflow를 안정적으로 따르게 합니다.
 - implication_for_skill_maker: skill을 독립 prompt text가 아니라 trigger 가능한 execution package로 다룹니다.
@@ -34,7 +34,7 @@
 ## AGENTS.md Guide
 
 - source_url: https://learn.chatgpt.com/docs/agent-configuration/agents-md
-- last_verified_at: 2026-07-29
+- last_verified_at: 2026-06-02
 - applies_to: project instruction discovery, scope, precedence, local guidance layering
 - summary: Repository instructions는 project 안에서 agent가 따라야 하는 scoped guidance를 정의합니다.
 - implication_for_skill_maker: 로컬 `instructions/`와 project rules가 generic provider examples보다 우선합니다.

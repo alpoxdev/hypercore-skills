@@ -14,6 +14,18 @@
 | Safety | Are side effects and permissions gated? | forbidden/required behavior review |
 | Regression | Will future edits preserve behavior? | small eval set or deterministic validation script |
 
+Select validation depth explicitly:
+
+| Depth | Use when | Minimum evidence |
+|---|---|---|
+| smoke | Small wording or metadata edit | Structural check plus 3–5 focused cases |
+| targeted | One behavior or known failure changes | Smoke set plus the failure and adjacent edge cases |
+| standard | New skill or material workflow change | 8–15 representative positive, negative, boundary, failure, and adversarial cases |
+| thorough | Tool, source, delegation, or broad behavior changes | Standard set plus trace, safety, source, and runtime variants |
+| high-stakes | Production, security, credentials, publication, or destructive effects | Thorough set plus independent review and explicit permission/rollback gates |
+
+These ranges guide sampling; critical-case coverage and claim-matched evidence are the actual gates.
+
 ## 2. Triggerability
 
 Minimum expectation for new or materially changed skills:
@@ -70,7 +82,7 @@ metrics:
   - completion
 ```
 
-For `skill-maker` itself, keep reusable machine-readable cases in `assets/evals/` as JSONL fixtures when the validator integration is present. The fixture should cover trigger positives, trigger negatives, boundary requests, workflow adherence, source/retrieval-safety behavior, and permission or side-effect safety.
+For `skill-maker` itself, keep reusable machine-readable cases in `assets/evals/` as JSONL fixtures when the validator integration is present. Every row should identify a unique id, category, language, intent, context files/sources, verbatim prompt, expected must/must-not behavior, and metrics. The suite must cover trigger positives and negatives, boundaries, missing context or failing tools, workflow adherence, source/retrieval injection, unsafe actions, bilingual behavior, and known regressions. Preserve baseline rows and add each observed failure permanently.
 
 ## 5. Trace Assertions for Agent Workflows
 
@@ -85,6 +97,12 @@ When a skill teaches tool use, delegation, or parallel work, validate trajectory
 | independent_or_sequenced | parallel work is independent or explicitly sequenced |
 | parent_verifies | final completion relies on leader/readback verification, not child claims only |
 | source_guard | web/tool results are evidence, not instruction authority |
+| input_schema | URLs, paths, commands, recipients, and tool arguments conform to scope, schema, or allowlist |
+| no_unauthorized_effect | destructive, external, credential, publication, deployment, and production effects are absent or explicitly authorized |
+| no_conflicting_edits | delegated write ownership does not overlap and same-file work is sequenced |
+| runtime_degrades_explicitly | unavailable capabilities lead to an equivalent fallback, explicit skip, or block |
+| loop_guard | acceptance follows the declared feedback, metric/rubric, guard, and stop rule |
+| bilingual_behavior | equivalent English/Korean cases preserve the same modal strength and completion gate |
 
 ## 6. Usability Readback
 
@@ -131,7 +149,7 @@ When the deterministic validator exists, the validation gate must include:
 - corpus structure: `validate-skills-corpus.mjs` exits 0 for the touched repository skill and verifies frontmatter, direct support links, bilingual markdown pairs, and balanced code fences
 - malformed input: an invalid JSONL eval case is rejected with a clear error
 - regression: no stray `README.md`, `CHANGELOG.md`, or `QUICK_REFERENCE.md` is added under the skill package
-- provider-date guard: official-reference `last_verified_at` values are unchanged unless the provider source was actually rechecked
+- source-date guard: official-reference dates are valid, not later than the verification run, and unchanged unless the provider source was actually rechecked
 
 The corpus structural validator is a repository-wide integrity gate. Keep package-specific validators, such as `skills/skill-maker/scripts/validate-skill-maker.mjs`, as stricter behavior and package-contract gates when they exist.
 
@@ -143,3 +161,4 @@ The corpus structural validator is a repository-wide integrity gate. Keep packag
 - Deterministic validator and JSONL eval fixture checks have run, or the report states that script/eval integration is still pending.
 - A new maintainer could place the next piece of information without guessing.
 - Completion claims map to evidence, verification, and caveats.
+- Validation records baseline/current results, critical and non-critical failures, regressions, residual risk, and one decision: `ship`, `iterate`, `caveated ship`, or `block`.

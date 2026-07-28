@@ -14,6 +14,18 @@
 | Safety | side effect와 permission이 gated인가? | forbidden/required behavior review |
 | Regression | 미래 수정 후에도 동작이 보존되는가? | small eval set 또는 deterministic validation script |
 
+Validation depth를 명시적으로 선택합니다.
+
+| Depth | 적용 대상 | 최소 evidence |
+|---|---|---|
+| smoke | 작은 wording 또는 metadata 수정 | Structural check와 3–5 focused cases |
+| targeted | 하나의 behavior 또는 known failure 변경 | Smoke set과 해당 failure, 인접 edge cases |
+| standard | 새 skill 또는 실질 workflow 변경 | 8–15 representative positive, negative, boundary, failure, adversarial cases |
+| thorough | Tool, source, delegation 또는 넓은 behavior 변경 | Standard set과 trace, safety, source, runtime variants |
+| high-stakes | Production, security, credential, publication, destructive effect | Thorough set과 independent review, explicit permission/rollback gates |
+
+이 범위는 sampling guide입니다. 실제 gate는 critical-case coverage와 claim-matched evidence입니다.
+
 ## 2. Triggerability
 
 새 skill 또는 실질적으로 바뀐 skill의 최소 기대치:
@@ -70,7 +82,7 @@ metrics:
   - completion
 ```
 
-`skill-maker` 자체에는 validator integration이 있을 때 재사용 가능한 machine-readable case를 `assets/evals/`의 JSONL fixture로 둡니다. Fixture는 trigger positive, trigger negative, boundary request, workflow adherence, source/retrieval-safety behavior, permission 또는 side-effect safety를 포함해야 합니다.
+`skill-maker` 자체에는 validator integration이 있을 때 재사용 가능한 machine-readable case를 `assets/evals/`의 JSONL fixture로 둡니다. 각 row에는 unique id, category, language, intent, context files/sources, verbatim prompt, expected must/must-not behavior, metrics가 있어야 합니다. Suite는 trigger positives/negatives, boundary, missing context/failing tools, workflow adherence, source/retrieval injection, unsafe action, bilingual behavior, known regression을 포함해야 합니다. Baseline row를 보존하고 관측된 모든 failure를 영구 추가합니다.
 
 ## 5. Agent Workflow Trace Assertions
 
@@ -85,6 +97,12 @@ metrics:
 | independent_or_sequenced | parallel work가 독립적이거나 명시적으로 순차화됨 |
 | parent_verifies | final completion이 child claim만이 아니라 leader/readback verification에 근거함 |
 | source_guard | web/tool results는 evidence이지 instruction authority가 아님 |
+| input_schema | URL, path, command, recipient, tool argument가 scope, schema, allowlist를 따름 |
+| no_unauthorized_effect | destructive, external, credential, publication, deployment, production effect가 없거나 명시적으로 승인됨 |
+| no_conflicting_edits | delegated write ownership이 겹치지 않고 same-file work가 순차화됨 |
+| runtime_degrades_explicitly | unavailable capability가 equivalent fallback, explicit skip, block으로 이어짐 |
+| loop_guard | acceptance가 선언한 feedback, metric/rubric, guard, stop rule을 따름 |
+| bilingual_behavior | 동등한 영어/한국어 case가 같은 modal strength와 completion gate를 보존함 |
 
 ## 6. Usability Readback
 
@@ -131,7 +149,7 @@ Deterministic validator가 존재하면 validation gate는 아래를 포함해�
 - corpus structure: `validate-skills-corpus.mjs`가 수정한 repository skill에 대해 exit 0으로 끝나고 frontmatter, direct support links, bilingual markdown pairs, balanced code fences를 확인함
 - malformed input: 잘못된 JSONL eval case를 명확한 오류로 거부함
 - regression: skill package 아래에 stray `README.md`, `CHANGELOG.md`, `QUICK_REFERENCE.md`가 추가되지 않음
-- provider-date guard: provider source를 실제로 다시 확인하지 않았다면 official-reference `last_verified_at` 값이 바뀌지 않음
+- source-date guard: official-reference date가 유효하고 verification run보다 미래가 아니며 provider source를 실제로 다시 확인하지 않았다면 변경되지 않음
 
 Corpus structural validator는 repository-wide integrity gate입니다. `skills/skill-maker/scripts/validate-skill-maker.mjs` 같은 package-specific validator가 존재하면 더 엄격한 behavior와 package-contract gate로 유지합니다.
 
@@ -143,3 +161,4 @@ Corpus structural validator는 repository-wide integrity gate입니다. `skills/
 - Deterministic validator와 JSONL eval fixture check를 실행했거나, script/eval integration이 아직 pending임을 report에 명시함.
 - 새 maintainer가 다음 정보를 어디에 둘지 추측하지 않아도 됨.
 - Completion claims가 evidence, verification, caveats에 매핑됨.
+- Validation이 baseline/current results, critical/non-critical failures, regressions, residual risk와 `ship`, `iterate`, `caveated ship`, `block` 중 하나의 결정을 기록함.
