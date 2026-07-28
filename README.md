@@ -51,7 +51,7 @@ codex plugin marketplace add /path/to/hypercore-skills
 codex plugin add hypercore@hypercore
 ```
 
-이 방식은 `.agents/plugins/marketplace.json`이 `plugins/hypercore` 소스를 가리키고, 해당 플러그인이 `skills/` 미러를 포함하는 Codex 플러그인 구조입니다.
+이 방식은 `.agents/plugins/marketplace.json`이 `plugins/hypercore` 소스를 가리키고, Codex 플러그인의 `skills`가 저장소 루트 `skills/`를 상대 심볼릭 링크로 참조하는 구조입니다. Claude Code 플러그인도 루트 `skills/`를 직접 참조하므로 스킬 원본은 한 곳에서만 관리됩니다.
 
 ### npx skills add (Cursor / Antigravity 등, 또는 레거시 Codex 설치)
 
@@ -234,8 +234,8 @@ hypercore-skills/
 │       └── color/         # @kood/color-cli — color-cli 스킬이 호출
 ├── instructions/          # 프로젝트 LLM 작업 베이스 (context/harness/sourcing/validation)
 ├── scripts/               # 보조 스크립트
-├── skills/                # 32개 스킬 (각 폴더에 SKILL.md / SKILL.ko.md)
-└── plugins/hypercore/     # Codex 플러그인 설치용 스킬 미러
+├── skills/                # 32개 스킬의 단일 원본 (각 폴더에 SKILL.md / SKILL.ko.md)
+└── plugins/hypercore/     # Codex 플러그인 (`skills`는 ../../skills 심볼릭 링크)
 ```
 
 스킬 한 개의 표준 구조:

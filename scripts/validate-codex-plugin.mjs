@@ -7,6 +7,8 @@ const root = process.cwd();
 const marketplacePath = path.join(root, ".agents", "plugins", "marketplace.json");
 const pluginRoot = path.join(root, "plugins", "hypercore");
 const pluginManifestPath = path.join(pluginRoot, ".codex-plugin", "plugin.json");
+const rootSkillsPath = path.join(root, "skills");
+const pluginSkillsPath = path.join(pluginRoot, "skills");
 
 function readJson(filePath) {
   try {
@@ -49,6 +51,18 @@ const manifest = readJson(pluginManifestPath);
 assert(manifest.name === "hypercore", "plugins/hypercore/.codex-plugin/plugin.json name must be hypercore");
 assert(manifest.version === "1.0.3", "plugins/hypercore/.codex-plugin/plugin.json version must be 1.0.3");
 assert(manifest.skills === "./skills/", "plugins/hypercore/.codex-plugin/plugin.json skills must be ./skills/");
+assert(
+  fs.lstatSync(pluginSkillsPath).isSymbolicLink(),
+  "plugins/hypercore/skills must be a symbolic link",
+);
+assert(
+  fs.readlinkSync(pluginSkillsPath) === "../../skills",
+  "plugins/hypercore/skills must link to ../../skills",
+);
+assert(
+  fs.realpathSync(pluginSkillsPath) === fs.realpathSync(rootSkillsPath),
+  "plugins/hypercore/skills must resolve to root skills",
+);
 
 const codexSkillPath = path.join(pluginRoot, "skills", "codex", "SKILL.md");
 assertFile(codexSkillPath);
@@ -66,7 +80,7 @@ const pluginSkillNames = fs
 
 assert(
   JSON.stringify(pluginSkillNames) === JSON.stringify(rootSkillNames),
-  "plugins/hypercore/skills must mirror root skills directories",
+  "plugins/hypercore/skills must resolve to root skill directories",
 );
 
 function listFiles(baseDir) {
@@ -89,14 +103,12 @@ function listFiles(baseDir) {
   return files.sort();
 }
 
-const rootSkillsPath = path.join(root, "skills");
-const pluginSkillsPath = path.join(pluginRoot, "skills");
 const rootSkillFiles = listFiles(rootSkillsPath);
 const pluginSkillFiles = listFiles(pluginSkillsPath);
 
 assert(
   JSON.stringify(pluginSkillFiles) === JSON.stringify(rootSkillFiles),
-  "plugins/hypercore/skills must mirror root skills files",
+  "plugins/hypercore/skills must resolve to root skill files",
 );
 
 for (const relativeFile of rootSkillFiles) {

@@ -46,7 +46,7 @@ rg -n 'Drizzle schema|drizzle.config.ts|generate|migrate|prepared statements|val
 rg -n 'Deprecated feature-folder guidance is absent|src/services|src/modules|src/db|direct leaf|current-docs-2026-06-02|Korean parity|mirror' skills/nextjs-architecture/rules/validation.md skills/nextjs-architecture/rules/validation.ko.md
 node skills/nextjs-architecture/scripts/validate-nextjs-architecture-skill.mjs
 node scripts/validate-codex-plugin.mjs
-diff -qr skills/nextjs-architecture plugins/hypercore/skills/nextjs-architecture
+test "$(readlink plugins/hypercore/skills)" = "../../skills"
 ```
 
 Must pass:
@@ -66,7 +66,7 @@ Must pass:
 - Cache Components, Server Actions, Route Handlers, Proxy, env, and Server/Client boundary guidance remain current-docs compatible.
 - English and Korean entrypoints have aligned trigger, boundary, workflow, contract, and read order.
 - English and Korean sibling files are structurally and semantically aligned; Korean parity checks include services/hooks/db/Drizzle phrases.
-- `plugins/hypercore/skills/nextjs-architecture/**` is an exact mirror of `skills/nextjs-architecture/**`.
+- `plugins/hypercore/skills` is a symbolic link to the canonical root `skills/` directory.
 
 ## Readback Evidence
 
@@ -77,7 +77,7 @@ Before reporting completion, record:
 - binary observable such as exit code, missing-file count, diff result, or validator JSON
 - captured artifact path
 
-For this skill folder, read back the changed English/Korean sibling files after edits and verify that links, headings, and rule responsibilities match before syncing the plugin mirror.
+For this skill folder, read back the changed English/Korean sibling files after edits and verify that links, headings, and rule responsibilities match. The plugin path resolves to the same canonical files and requires no mirror sync.
 
 ## Trigger Tests
 
