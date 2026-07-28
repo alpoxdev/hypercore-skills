@@ -5,8 +5,8 @@
   "author": {
     "name": "alpoxdev"
   },
-  "repository": "https://github.com/alpoxdev/hypercore",
-  "homepage": "https://github.com/alpoxdev/hypercore",
+  "repository": "https://github.com/alpoxdev/hypercore-skills",
+  "homepage": "https://github.com/alpoxdev/hypercore-skills",
   "license": "MIT",
   "keywords": ["claude-code", "skills", "agents", "architecture", "git", "research"],
   "skills": "./skills/"

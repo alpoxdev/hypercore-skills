@@ -29,7 +29,7 @@ Hypercore는 코드베이스 분석부터 릴리스까지의 반복 작업을 �
 Claude Code 안에서:
 
 ```bash
-/plugin marketplace add https://github.com/alpoxdev/hypercore
+/plugin marketplace add https://github.com/alpoxdev/hypercore-skills
 /plugin install hypercore
 ```
 
@@ -40,14 +40,14 @@ Claude Code 안에서:
 Codex CLI에서:
 
 ```bash
-codex plugin marketplace add https://github.com/alpoxdev/hypercore
+codex plugin marketplace add https://github.com/alpoxdev/hypercore-skills
 codex plugin add hypercore@hypercore
 ```
 
 로컬 클론에서 검증하거나 설치할 때는 저장소 루트를 마켓플레이스로 추가합니다:
 
 ```bash
-codex plugin marketplace add /path/to/hypercore
+codex plugin marketplace add /path/to/hypercore-skills
 codex plugin add hypercore@hypercore
 ```
 
@@ -58,20 +58,20 @@ codex plugin add hypercore@hypercore
 기본 대상(지원되는 모든 에이전트)에 한 번에 설치:
 
 ```bash
-npx skills add alpoxdev/hypercore --skill '*' -g -y
+npx skills add alpoxdev/hypercore-skills --skill '*' -g -y
 ```
 
 특정 에이전트만 설치:
 
 ```bash
-npx skills add alpoxdev/hypercore --skill '*' -a codex -g -y
-npx skills add alpoxdev/hypercore --skill '*' -a cursor -g -y
+npx skills add alpoxdev/hypercore-skills --skill '*' -a codex -g -y
+npx skills add alpoxdev/hypercore-skills --skill '*' -a cursor -g -y
 ```
 
 특정 스킬만 골라서 설치:
 
 ```bash
-npx skills add alpoxdev/hypercore --skill git-maker --skill readme-maker -g -y
+npx skills add alpoxdev/hypercore-skills --skill git-maker --skill readme-maker -g -y
 ```
 
 옵션 요약:
@@ -88,9 +88,9 @@ npx skills add alpoxdev/hypercore --skill git-maker --skill readme-maker -g -y
 레포를 클론해 그대로 가져다 써도 됩니다 (CI나 CLI 빌드/실행에는 별도 의존성이 필요하지 않습니다 — 스킬은 모두 마크다운입니다):
 
 ```bash
-git clone https://github.com/alpoxdev/hypercore.git
+git clone https://github.com/alpoxdev/hypercore-skills.git
 # 원하는 스킬 디렉터리를 자신의 프로젝트로 복사
-cp -R hypercore/skills/git-maker your-project/.claude/skills/
+cp -R hypercore-skills/skills/git-maker your-project/.claude/skills/
 ```
 
 ## 빠른 사용 예시
@@ -225,7 +225,7 @@ lint, typecheck, build, test 같은 프로젝트 게이트를 재현하고, 실�
 ## 프로젝트 구조
 
 ```text
-hypercore/
+hypercore-skills/
 ├── .claude-plugin/        # Claude Code 마켓플레이스 매니페스트 (plugin.json, marketplace.json)
 ├── .agents/plugins/       # Codex 플러그인 마켓플레이스 매니페스트
 ├── agents/                # 사용자 정의 에이전트 자리 (현재 비어 있음)
@@ -310,4 +310,4 @@ PR 환영합니다. 작업 흐름:
 
 - [Vercel Skills](https://github.com/vercel-labs/skills) — 패키지 구조와 `npx skills add` 워크플로의 기반.
 - Claude Code · Codex · Cursor · Antigravity 팀의 스킬/플러그인 표면.
-- 모든 컨트리뷰터 — 자세한 목록은 [GitHub Contributors](https://github.com/alpoxdev/hypercore/graphs/contributors).
+- 모든 컨트리뷰터 — 자세한 목록은 [GitHub Contributors](https://github.com/alpoxdev/hypercore-skills/graphs/contributors).

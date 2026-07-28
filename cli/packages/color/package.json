@@ -22,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alpoxdev/hypercore.git",
+    "url": "git+https://github.com/alpoxdev/hypercore-skills.git",
     "directory": "cli/packages/color"
   },
   "license": "MIT",
