@@ -40,7 +40,7 @@
 
 ## Agent Evals
 - source_url: https://developers.openai.com/api/docs/guides/agent-evals
-- last_verified_at: 2026-07-29
+- last_verified_at: 2026-06-02
 - applies_to: agent trajectory, tool use, goal completion 평가
 - summary: 에이전트 워크플로우는 최종 텍스트만이 아니라 trajectory, tool behavior, goal completion까지 평가해야 합니다.
 - implication_for_docs_maker: 하네스 문서는 단계별 행동도 평가해야 합니다.

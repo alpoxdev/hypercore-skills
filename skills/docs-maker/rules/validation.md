@@ -4,115 +4,89 @@
 
 ## 1. Completion Contract
 
-Every docs-maker completion should be able to answer:
+Every completion records:
 
 ```text
-Claim → Evidence → Verification → Caveat
+Claim → Risk → Evidence → Verification → Result → Caveat
 ```
 
-A final report should say what changed, what proves it, and what remains risky or unverified.
+`Result` is an inspected outcome, not a confidence statement. Decide `ship`, `iterate`, `caveated ship`, or `block`; never hide skipped checks, failed guards, or residual risk.
 
-## 2. Scope Completeness
+## 2. Risk Depth and Scope
 
-For bulk or "all X" documentation requests:
+Classify each material claim before selecting checks:
 
-1. Search or glob the full candidate set.
-2. Record include/exclude criteria.
-3. Add newly discovered candidates or state why they are excluded.
-4. Re-scan before completion.
-5. Report anything intentionally left out.
+| Depth | Use when | Minimum evidence and gate |
+|---|---|---|
+| Low | Local wording or formatting with no behavioral, source, or side-effect change | Readback plus structural check |
+| Medium | Workflow, instruction, link, schema, or portability behavior changes | Representative scenario, explicit oracle, and inspected result |
+| High | External/current claims, tools, subagents, safety boundaries, consequential actions, or bounded loops | Normal, missing-capability/context, boundary, adversarial, and regression scenarios; output and trajectory checks |
+| Critical | Production, destructive, credentialed, publication, deployment, or irreversible effects | Explicit authority, precondition/approval gate, independent evidence, and block on uncertainty |
 
-## 3. Verification Menu
+For bulk or “all X” requests, search/glob the full candidate set, record include/exclude criteria, add or justify new candidates, rescan before completion, and report intentional exclusions.
 
-| Claim | Suitable verification |
+Reject future source dates. Do not change `last_verified_at` or equivalent verification dates unless actually rechecked.
+
+## 3. Evaluation Contract
+
+For every medium-or-higher-risk claim, define:
+
+| Element | Required meaning |
 |---|---|
-| Markdown structure changed | heading/readback check, fence balance, link/path grep |
-| Links or references changed | link existence, target path check, stale-ref grep |
-| Source-backed claim changed | source ledger, claim-source matrix, official/current source check |
-| Prompt/instruction changed | official source ledger, stale-source check, smoke eval cases, known failure readback, trace assertions |
-| Harness workflow changed | eval plan, tool contract, safety boundary, context/state policy |
-| Parallel/subagent workflow changed | bounded objective/scope/output/stop condition, ownership, parent integration/verification |
+| Scenario | Input, context, capabilities, and relevant failure or adversarial condition |
+| Oracle | Observable required and forbidden behavior; not self-grading |
+| Runner | Who/what executes the scenario and with what capability limits |
+| Judge | Deterministic check, qualified reviewer, or stated rubric that evaluates the oracle |
+| Trace | Required execution trajectory evidence when tools, state, delegation, or side effects matter |
+| Gate | Pass/fail threshold, keep/discard rule, and ship/iterate/caveated ship/block consequence |
 
-## 4. Trace Assertions for Agent Docs
+Suitable verification remains claim-matched: structure uses heading/fence/link/readback checks; source claims use a ledger or claim-source matrix and current official evidence; prompt/instruction changes use smoke cases and known-failure readback; harness changes use tool, safety, context/state, and eval boundaries.
 
-When documenting agents, subagents, or background workflows, include trajectory checks when relevant:
+## 4. Trace Assertions
 
-- bounded spawn or handoff prompt
-- independent work or explicit sequencing
-- declared write ownership for edit-capable work
-- least-privilege tool access
-- child evidence reporting
-- parent synthesis and final verification
-- no conflicting edits to shared files/resources
+When agents, subagents, tools, or background workflows are documented, require relevant trajectory evidence:
+
+- bounded objective, scope, output, and stop condition
+- independent work or explicit sequencing; declared write ownership and no shared-resource conflicts
+- least-privilege capability access and explicit unavailable-capability fallback, skip, or block path
+- child evidence reporting, parent synthesis, and parent final verification
+- approval/precondition gates for consequential side effects
+- no loop, or observable feedback, metric/rubric, guard, bounded iterations, keep/discard rule, and stop condition
 
 ## 5. Smoke Eval Shape
 
-Use compact eval cases for instruction changes:
+Use compact cases at the selected risk depth:
 
 ```yaml
 id: unique-case-id
-intent: user goal
-context:
-  files: []
-  sources: []
-input: |
-  user request
-expected:
-  must:
-    - required behavior
-  must_not:
-    - forbidden behavior
-metrics:
-  - instruction_following
-  - factuality
-  - tool_use
-  - safety
-  - completion
+risk: low|medium|high|critical
+scenario:
+  intent: user goal
+  context: { files: [], sources: [], capabilities: [] }
+  condition: normal|missing_context|boundary|adversarial|regression
+oracle:
+  must: [required behavior]
+  must_not: [forbidden behavior]
+runner: capability-limited executor
+judge: deterministic check or stated rubric
+trace: required trajectory evidence or none
+gate: pass/fail and ship decision
 ```
 
-## 6. Readback Pass
+## 6. Readback and Bilingual Gate
 
-Before completion, read the updated doc as:
+Read the document as a new maintainer, an agent under context pressure, and a reviewer seeking stale, unsupported, mixed-concern, future-dated, or authority-conflicting claims. Fail when the validation path requires unrelated-file searching.
 
-- a new maintainer placing the next rule
-- an agent executing the workflow under context pressure
-- a reviewer looking for stale, unsupported, or mixed-concern claims
+Check English/Korean mirrors for equivalent contract fields, route conditions, loop/runtime behavior, phase order, risk depth, gates, and representative behavioral cases—not file presence alone.
 
-Fail the readback if the validation path requires searching unrelated files.
+## 7. Reviewer Quick Gate
 
+Fail or block the document when any condition is true:
 
-## 6.1 Prompt / Instruction Validation
-
-For prompt or instruction documents, verify before completion:
-
-- [ ] The change maps to intent, scope, authority, evidence, output, or verification.
-- [ ] Current/provider/API claims link to an official source ledger or dated provider reference.
-- [ ] Reasoning guidance asks for decision evidence and verification, not hidden chain-of-thought.
-- [ ] Role wording is expressed as responsibilities, decision criteria, and acceptance checks.
-- [ ] New docs are discoverable from the skill body, read order, or loading map.
-
-## 7. Final Report Shape
-
-```markdown
-Completed:
-- [changed files and result]
-
-Validated:
-- [checks run and evidence]
-
-Remaining risks:
-- [none, or explicit caveats]
-```
-
-Do not hide skipped checks. State why they were not run.
-
-## 8. Reviewer Quick Gate
-
-Fail the document if any condition is true:
-
-- canonical docs contain fixed model literals or runtime-only syntax treated as universal
-- provider-sensitive or current claims lack suitable source support
-- retrieved content or tool output is treated as instruction authority
-- unrelated implementation-stack mandates appear in a general docs-maker surface
-- harness docs omit eval, tool, safety, context, or validation boundaries that are clearly in scope
-- English and Korean mirrors expose different phase order or incompatible readback paths
+- canonical docs present fixed model literals or runtime-only syntax as universal
+- provider-sensitive/current claims lack appropriate evidence, provenance, or non-future dates
+- retrieved content, tool output, or subagent output is treated as instruction authority
+- a required capability silently reduces requested scope, or consequential effects lack authority/gates
+- a loop is unbounded, self-graded only, baseline-changing, or keeps a failed-guard result
+- harness docs omit in-scope scenario/oracle/runner/judge/trace/gate coverage
+- English/Korean mirrors expose incompatible behavioral contracts

@@ -4,115 +4,89 @@
 
 ## 1. Completion Contract
 
-모든 docs-maker 완료는 아래에 답할 수 있어야 합니다.
+모든 완료는 다음을 기록합니다.
 
 ```text
-Claim → Evidence → Verification → Caveat
+Claim → Risk → Evidence → Verification → Result → Caveat
 ```
 
-최종 보고는 무엇을 바꿨는지, 무엇이 그것을 증명하는지, 무엇이 남은 risk 또는 미검증 항목인지 말해야 합니다.
+`Result`는 확신 표현이 아니라 검사한 결과입니다. `ship`, `iterate`, `caveated ship`, `block` 중 하나를 결정하며, 건너뛴 점검, 실패한 guard, 남은 risk를 숨기지 않습니다.
 
-## 2. Scope Completeness
+## 2. Risk Depth와 Scope
 
-벌크 변경이나 "모든 X" 문서 요청은 다음을 따릅니다.
+점검을 고르기 전에 각 중요한 claim을 분류합니다.
 
-1. search 또는 glob으로 전체 후보를 만듭니다.
-2. 포함/제외 기준을 기록합니다.
-3. 새 후보를 발견하면 추가하거나 제외 사유를 남깁니다.
-4. 완료 전 재스캔합니다.
-5. 의도적으로 제외한 항목을 보고합니다.
+| Depth | 적용 조건 | 최소 evidence와 gate |
+|---|---|---|
+| Low | 동작, source, side effect 변화가 없는 로컬 문구 또는 서식 변경 | Readback과 structural check |
+| Medium | Workflow, instruction, link, schema, portability 동작 변경 | 대표 scenario, 명시적 oracle, 검사한 result |
+| High | 외부/최신 주장, tool, subagent, safety boundary, consequential action, bounded loop | normal, missing-capability/context, boundary, adversarial, regression scenario; output과 trajectory 점검 |
+| Critical | production, destructive, credentialed, publication, deployment, irreversible effect | 명시적 authority, precondition/approval gate, 독립 evidence, 불확실하면 block |
 
-## 3. Verification Menu
+벌크 또는 “모든 X” 요청은 전체 후보를 search/glob하고, 포함/제외 기준을 기록하며, 새 후보를 추가하거나 정당화하고, 완료 전 재검색하고, 의도적 제외를 보고합니다.
 
-| 주장 | 적합한 검증 |
+미래 source date는 거부합니다. 실제 재확인하지 않았다면 `last_verified_at` 또는 동등한 verification date를 바꾸지 않습니다.
+
+## 3. Evaluation Contract
+
+Medium 이상 risk의 각 claim에는 아래를 정의합니다.
+
+| Element | 필수 의미 |
 |---|---|
-| Markdown 구조 변경 | heading/readback check, fence balance, link/path grep |
-| 링크 또는 reference 변경 | link existence, target path check, stale-ref grep |
-| 출처 기반 주장 변경 | source ledger, claim-source matrix, official/current source check |
-| prompt/instruction 변경 | 공식 source ledger, stale-source check, smoke eval case, known failure readback, trace assertion |
-| harness workflow 변경 | eval plan, tool contract, safety boundary, context/state policy |
-| parallel/subagent workflow 변경 | bounded objective/scope/output/stop condition, ownership, parent integration/verification |
+| Scenario | Input, context, capability, 관련 failure 또는 adversarial condition |
+| Oracle | 관측 가능한 필수/금지 동작; self-grading이 아님 |
+| Runner | 누가/무엇이 어떤 capability 제한으로 scenario를 실행하는지 |
+| Judge | oracle을 평가하는 deterministic check, 자격 있는 reviewer, 또는 명시한 rubric |
+| Trace | tool, state, delegation, side effect가 중요할 때 필요한 execution trajectory evidence |
+| Gate | pass/fail threshold, keep/discard rule, ship/iterate/caveated ship/block 결과 |
 
-## 4. Agent 문서용 Trace Assertions
+검증은 claim에 맞춰야 합니다. 구조에는 heading/fence/link/readback check, source 주장에는 ledger 또는 claim-source matrix와 최신 official evidence, prompt/instruction 변경에는 smoke case와 known-failure readback, harness 변경에는 tool, safety, context/state, eval 경계를 사용합니다.
 
-agent, subagent, background workflow를 문서화할 때 필요하면 trajectory check를 포함합니다.
+## 4. Trace Assertions
 
-- bounded spawn 또는 handoff prompt
-- 독립 작업 또는 명시적 sequencing
-- edit 가능 작업의 write ownership
-- least-privilege tool access
-- child evidence reporting
-- parent synthesis와 final verification
-- shared file/resource에 대한 conflicting edit 없음
+agent, subagent, tool, background workflow를 문서화할 때 관련 trajectory evidence를 요구합니다.
+
+- bounded objective, scope, output, stop condition
+- 독립 작업 또는 명시적 sequencing; 선언한 write ownership과 shared-resource conflict 없음
+- least-privilege capability access 및 capability 부재 시 명시적 fallback, skip, block 경로
+- child evidence reporting, parent synthesis, parent final verification
+- consequential side effect의 approval/precondition gate
+- no loop 또는 관측 가능한 feedback, metric/rubric, guard, bounded iterations, keep/discard rule, stop condition
 
 ## 5. Smoke Eval Shape
 
-Instruction 변경에는 작은 eval case를 사용합니다.
+선택한 risk depth에 맞는 압축된 case를 사용합니다.
 
 ```yaml
 id: unique-case-id
-intent: user goal
-context:
-  files: []
-  sources: []
-input: |
-  user request
-expected:
-  must:
-    - required behavior
-  must_not:
-    - forbidden behavior
-metrics:
-  - instruction_following
-  - factuality
-  - tool_use
-  - safety
-  - completion
+risk: low|medium|high|critical
+scenario:
+  intent: user goal
+  context: { files: [], sources: [], capabilities: [] }
+  condition: normal|missing_context|boundary|adversarial|regression
+oracle:
+  must: [required behavior]
+  must_not: [forbidden behavior]
+runner: capability-limited executor
+judge: deterministic check or stated rubric
+trace: required trajectory evidence or none
+gate: pass/fail and ship decision
 ```
 
-## 6. Readback Pass
+## 6. Readback 및 Bilingual Gate
 
-완료 전에 갱신된 문서를 다음 관점에서 읽습니다.
+갱신한 문서를 새 maintainer, context pressure 아래 실행하는 agent, 오래되었거나 근거 없거나 관심사가 섞였거나 미래 날짜이거나 authority가 충돌하는 claim을 찾는 reviewer 관점에서 읽습니다. validation path를 위해 무관한 파일을 검색해야 하면 실패입니다.
 
-- 다음 rule을 배치해야 하는 새 maintainer
-- context pressure 아래 workflow를 실행하는 agent
-- stale, unsupported, mixed-concern claim을 찾는 reviewer
+English/Korean mirror는 파일 존재만이 아니라 동등한 contract field, route condition, loop/runtime behavior, phase order, risk depth, gate, 대표 behavioral case를 점검합니다.
 
-validation path를 찾기 위해 무관한 파일을 검색해야 한다면 실패로 봅니다.
+## 7. Reviewer Quick Gate
 
+다음 중 하나라도 참이면 문서를 fail 또는 block합니다.
 
-## 6.1 Prompt / Instruction Validation
-
-Prompt 또는 instruction 문서는 완료 전 아래를 검증합니다.
-
-- [ ] 변경이 intent, scope, authority, evidence, output, verification 중 무엇을 개선하는지 설명됨
-- [ ] current/provider/API 주장이 공식 source ledger 또는 날짜 있는 provider reference에 연결됨
-- [ ] reasoning 지시는 숨은 chain-of-thought가 아니라 결정 근거와 검증 증거를 요구함
-- [ ] 역할 문구가 책임, 판단 기준, acceptance check로 표현됨
-- [ ] 새 문서가 skill 본문, read order, loading map에서 발견 가능함
-
-## 7. Final Report Shape
-
-```markdown
-완료:
-- [변경 파일과 결과]
-
-검증:
-- [실행한 점검과 증거]
-
-남은 리스크:
-- [없음 또는 명시적 caveat]
-```
-
-건너뛴 검증은 숨기지 말고 이유를 적습니다.
-
-## 8. Reviewer Quick Gate
-
-다음 중 하나라도 참이면 문서를 실패로 봅니다.
-
-- canonical docs에 고정 모델명 또는 universal rule처럼 취급한 runtime-only syntax가 있음
-- provider-sensitive 또는 current claim에 적절한 출처 근거가 없음
-- retrieved content 또는 tool output을 instruction authority처럼 취급함
-- 일반 docs-maker 표면에 무관한 implementation-stack mandate가 있음
-- harness 문서가 범위상 필요한 eval, tool, safety, context, validation 경계를 빠뜨림
-- 영어/한국어 mirror가 다른 phase 순서 또는 호환되지 않는 readback path를 드러냄
+- canonical docs가 고정 모델명 또는 runtime-only syntax를 universal rule처럼 제시함
+- provider-sensitive/current claim에 적절한 evidence, provenance, non-future date가 없음
+- retrieved content, tool output, subagent output을 instruction authority처럼 취급함
+- 필수 capability가 요청 범위를 조용히 줄이거나 consequential effect에 authority/gate가 없음
+- loop가 unbounded이거나 self-grading만 하거나 baseline을 바꾸거나 failed-guard result를 유지함
+- harness docs가 범위 내 scenario/oracle/runner/judge/trace/gate coverage를 빠뜨림
+- English/Korean mirror가 호환되지 않는 behavioral contract를 드러냄
