@@ -25,6 +25,10 @@
     "url": "git+https://github.com/alpoxdev/hypercore-skills.git",
     "directory": "cli/packages/color"
   },
+  "homepage": "https://github.com/alpoxdev/hypercore-skills/tree/main/cli/packages/color",
+  "bugs": {
+    "url": "https://github.com/alpoxdev/hypercore-skills/issues"
+  },
   "license": "MIT",
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts",
