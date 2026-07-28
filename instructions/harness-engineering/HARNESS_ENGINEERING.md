@@ -1,49 +1,51 @@
 # Harness Engineering
 
-LLM instruction, prompt, agent workflow를 “감”이 아니라 반복 가능한 테스트 대상으로 관리하는 기준이다.
+Standards for managing LLM instructions, prompts, and agent workflows as repeatable test subjects rather than gut feel.
+
+> Korean version: [`HARNESS_ENGINEERING.ko.md`](HARNESS_ENGINEERING.ko.md)
 
 ## Why
 
-LLM 출력은 확률적이고 모델/도구/컨텍스트 변경에 민감하다. 따라서 instruction 개선은 문장 다듬기가 아니라 **eval set, metrics, trace, regression gate**를 갖춘 하네스 작업이어야 한다.
+LLM output is probabilistic and sensitive to changes in model, tools, and context. Improving an instruction is therefore not sentence polishing but harness work equipped with an **eval set, metrics, traces, and a regression gate**.
 
 ## Harness Layers
 
-| Layer | 질문 | 산출물 |
+| Layer | Question | Artifact |
 |---|---|---|
-| Scenario | 어떤 사용자 요청/환경에서 실패하는가 | test case |
-| Oracle | 무엇이 정답/성공인가 | expected behavior / rubric |
-| Runner | 어떤 모델·도구·컨텍스트로 실행하는가 | eval config |
-| Judge | 어떻게 채점하는가 | deterministic check / rubric / human review |
-| Trace | 왜 실패했는가 | tool calls, retrieved sources, logs |
-| Gate | 언제 merge/ship 가능한가 | pass threshold / blocking criteria |
+| Scenario | Under which user request or environment does it fail? | test case |
+| Oracle | What counts as correct or successful? | expected behavior / rubric |
+| Runner | With which model, tools, and context does it run? | eval config |
+| Judge | How is it scored? | deterministic check / rubric / human review |
+| Trace | Why did it fail? | tool calls, retrieved sources, logs |
+| Gate | When can it merge or ship? | pass threshold / blocking criteria |
 
 ## Prompt / Role Instruction Smoke Eval
 
-역할 수행 프롬프트를 바꿀 때는 최소 3-5개 smoke case를 둔다.
+Keep at least 3-5 smoke cases whenever you change a role prompt.
 
-| Case type | 확인할 것 | 예시 |
+| Case type | What to check | Example |
 |---|---|---|
-| Happy path | 목표, 출력 형식, 톤을 지키는가 | 명확한 요청으로 expected schema 생성 |
-| Missing context | 모르는 사실을 추정하지 않는가 | 필요한 파일/출처가 없는 요청 |
-| Scope boundary | non-goal을 넘지 않는가 | 수정 금지 파일/외부 side effect 포함 요청 |
-| Source boundary | 웹/tool 결과를 지시가 아니라 증거로 취급하는가 | retrieved page 안의 prompt injection |
-| Regression | 이전 실패가 재발하지 않는가 | known bad prompt/output pair |
+| Happy path | Does it hold the goal, output format, and tone? | A clear request produces the expected schema |
+| Missing context | Does it avoid guessing facts it does not know? | A request whose required file or source is absent |
+| Scope boundary | Does it stay inside non-goals? | A request touching forbidden files or external side effects |
+| Source boundary | Does it treat web/tool results as evidence rather than instructions? | Prompt injection inside a retrieved page |
+| Regression | Does a previous failure stay fixed? | A known bad prompt/output pair |
 
 ## Minimum Eval Case Format
 
 ```yaml
 id: unique-case-id
-intent: 사용자가 달성하려는 일
+intent: what the user is trying to achieve
 context:
   files: []
   sources: []
 input: |
-  사용자 요청 원문
+  verbatim user request
 expected:
   must:
-    - 반드시 해야 할 행동
+    - actions that must happen
   must_not:
-    - 하면 안 되는 행동
+    - actions that must not happen
 metrics:
   - instruction_following
   - factuality
@@ -106,20 +108,20 @@ metrics:
 
 ## Parallel / Subagent Trace Rules
 
-병렬 작업은 결과만 보면 실패를 숨기기 쉽기 때문에 trace assertion을 둔다.
+Parallel work hides failures when only results are inspected, so add trace assertions.
 
-| Assertion | 확인 방법 | Fail 예시 |
+| Assertion | How to check | Failure example |
 |---|---|---|
-| bounded_spawn | subagent/background agent prompt에 objective, scope, output, stop condition이 있다 | “전체 코드 다 봐줘”처럼 무제한 위임 |
-| independent_or_sequenced | 병렬 작업 간 입력 의존성이 없거나 순차 대기가 명시됨 | A 결과가 필요한 B를 동시에 실행 |
-| ownership_declared | edit 작업은 파일/디렉터리 write set을 가진다 | 두 에이전트가 같은 config를 수정 |
-| least_privilege_tools | read-only 조사에는 쓰기/외부 side effect 권한이 없다 | docs lookup agent가 production command 실행 가능 |
-| parent_continues | non-blocking 작업 중 리더가 독립 작업을 진행하거나 이유를 기록 | spawn 직후 무의미한 idle wait |
-| child_reports_evidence | 하위 결과가 파일/링크/테스트 출력/변경 파일을 포함 | “문제 없음”만 반환 |
-| parent_integrates | 리더가 충돌·중복·누락을 합성하고 최종 판단 | subagent 요약을 그대로 이어붙임 |
-| parent_verifies | 최종 완료 전 리더가 검증 명령/eval/source-check를 읽음 | 하위 에이전트의 완료 선언만 신뢰 |
+| bounded_spawn | The subagent/background-agent prompt carries objective, scope, output, and stop condition | Unbounded delegation such as "review the whole codebase" |
+| independent_or_sequenced | Parallel tasks have no input dependency, or sequential waiting is explicit | Running B concurrently when B needs A's result |
+| ownership_declared | Editing tasks own a file/directory write set | Two agents modifying the same config |
+| least_privilege_tools | Read-only investigation carries no write or external side-effect permission | A docs-lookup agent able to run production commands |
+| parent_continues | During non-blocking work the leader proceeds with independent work or records why not | Pointless idle waiting right after spawning |
+| child_reports_evidence | Child results include files, links, test output, or changed files | Returning only "no problems found" |
+| parent_integrates | The leader synthesizes conflicts, duplicates, and gaps, then decides | Concatenating subagent summaries verbatim |
+| parent_verifies | Before final completion the leader reads verification output, evals, or source checks | Trusting only the subagent's completion claim |
 
-병렬 구현 eval은 최소 1개 이상 “같은 파일 충돌” 케이스와 1개 이상 “독립 research fan-out” 케이스를 포함한다.
+A parallel-implementation eval includes at least one "same-file conflict" case and at least one "independent research fan-out" case.
 
 ## CI / Regression Guidance
 
@@ -132,9 +134,20 @@ metrics:
 
 ## Sources
 
-- OpenAI evaluation best practices, Prompt optimizer, and Evals API guidance
-- Anthropic success criteria and evaluation tool guidance
-- Google Vertex Gen AI evaluation adaptive rubrics
-- LangSmith evaluation datasets/evaluators
-- Promptfoo guides for factuality, LLM-as-judge, chains, agents, red teaming
-- Google Responsible GenAI safety evaluation lifecycle
+> Links checked 2026-07-29. Next re-verification 2026-10-29.
+
+| Claim | Source |
+|---|---|
+| OpenAI evaluation best practices and the Evals API | <https://developers.openai.com/api/docs/guides/evals> |
+| OpenAI Prompt optimizer | <https://developers.openai.com/api/docs/guides/prompt-optimizer> |
+| OpenAI agent workflow evaluation — start with trace grading, expand to datasets and eval runs | <https://developers.openai.com/api/docs/guides/agent-evals> |
+| Anthropic success criteria (specific, measurable, achievable, relevant) and eval construction | <https://platform.claude.com/docs/en/test-and-evaluate/develop-tests> |
+| Google Vertex Gen AI evaluation — adaptive rubrics that generate pass/fail criteria per prompt | <https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/evaluation-overview> |
+| Adaptive rubric metric details (`INSTRUCTION_FOLLOWING`, `TEXT_QUALITY`, and others) | <https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/rubric-metric-details> |
+| LangSmith evaluation — the dataset + target function + evaluator triad, and offline/online evaluation types | <https://docs.langchain.com/langsmith/evaluation>, <https://docs.langchain.com/langsmith/evaluation-types> |
+| Promptfoo LLM-as-a-judge — a model grades against a rubric and returns pass, score, and reason | <https://www.promptfoo.dev/docs/guides/llm-as-a-judge/> |
+| Promptfoo red teaming — adversarial input generation, with guides for RAG, agents, and MCP | <https://www.promptfoo.dev/docs/red-team/> |
+| Google Responsible GenAI safety evaluation | <https://ai.google.dev/responsible> |
+| OpenAI skill eval axes (outcome / process / style / efficiency) | <https://developers.openai.com/blog/eval-skills> |
+
+An earlier revision left this list as prose with no URLs, making it unverifiable. Each entry above was grounded by checking its URL directly on 2026-07-29.

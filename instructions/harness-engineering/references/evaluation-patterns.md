@@ -1,5 +1,7 @@
 # Evaluation Patterns
 
+> Korean version: [`evaluation-patterns.ko.md`](evaluation-patterns.ko.md)
+
 ## Deterministic Assertions
 
 Use when output can be checked exactly.

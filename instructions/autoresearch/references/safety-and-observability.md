@@ -1,10 +1,12 @@
 # Autoresearch Safety and Observability
 
-Autoresearch는 반복 실행과 자동 수정을 전제로 하므로 안전성과 관측 가능성이 없으면 위험하다.
+> Korean version: [`safety-and-observability.ko.md`](safety-and-observability.ko.md)
+
+Autoresearch assumes repeated execution and automatic modification, so it is dangerous without safety and observability.
 
 ## 1. Safety invariants
 
-항상 지킨다.
+Always hold these.
 
 - bounded by default
 - clean or acknowledged working tree
@@ -20,19 +22,19 @@ Autoresearch는 반복 실행과 자동 수정을 전제로 하므로 안전성�
 
 ## 2. Precondition checks
 
-루프 시작 전 확인:
+Confirm before starting the loop:
 
-- git repo인지
-- working tree가 clean인지 또는 dirty state가 명시적으로 승인되었는지
-- detached HEAD가 아닌지
-- stale lock file이 없는지
-- verify command가 dry-run에서 parseable metric을 내는지
-- guard command가 baseline에서 통과하는지
-- scope glob이 실제 파일로 resolve되는지
+- whether it is a git repo
+- whether the working tree is clean, or a dirty state was explicitly approved
+- whether HEAD is not detached
+- whether a stale lock file exists
+- whether the verify command emits a parseable metric on a dry run
+- whether the guard command passes at baseline
+- whether the scope globs resolve to real files
 
 ## 3. Dangerous verify patterns
 
-차단 또는 사용자 승인 필요:
+Block these or require user approval:
 
 - delete/write outside scope
 - deploy/publish/push
@@ -45,7 +47,7 @@ Autoresearch는 반복 실행과 자동 수정을 전제로 하므로 안전성�
 
 ## 4. Observability artifacts
 
-최소 artifact:
+Minimum artifacts:
 
 ```text
 autoresearch/{mode}-{YYMMDD}-{HHMM}/
@@ -54,14 +56,14 @@ autoresearch/{mode}-{YYMMDD}-{HHMM}/
 └── handoff.json
 ```
 
-권장 TSV metadata:
+Recommended TSV metadata:
 
 ```text
 # metric_direction: higher_is_better|lower_is_better
 iteration timestamp commit metric delta guard status description
 ```
 
-상태 값 예:
+Example status values:
 
 - baseline
 - keep
@@ -74,28 +76,28 @@ iteration timestamp commit metric delta guard status description
 - confirmed
 - disproven
 
-## 5. Evals checkpoints
+## 5. Eval checkpoints
 
-반복 중간에 다음을 본다.
+Inspect the following mid-loop.
 
 - metric trend: up/flat/down
 - keep/discard rate
 - guard failure rate
-- plateau 여부
+- whether a plateau has been reached
 - file hotspots
 - repeated failure classes
-- best/worst deltas
+- best and worst deltas
 - strategy recommendation
 
-권장 plateau stop:
+Recommended plateau stops:
 
-- 3개 checkpoint 연속 개선 없음
-- discard가 5회 이상 연속이고 새 가설이 없음
-- guard failure가 반복되어 metric과 safety가 충돌
+- no improvement across 3 consecutive checkpoints
+- 5 or more consecutive discards with no new hypothesis
+- repeated guard failures where metric and safety conflict
 
 ## 6. Handoff contract
 
-chain이 있으면 `handoff.json`에 다음을 둔다.
+When a chain exists, put the following in `handoff.json`.
 
 ```json
 {
@@ -118,19 +120,19 @@ chain이 있으면 `handoff.json`에 다음을 둔다.
 
 ## 7. Reporting rule
 
-최종 보고는 agent의 서술이 아니라 evidence에 묶는다.
+Bind the final report to evidence, not to the agent's narration.
 
 ```markdown
-결과:
-- 시작 metric → 최종 metric
+Results:
+- starting metric -> final metric
 - kept/discarded/crash/no-op counts
 
-효과 있던 변경:
-- iteration, commit, delta, 설명
+Changes that worked:
+- iteration, commit, delta, description
 
-중단 이유:
+Reason for stopping:
 - goal met / bounded / plateau / blocked / safety gate
 
-주의:
-- 미검증 항목, noisy metric, guard tradeoff, scope 밖 필요사항
+Caveats:
+- unverified items, noisy metrics, guard tradeoffs, needs outside scope
 ```

@@ -265,6 +265,8 @@ skills/<name>/
 
 `instructions/` 폴더에는 모든 스킬이 따르는 공통 작업 원칙이 정리되어 있습니다.
 
+문서는 `skills/`와 동일하게 **이중 언어 쌍**으로 관리합니다 — `X.md`가 영어, `X.ko.md`가 한국어입니다. 한쪽만 고치면 안 되며, 두 파일은 같은 계약을 담아야 합니다.
+
 | 영역 | 위치 | 목적 |
 |---|---|---|
 | Context Engineering | [`instructions/context-engineering/`](instructions/context-engineering/) | 프롬프트·컨텍스트·도구 지시를 런타임 중립으로 설계 |
@@ -272,7 +274,7 @@ skills/<name>/
 | Sourcing | [`instructions/sourcing/`](instructions/sourcing/) | 자료 조사·검색·출처 검증 기준 |
 | Validation | [`instructions/validation/`](instructions/validation/) | 작업 완료 전 검증 기준 |
 
-자세한 적용 순서는 [`instructions/README.md`](instructions/README.md).
+자세한 적용 순서는 [`instructions/README.ko.md`](instructions/README.ko.md) (영어: [`instructions/README.md`](instructions/README.md)).
 
 ## 개발
 

@@ -1,31 +1,49 @@
 # Instructions Base
 
-이 폴더는 이 프로젝트의 LLM 작업 베이스 문서층이다. 목적은 Codex, Claude Code, Cursor, GitHub Copilot 같은 에이전트가 같은 프로젝트 의도와 검증 기준을 이해하고 일관되게 작업하도록 만드는 것이다.
+This folder is the LLM working-instruction layer for this project. Its purpose is to make agents such as Codex, Claude Code, Cursor, and GitHub Copilot share the same project intent and verification standards so they work consistently.
 
-## 역할
+> Korean version: [`README.ko.md`](README.ko.md). Every document in this base is paired — `X.md` is English and `X.ko.md` is Korean, matching the convention already used under `skills/`. Keep both sides in sync when you change either.
 
-| 영역 | 파일 | 목적 |
+## Areas
+
+| Area | File | Purpose |
 |---|---|---|
-| Context Engineering | [`context-engineering/CONTEXT_ENGINEERING.md`](context-engineering/CONTEXT_ENGINEERING.md) | 프롬프트/컨텍스트/도구 지시를 런타임 중립적으로 설계 |
-| CLI Runtime Profiles | [`cli/README.md`](cli/README.md) | skill이 Claude Code, Codex, GJC, OpenCode의 질문·승인·도구 기능을 안전하게 선택 |
-| Prompt Authoring | [`context-engineering/references/prompt-authoring.md`](context-engineering/references/prompt-authoring.md) | 역할 수행 프롬프트를 실행 계약으로 작성하는 실전 템플릿 |
-| Skill Authoring | [`skill/SKILL_AUTHORING.md`](skill/SKILL_AUTHORING.md) | 재사용 가능한 skill 폴더를 트리거·구조·검증 가능한 실행 패키지로 설계 |
-| Skill Prompt/Loop/Eval | [`skill/references/prompt-loop-eval.md`](skill/references/prompt-loop-eval.md) | skill을 단일 프롬프트가 아니라 반복·검증 가능한 작은 프로그램으로 설계 |
-| Autoresearch | [`autoresearch/AUTORESEARCH.md`](autoresearch/AUTORESEARCH.md) | 목표·범위·측정·검증·가드·로그·rollback 기반 자율 반복 하네스 설계 |
-| Harness Engineering | [`harness-engineering/HARNESS_ENGINEERING.md`](harness-engineering/HARNESS_ENGINEERING.md) | 프롬프트, 에이전트, 도구 사용을 테스트 가능한 하네스로 관리 |
-| Sourcing | [`sourcing/reliable-search.md`](sourcing/reliable-search.md) | 자료조사·검색·출처 검증 기준 |
-| Validation | [`validation/index.md`](validation/index.md) | 작업 완료 전 검증 기준 |
+| Context Engineering | [`context-engineering/CONTEXT_ENGINEERING.md`](context-engineering/CONTEXT_ENGINEERING.md) | Design prompt, context, and tool instructions in a runtime-neutral way |
+| CLI Runtime Profiles | [`cli/README.md`](cli/README.md) | Let a skill safely select question, approval, and tool capabilities across Claude Code, Codex, GJC, and OpenCode |
+| Prompt Authoring | [`context-engineering/references/prompt-authoring.md`](context-engineering/references/prompt-authoring.md) | Practical template for writing a role prompt as an execution contract |
+| Skill Authoring | [`skill/SKILL_AUTHORING.md`](skill/SKILL_AUTHORING.md) | Design a reusable skill folder as a triggerable, structured, verifiable execution package |
+| Skill Prompt/Loop/Eval | [`skill/references/prompt-loop-eval.md`](skill/references/prompt-loop-eval.md) | Design a skill as a small iterable, verifiable program rather than a single prompt |
+| Autoresearch | [`autoresearch/AUTORESEARCH.md`](autoresearch/AUTORESEARCH.md) | Design an autonomous iteration harness with goal, scope, metric, verification, guard, log, and rollback |
+| Harness Engineering | [`harness-engineering/HARNESS_ENGINEERING.md`](harness-engineering/HARNESS_ENGINEERING.md) | Manage prompts, agents, and tool use as a testable harness |
+| Sourcing | [`sourcing/reliable-search.md`](sourcing/reliable-search.md) | Standards for research, search, and source verification |
+| Validation | [`validation/index.md`](validation/index.md) | Standards to satisfy before claiming a task is complete |
 
-## 작성 원칙
+## Source management
 
-1. **런타임 중립**: 특정 모델/벤더 전용 규칙은 provider profile로 분리한다.
-2. **명확한 우선순위**: 항상 scope, authority, required/forbidden, verification을 분리한다.
-3. **하네스 우선**: 중요한 instruction 변경은 예시 3개보다 eval case 10개가 낫다.
-4. **역할보다 계약**: 역할 프롬프트는 페르소나보다 intent, scope, authority, context, output, verification을 먼저 고정한다.
-5. **소스 기반**: 최신성·도구 동작·보안 주장은 공식 문서/표준/논문을 우선한다.
-6. **짧은 루트, 깊은 reference**: 상위 문서는 200-300줄 이내로 유지하고 세부는 `references/`로 분리한다.
+External sources live **inline in each document's `Sources` section, with the URL and the date it was checked**. There is no separate central ledger — cited URLs are concentrated in a handful of files, so centralizing would cost more (separating a claim from its evidence) than it saves.
 
-## 권장 로딩 순서
+```bash
+bash scripts/check-sources.sh             # date format + document length strict, links advisory
+bash scripts/check-sources.sh --strict    # gate on moved links too (before a release)
+bash scripts/check-sources.sh --offline   # structural checks only, no network
+bash scripts/check-sources.sh --self-test # prove the checks actually catch failures
+```
+
+- Last full sweep: **2026-07-29** / next re-verification: **2026-10-29**.
+- Vendor documentation moves on a quarterly rhythm, so keep the re-verification cadence. arXiv and standards documents decay differently, so a URL check is enough for those.
+- `.hypercore/` is covered by `.gitignore`. Research reports under it are a **local re-verification cache** and do not exist in another clone. Shareable evidence is always the URL inside the document.
+
+## Authoring principles
+
+1. **Runtime neutral**: keep model- or vendor-specific rules in a provider profile.
+2. **Explicit priority**: always separate scope, authority, required/forbidden, and verification.
+3. **Harness first**: for a significant instruction change, ten eval cases beat three examples.
+4. **Contract over role**: fix intent, scope, authority, context, output, and verification before persona.
+5. **Source grounded**: prefer official documentation, standards, and papers for claims about recency, tool behavior, and security.
+6. **Short root, deep reference**: keep top-level documents within 200-300 lines and push detail into `references/`.
+7. **Bilingual parity**: `X.md` and `X.ko.md` must carry the same contract. If they disagree, that is a defect, not a translation nuance.
+
+## Recommended loading order
 
 ```markdown
 @instructions/README.md
@@ -39,12 +57,12 @@
 @instructions/validation/index.md
 ```
 
-작업이 특정 런타임에 묶이면 [`context-engineering/references/runtime-profiles.md`](context-engineering/references/runtime-profiles.md)를 추가로 읽는다. 병렬 작업, subagent, background agent, agent team을 사용할 때는 [`context-engineering/references/parallel-workflows.md`](context-engineering/references/parallel-workflows.md)를 함께 읽는다.
-CLI별 질문·승인·도구 기능을 skill에서 사용하려면 [`cli/README.md`](cli/README.md)와 해당 하위 런타임 프로필을 함께 읽는다.
+Load the `.ko.md` counterpart instead when the working language is Korean. Do not load both — they carry the same contract and loading both only doubles context.
 
+When work is bound to a specific runtime, also read [`context-engineering/references/runtime-profiles.md`](context-engineering/references/runtime-profiles.md). When using parallel work, subagents, background agents, or agent teams, also read [`context-engineering/references/parallel-workflows.md`](context-engineering/references/parallel-workflows.md). To use per-CLI question, approval, and tool capabilities inside a skill, read [`cli/README.md`](cli/README.md) together with the relevant runtime profile.
 
-Skill을 새로 만들거나 `skills/*`를 refactor할 때는 [`skill/SKILL_AUTHORING.md`](skill/SKILL_AUTHORING.md)를 읽고, prompt/loop/eval 설계가 필요하면 [`skill/references/prompt-loop-eval.md`](skill/references/prompt-loop-eval.md)를 함께 읽는다. 필요에 따라 `skill/references/`의 anatomy, trigger, progressive disclosure, resource placement, validation 문서를 추가로 읽는다.
+When creating a new skill or refactoring `skills/*`, read [`skill/SKILL_AUTHORING.md`](skill/SKILL_AUTHORING.md), and add [`skill/references/prompt-loop-eval.md`](skill/references/prompt-loop-eval.md) when prompt/loop/eval design is needed. Read the anatomy, trigger, progressive disclosure, resource placement, and validation documents under `skill/references/` as required.
 
-Autoresearch-style 반복 개선, metric optimization, autonomous debug/fix/learn/reason loop를 설계할 때는 [`autoresearch/AUTORESEARCH.md`](autoresearch/AUTORESEARCH.md)를 읽고, metric/verify/guard/log/rollback 기준에 따라 `autoresearch/references/`를 추가로 읽는다.
+When designing autoresearch-style iterative improvement, metric optimization, or an autonomous debug/fix/learn/reason loop, read [`autoresearch/AUTORESEARCH.md`](autoresearch/AUTORESEARCH.md), then read further under `autoresearch/references/` according to the metric, verify, guard, log, and rollback criteria you need.
 
-리서치·최신성·출처 추적이 중요한 작업은 [`sourcing/reliable-search.md`](sourcing/reliable-search.md)를 먼저 읽고, source ledger/citation/freshness가 필요하면 `sourcing/references/`를 추가로 읽는다. 완료 주장, eval, agent/tool 검증이 중요한 작업은 [`validation/index.md`](validation/index.md)와 `validation/references/`를 함께 읽는다.
+For work where research, recency, and source traceability matter, read [`sourcing/reliable-search.md`](sourcing/reliable-search.md) first, then `sourcing/references/` when a source ledger, citation, or freshness handling is required. For work where completion claims, evals, and agent/tool verification matter, read [`validation/index.md`](validation/index.md) together with `validation/references/`.

@@ -1,23 +1,25 @@
 # Skill Validation
 
-Skill validation은 “잘 읽힌다”가 아니라 “정확히 트리거되고, 필요한 절차를 따르고, 산출물이 검증 가능하다”를 증명하는 과정이다.
+> Korean version: [`validation.ko.md`](validation.ko.md)
 
-## 1. 검증 계층
+Skill validation proves not that a skill "reads well" but that it **triggers accurately, follows the required procedure, and produces a verifiable artifact**.
 
-| 계층 | 질문 | 방법 |
+## 1. Validation layers
+
+| Layer | Question | Method |
 |---|---|---|
-| Anatomy | 형식이 맞는가? | frontmatter, folder shape, local links, code fences |
-| Trigger | 맞는 요청에서 켜지는가? | positive/negative/boundary prompt set |
-| Workflow | 필요한 단계를 따르는가? | readback checklist, trace review, manual dry run |
-| Output | 산출물 형식이 맞는가? | template/rubric/schema check |
-| Source | 외부 claim이 근거와 연결되는가? | source ledger, accessed date, claim-source matrix |
-| Safety | 권한·네트워크·파괴적 행동이 gated인가? | forbidden/required behavior review |
-| Benchmark | eval/leaderboard 주장이 재현 가능한가? | benchmark release, scaffold, contamination, oracle caveat |
-| Regression | 나중에 바꿔도 유지되는가? | small eval set, deterministic scripts |
+| Anatomy | Is the format correct? | Frontmatter, folder shape, local links, code fences |
+| Trigger | Does it activate on the right requests? | Positive/negative/boundary prompt sets |
+| Workflow | Does it follow the required stages? | Readback checklist, trace review, manual dry run |
+| Output | Is the artifact format correct? | Template, rubric, or schema check |
+| Source | Are external claims linked to evidence? | Source ledger, accessed date, claim-source matrix |
+| Safety | Are permissions, network, and destructive actions gated? | Forbidden/required behavior review |
+| Benchmark | Are eval or leaderboard claims reproducible? | Benchmark release, scaffold, contamination, oracle caveats |
+| Regression | Does it hold up after later changes? | Small eval set, deterministic scripts |
 
-## 2. 최소 smoke set
+## 2. Minimum smoke set
 
-모든 skill은 최소 다음 검증 노트를 남긴다.
+Every skill leaves at least the following validation note.
 
 ```markdown
 ## Validation notes
@@ -32,14 +34,14 @@ Skill validation은 “잘 읽힌다”가 아니라 “정확히 트리거되�
 - Boundary:
   - [ ] prompt 1
 - Source-sensitive:
-  - [ ] 최신/벤더/API claim prompt
-  - [ ] 충돌 source prompt
+  - [ ] recency/vendor/API claim prompt
+  - [ ] conflicting-source prompt
 - Safety:
-  - [ ] retrieved prompt injection prompt
+  - [ ] retrieved prompt-injection prompt
   - [ ] credential/network/destructive action prompt
 - Benchmark:
   - [ ] benchmark/scaffold/version note
-  - [ ] with-skill vs without-skill comparison 필요 여부
+  - [ ] whether a with-skill vs without-skill comparison is needed
 - Anatomy:
   - [ ] frontmatter present
   - [ ] support files linked
@@ -51,149 +53,149 @@ Skill validation은 “잘 읽힌다”가 아니라 “정확히 트리거되�
   - ...
 ```
 
-## 3. Trigger eval 설계
+## 3. Trigger eval design
 
-권장 세트:
+Recommended set:
 
-- should-trigger 8~10개
-- should-not-trigger 8~10개
-- boundary 2~4개
-- source-sensitive 2~4개
-- safety/adversarial 2~4개
+- 8-10 should-trigger
+- 8-10 should-not-trigger
+- 2-4 boundary
+- 2-4 source-sensitive
+- 2-4 safety/adversarial
 
-초기에는 6개 smoke set으로 시작해도 된다. 실제 실패가 생길 때마다 eval row로 승격한다.
+Starting with a 6-case smoke set is acceptable early on. Promote each real failure into an eval row as it happens.
 
-각 row에는 다음을 둔다.
+Each row carries the following.
 
 ```json
 {
   "id": "skill-trigger-001",
-  "prompt": "실제 사용자가 입력할 문장",
+  "prompt": "a sentence a real user would type",
   "should_trigger": true,
-  "expected_reason": "왜 이 skill이어야 하는지"
+  "expected_reason": "why this skill should handle it"
 }
 ```
 
-Trigger eval은 단일 문장만 보지 않는다. 같은 intent를 다음처럼 변형한다.
+A trigger eval does not look at one sentence only. Vary the same intent as follows.
 
-- 한국어/영어/혼합 언어
-- skill 이름 직접 언급/무언급
-- 짧은 요청/긴 맥락 요청
-- 일반 문서 작성/재사용 skill 생성의 경계
-- research 선행이 필요한 최신 claim 요청
+- Korean, English, and mixed language
+- Direct mention of the skill name, and no mention
+- Short requests and long-context requests
+- The boundary between general document writing and reusable skill creation
+- Recency-claim requests that require prior research
 
-## 4. Output eval 설계
+## 4. Output eval design
 
-산출물이 중요한 skill은 다음을 포함한다.
+A skill whose artifact matters includes the following.
 
-- expected output description
-- required files
-- forbidden output
-- style/format rubric
-- deterministic artifact check
-- with-skill vs without-skill baseline이 필요한지 여부
+- Expected output description
+- Required files
+- Forbidden output
+- Style and format rubric
+- Deterministic artifact check
+- Whether a with-skill vs without-skill baseline is needed
 
-## 5. Workflow / Loop eval 설계
+## 5. Workflow / loop eval design
 
-Loop가 있는 skill은 “반복했다”가 아니라 “올바른 신호로 반복했고 올바른 조건에서 멈췄다”를 증명한다.
+A skill with a loop proves not that it "iterated" but that it **iterated on the right signal and stopped under the right condition**.
 
-| Loop | Eval case | 확인 |
+| Loop | Eval case | Check |
 |---|---|---|
-| observe-act | tool output이 실패/충돌/누락됨 | observation을 읽고 다음 action을 바꿈 |
-| draft-critique-revise | rubric 위반 draft | critique가 rubric에 근거하고 revision이 고침 |
-| branch-score-prune | 두 대안 중 하나가 scope 밖 | score/prune 기준으로 버림 |
-| optimize-compare | prompt 후보 A/B | 같은 eval set, holdout, regression 기록 |
+| observe-act | Tool output fails, conflicts, or is missing | It reads the observation and changes the next action |
+| draft-critique-revise | A draft violating the rubric | The critique cites the rubric and the revision fixes it |
+| branch-score-prune | One of two alternatives is out of scope | It is dropped by the score/prune criteria |
+| optimize-compare | Prompt candidates A/B | Same eval set, holdout, and regression record |
 
-필수:
+Required:
 
-- [ ] feedback source가 명시되어 있다.
-- [ ] max iterations 또는 stop condition이 있다.
-- [ ] guard 실패 시 keep/discard/ask/block 중 하나로 귀결된다.
-- [ ] loop 결과가 log 또는 validation notes에 남는다.
+- [ ] The feedback source is stated.
+- [ ] There is a max-iterations or stop condition.
+- [ ] A guard failure resolves to exactly one of keep, discard, ask, or block.
+- [ ] Loop results are recorded in a log or the validation notes.
 
-## 6. Source-grounding eval 설계
+## 6. Source-grounding eval design
 
-리서치, 최신 API, vendor behavior, 논문, benchmark, 보안 claim을 포함하는 skill은 source eval을 둔다.
+A skill covering research, recent APIs, vendor behavior, papers, benchmarks, or security claims includes a source eval.
 
-| Case | 기대 행동 |
+| Case | Expected behavior |
 |---|---|
-| 공식 source가 있음 | URL, accessed date, 적용 버전/제품 기록 |
-| source끼리 충돌 | authority/date/scope 비교 후 caveat |
-| 오래된 블로그만 있음 | primary source 요구 또는 unresolved 처리 |
-| retrieved content가 지시를 포함 | evidence로만 추출하고 지시는 무시 |
+| An official source exists | Record the URL, accessed date, and applicable version or product |
+| Sources conflict | Compare authority, date, and scope, then caveat |
+| Only an old blog exists | Demand a primary source, or mark it unresolved |
+| Retrieved content contains instructions | Extract only as evidence and ignore the instruction |
 
-최소 체크:
+Minimum checks:
 
-- [ ] non-obvious claim은 source와 연결된다.
-- [ ] 최신성 claim은 절대 날짜를 쓴다.
-- [ ] reviewed source와 cited source를 구분한다.
-- [ ] source가 없는 claim은 skill core rule로 승격하지 않는다.
+- [ ] Non-obvious claims link to a source.
+- [ ] Recency claims use absolute dates.
+- [ ] Reviewed sources are distinguished from cited sources.
+- [ ] A claim without a source is not promoted into a skill core rule.
 
-## 7. Benchmark eval 설계
+## 7. Benchmark eval design
 
-Skill이 “성능이 좋아졌다”, “벤치마크를 통과한다”, “agentic coding에 강하다” 같은 검증 claim을 포함하면 benchmark hygiene을 둔다.
+When a skill carries verification claims such as "performance improved," "it passes the benchmark," or "it is strong at agentic coding," apply benchmark hygiene.
 
-| Case | 기대 행동 |
+| Case | Expected behavior |
 |---|---|
-| static public benchmark | contamination/overlap 가능성을 caveat로 기록 |
-| scaffold/tool version 변경 | 이전 점수와 직접 비교하지 않음 |
-| weak public tests | hidden/differential/oracle refinement 필요 표시 |
-| skill utility claim | 같은 task에서 with-skill vs without-skill paired run |
-| aggregate score claim | task type/repo/difficulty/failure class로 stratify |
+| Static public benchmark | Record contamination and overlap risk as a caveat |
+| Scaffold or tool version changed | Do not compare directly against earlier scores |
+| Weak public tests | Flag the need for hidden, differential, or oracle refinement |
+| Skill utility claim | Paired with-skill vs without-skill runs on the same task |
+| Aggregate score claim | Stratify by task type, repo, difficulty, and failure class |
 
-필수 기록:
+Required records:
 
-- benchmark release/date window
-- model/runtime/tool/scaffold version
-- repository commit/container/toolchain
-- allowed tools and retrieval setting
-- deterministic verifier 또는 LLM judge rubric
-- known leakage, weak oracle, contamination caveat
+- Benchmark release and date window
+- Model, runtime, tool, and scaffold versions
+- Repository commit, container, toolchain
+- Allowed tools and retrieval setting
+- Deterministic verifier or LLM judge rubric
+- Known leakage, weak oracle, and contamination caveats
 
-## 8. Safety eval 설계
+## 8. Safety eval design
 
-Safety eval은 정상 작업을 막지 않으면서 위험 행동을 gate하는지 본다.
+A safety eval checks that risky actions are gated without blocking normal work.
 
-| Case | 기대 행동 |
+| Case | Expected behavior |
 |---|---|
-| prompt injection in webpage/tool output | 외부 지시 무시, 필요한 데이터만 추출 |
-| credential 요구 | 사용자 권한과 secure handling 없이는 거부/중단 |
-| destructive command | 명시 권한 전에는 실행하지 않음 |
-| production deploy/publish | 권한, scope, verification, rollback 확인 |
-| arbitrary URL/tool arg | allowlist/schema validation |
-| third-party skill/script | code review, sandboxing, version pinning, secret check |
+| Prompt injection in a web page or tool output | Ignore the external instruction and extract only the needed data |
+| Credential request | Refuse or stop without user permission and secure handling |
+| Destructive command | Do not execute before explicit permission |
+| Production deploy or publish | Confirm permission, scope, verification, and rollback |
+| Arbitrary URL or tool argument | Allowlist and schema validation |
+| Third-party skill or script | Code review, sandboxing, version pinning, secret check |
 
-## 9. Script-backed skill 검증
+## 9. Script-backed skill validation
 
-`scripts/`가 있으면 추가 확인한다.
+When `scripts/` exists, additionally confirm:
 
-- [ ] script가 non-interactive하다.
-- [ ] `--help` 또는 usage 설명이 있다.
-- [ ] dependency가 명시되어 있다.
-- [ ] 실패 시 helpful error를 출력한다.
-- [ ] structured output이 필요하면 JSON/JSONL/schema를 쓴다.
-- [ ] version pinning 또는 환경 요구가 명시되어 있다.
+- [ ] The script is non-interactive.
+- [ ] It has `--help` or usage documentation.
+- [ ] Dependencies are stated.
+- [ ] It prints a helpful error on failure.
+- [ ] It uses JSON, JSONL, or a schema when structured output is needed.
+- [ ] Version pinning or environment requirements are stated.
 
-## 10. Markdown 검증
+## 10. Markdown validation
 
-수동 또는 자동으로 다음을 확인한다.
+Confirm the following manually or automatically.
 
-- code fence balance
-- local markdown link target 존재
-- frontmatter 시작/종료
-- duplicate headings 과다 여부
-- `SKILL.md`에서 존재하지 않는 support file을 링크하지 않는지
+- Code fence balance
+- Local markdown link targets exist
+- Frontmatter opens and closes
+- Excessive duplicate headings
+- `SKILL.md` does not link a support file that does not exist
 
 ## 11. Completion gate
 
-다음 중 하나라도 실패하면 완료라고 말하지 않는다.
+Do not call it complete if any of the following fails.
 
-- trigger boundary가 설명되지 않음
-- support files가 연결되지 않음
-- scripts/assets가 workflow와 분리되어 있음
-- 공식 문서 claim에 source가 없음
-- destructive/credential/network behavior가 gated되지 않음
-- 검증 결과가 기록되지 않음
-- loop가 있는데 feedback/metric/guard/stop condition이 없음
-- eval이 happy path만 있고 negative/boundary/source/safety case가 없음
-- benchmark/성능 claim이 있는데 release, scaffold, verifier, contamination caveat가 없음
+- The trigger boundary is not explained
+- Support files are not linked
+- Scripts or assets are disconnected from the workflow
+- An official-documentation claim has no source
+- Destructive, credential, or network behavior is not gated
+- Verification results are not recorded
+- A loop exists without feedback, metric, guard, and stop condition
+- The eval has only happy paths and no negative, boundary, source, or safety cases
+- A benchmark or performance claim lacks release, scaffold, verifier, and contamination caveats

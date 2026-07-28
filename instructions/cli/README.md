@@ -1,49 +1,51 @@
-# CLI 런타임 프로필
+# CLI Runtime Profiles
 
-이 디렉터리는 재사용 가능한 skill이 CLI별 기능 차이를 **발견·선택·검증**하도록 돕는 참조 계층이다. 공통 규칙은 [`capability-contract.md`](capability-contract.md)에 한 번만 두고, 변동 가능한 런타임 차이는 하위 프로필에 격리한다.
+> Korean version: [`README.ko.md`](README.ko.md)
 
-## 범위와 권한
+This directory is the reference layer that helps a reusable skill **discover, select, and verify** capability differences across CLIs. Shared rules live once in [`capability-contract.md`](capability-contract.md); volatile runtime differences are isolated in the sub-profiles.
 
-- 범위: Claude Code, Codex, GJC, OpenCode에서 skill이 질문·승인·파일·명령 기능을 안전하게 선택하는 방법.
-- 비범위: 특정 CLI의 설치, 인증, 모델 선택, 전체 명령 레퍼런스, 프로젝트 규칙의 대체.
-- 권한: 사용자 요청과 프로젝트의 `AGENTS.md`가 이 문서 및 런타임 출력보다 우선한다. 런타임이 노출한 기능은 **사용 가능성**만 뜻하며 권한이나 승인으로 간주하지 않는다.
-- 근거: 이 문서는 저장소 안에서 확인된 문서만 사용한다. 검증하지 못한 런타임 기능은 지원 사실로 쓰지 않고 런타임 발견 절차로 처리한다. 근거 목록과 한계는 [`sources.md`](sources.md)에 있다.
+## Scope and authority
 
-## 읽는 순서
+- Scope: how a skill safely selects question, approval, file, and command capabilities across Claude Code, Codex, GJC, and OpenCode.
+- Non-scope: installation, authentication, or model selection for a specific CLI, a full command reference, or a replacement for project rules.
+- Authority: the user request and the project's `AGENTS.md` outrank this document and any runtime output. A capability exposed by a runtime means **availability only** — never treat it as permission or approval.
+- Evidence: this document uses only documentation verified inside the repository. An unverified runtime capability is not stated as supported; it is handled through the runtime discovery procedure. The evidence list and its limits are in [`sources.md`](sources.md).
 
-1. 모든 skill 작성자는 [`capability-contract.md`](capability-contract.md)를 읽는다.
-2. 특정 CLI 동작에 의존할 때만 해당 런타임 프로필을 읽는다.
-3. 프로필이 기능을 `런타임 확인`으로 표시하면 현재 세션에서 기능 이름, 입력 스키마, 권한 경계를 확인한다.
-4. 확인할 수 없으면 보수적 fallback을 사용하거나, 안전·산출물에 영향을 주는 누락 결정만 한 문장으로 질문한다.
+## Reading order
 
-## 프로필
+1. Every skill author reads [`capability-contract.md`](capability-contract.md).
+2. Read a specific runtime profile only when you depend on that CLI's behavior.
+3. When a profile marks a capability as `verify at runtime`, confirm the capability name, input schema, and permission boundary in the current session.
+4. If you cannot confirm it, use the conservative fallback, or ask a one-sentence question about the missing decision only when it affects safety or the artifact.
 
-| 런타임 | 프로필 | 저장소에서 확인된 기능 | 질문·승인 기본값 |
+## Profiles
+
+| Runtime | Profile | Capabilities verified in this repository | Question/approval default |
 |---|---|---|---|
-| Claude Code | [`claude-code/README.md`](claude-code/README.md) | `claude` CLI의 비대화형 실행·세션 재개·권한 모드 | 구조화 질문 도구를 가정하지 않고 평문 질문 |
-| Codex | [`codex/README.md`](codex/README.md) | `codex exec`, `codex review`, 세션 재개, sandbox | 평문 질문 |
-| GJC | [`gjc/README.md`](gjc/README.md) | 저장소 내 버전 고정 기능 근거 없음 | 런타임 발견 후, 없으면 평문 질문 |
-| OpenCode | [`opencode/README.md`](opencode/README.md) | ask 스타일 승인 프롬프트를 사용할 수 있을 때 우선 | 기능 노출 시 native prompt, 아니면 평문 질문 |
+| Claude Code | [`claude-code/README.md`](claude-code/README.md) | Non-interactive execution, session resume, and permission modes of the `claude` CLI | Plain-text question; do not assume a structured question tool |
+| Codex | [`codex/README.md`](codex/README.md) | `codex exec`, `codex review`, session resume, sandbox | Plain-text question |
+| GJC | [`gjc/README.md`](gjc/README.md) | No version-pinned capability evidence in the repository | Discover at runtime; plain-text question if absent |
+| OpenCode | [`opencode/README.md`](opencode/README.md) | Prefer an ask-style approval prompt when available | Native prompt when exposed, otherwise plain-text question |
 
-이 표는 완전한 제품 기능표가 아니다. 각 행의 “확인된 기능”은 이 저장소 문서로 직접 추적되는 최소 집합이며, 프로필이 명시한 전제와 검증을 함께 따른다.
+This table is not a complete product feature matrix. The "verified capabilities" column is the minimum set directly traceable to documentation in this repository, and it applies together with the assumptions and verification each profile states.
 
-## Skill에 넣는 최소 패턴
+## Minimum pattern to embed in a skill
 
 ```markdown
-## 런타임 기능
-- 필요한 논리 기능: `read`, `search`, `ask_user`, `edit`
-- 런타임 프로필: `@instructions/cli/<runtime>/README.md`
-- 발견 규칙: 실제로 노출된 기능과 입력 스키마를 먼저 확인한다.
-- fallback: `ask_user`를 확인할 수 없으면 사용자 언어로 한 문장 질문 후, 답변 전에는 gated 작업을 수행하지 않는다.
-- 승인 경계: 파일 변경, 네트워크, 자격 증명, 외부 시스템 변경은 사용자의 명시적 요청과 별도 안전 규칙을 함께 만족해야 한다.
+## Runtime capabilities
+- Required logical capabilities: `read`, `search`, `ask_user`, `edit`
+- Runtime profile: `@instructions/cli/<runtime>/README.md`
+- Discovery rule: first confirm which capabilities and input schemas are actually exposed.
+- Fallback: if `ask_user` cannot be confirmed, ask one sentence in the user's language and perform no gated work before an answer.
+- Approval boundary: file changes, network, credentials, and external system changes must satisfy both an explicit user request and the separate safety rules.
 ```
 
-`ask_user`는 논리 기능 이름이며, 특정 런타임의 도구/API 이름이 아니다. 세부 계약은 [`capability-contract.md`](capability-contract.md#사용자-질문과-승인-계약)을 따른다.
+`ask_user` is a logical capability name, not the tool or API name of a specific runtime. Follow [`capability-contract.md`](capability-contract.md) for the detailed contract.
 
-## 검증
+## Verification
 
-- [ ] skill이 필요한 **논리 기능**과 fallback을 선언한다.
-- [ ] 런타임 고유 기능은 해당 프로필의 로컬 근거 또는 현재 세션의 발견 결과가 있다.
-- [ ] 질문은 결과나 안전을 실질적으로 바꾸는 누락 결정에만 사용한다.
-- [ ] 구조화 질문/승인 기능이 없을 때 평문 질문 후 gated 작업을 멈춘다.
-- [ ] 외부·파괴적·자격 증명·production 작업은 기능 존재와 별개로 명시적 권한을 확인한다.
+- [ ] The skill declares the **logical capabilities** it needs, plus fallbacks.
+- [ ] Runtime-specific capabilities have either local evidence in that profile or a discovery result from the current session.
+- [ ] Questions are used only for missing decisions that materially change the outcome or safety.
+- [ ] When no structured question/approval capability exists, the skill asks in plain text and stops before gated work.
+- [ ] External, destructive, credential-gated, and production work confirms explicit permission independently of capability existence.

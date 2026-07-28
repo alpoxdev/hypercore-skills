@@ -1,52 +1,54 @@
 # Progressive Disclosure
 
-Progressive disclosure는 skill의 핵심 설계 원리다. agent가 모든 skill의 모든 내용을 처음부터 읽는다고 가정하면 context가 낭비되고 지시 충돌이 늘어난다. 따라서 skill은 필요한 순간에 필요한 깊이만 읽도록 설계한다.
+> Korean version: [`progressive-disclosure.ko.md`](progressive-disclosure.ko.md)
 
-## 1. 세 단계 모델
+Progressive disclosure is the core design principle for skills. If you assume the agent reads all content of every skill from the start, context is wasted and instruction conflicts multiply. Design a skill so it reads only the depth it needs, at the moment it needs it.
 
-| 단계 | 로드되는 내용 | 설계 목표 |
+## 1. The three-stage model
+
+| Stage | What loads | Design goal |
 |---|---|---|
-| Discovery | `name`, `description`, path | 정확한 skill 선택 |
-| Activation | 전체 `SKILL.md` | 핵심 workflow와 계약 실행 |
-| Execution | `references/`, `scripts/`, `assets/` | 필요할 때 세부 지식/도구 사용 |
+| Discovery | `name`, `description`, path | Accurate skill selection |
+| Activation | The whole `SKILL.md` | Executing the core workflow and contract |
+| Execution | `references/`, `scripts/`, `assets/` | Using detailed knowledge and tools on demand |
 
-## 2. `SKILL.md`에 남길 것
+## 2. What to keep in `SKILL.md`
 
-- trigger와 scope
-- authority/evidence 기준
-- workflow 큰 단계
-- loop type, feedback source, stop condition의 요약
-- 꼭 알아야 하는 gotcha
-- support files를 언제 읽을지 알려주는 navigation
-- validation과 stop condition
+- Trigger and scope
+- Authority and evidence criteria
+- The major workflow stages
+- A summary of loop type, feedback source, and stop condition
+- Gotchas the executor must know
+- Navigation telling when to read support files
+- Validation and stop conditions
 
-## 3. 내려보낼 것
+## 3. What to push down
 
-| 내용 | 위치 |
+| Content | Location |
 |---|---|
-| 긴 공식 문서 요약 | `references/official/*.md` |
-| 반복 정책 | `rules/*.md` |
-| prompt scaffold / reusable prompt template | `assets/prompts/` 또는 `references/examples.md` |
-| loop 세부 규칙과 실패 복구 순서 | `rules/loop.md` |
-| eval case / fixture / expected output | `assets/evals/` 또는 `references/eval-cases.md` |
-| source ledger / vendor drift note | `references/official/` 또는 `references/sources.md` |
-| prompt injection / side-effect safety note | `rules/safety.md` 또는 `references/safety.md` |
-| schema/API/detail | `references/*.md` |
-| deterministic 검증 | `scripts/*.py`, `scripts/*.sh`, `scripts/*.mjs` |
-| 템플릿 | `assets/*` |
-| 긴 예시 모음 | `references/examples.md` 또는 `assets/examples/*` |
+| Long official documentation summaries | `references/official/*.md` |
+| Recurring policy | `rules/*.md` |
+| Prompt scaffolds and reusable prompt templates | `assets/prompts/` or `references/examples.md` |
+| Detailed loop rules and failure-recovery order | `rules/loop.md` |
+| Eval cases, fixtures, expected output | `assets/evals/` or `references/eval-cases.md` |
+| Source ledger and vendor drift notes | `references/official/` or `references/sources.md` |
+| Prompt injection and side-effect safety notes | `rules/safety.md` or `references/safety.md` |
+| Schema and API detail | `references/*.md` |
+| Deterministic verification | `scripts/*.py`, `scripts/*.sh`, `scripts/*.mjs` |
+| Templates | `assets/*` |
+| Long example collections | `references/examples.md` or `assets/examples/*` |
 
-## 4. Navigation 문장
+## 4. Navigation sentences
 
-단순히 “see references/”라고 쓰지 않는다. 언제 읽을지 적는다.
+Do not simply write "see references/." State when to read it.
 
-약한 예:
+Weak example:
 
 ```markdown
 For more information, see references/.
 ```
 
-강한 예:
+Strong example:
 
 ```markdown
 Read `references/official/openai.md` only when provider-specific Codex skill behavior changes the core rule.
@@ -55,21 +57,21 @@ Read `rules/safety.md` before enabling network, credential, destructive, or prod
 Run `scripts/validate-skill.mjs` when the skill includes scripts, generated assets, or eval fixtures.
 ```
 
-## 5. Context 예산 규칙
+## 5. Context budget rules
 
-- core `SKILL.md`는 가능하면 300줄 안팎, 특별한 이유가 있어도 500줄을 넘기지 않는다.
-- `references/` 파일은 하나의 주제에 집중한다.
-- deep reference chain을 만들지 않는다.
-- support file을 만들었으면 `SKILL.md`에서 직접 참조한다.
-- support file을 만들지 않아도 되는 설명은 만들지 않는다.
-- eval fixture와 prompt template은 prose reference가 아니라 실제 실행/복사 대상이면 `assets/`에 둔다.
+- Keep the core `SKILL.md` around 300 lines where possible, and never above 500 lines even with a special reason.
+- Keep each `references/` file focused on one topic.
+- Do not build deep reference chains.
+- If you created a support file, reference it directly from `SKILL.md`.
+- Do not create explanations that did not need a support file.
+- Put eval fixtures and prompt templates in `assets/` when they are actually run or copied, rather than in a prose reference.
 
 ## 6. Readback check
 
-분리 후 다음 질문에 답한다.
+After splitting, answer the following.
 
-- `SKILL.md`만 읽어도 무엇을 언제 해야 하는지 알 수 있는가?
-- support file을 읽어야 하는 조건이 명확한가?
-- 반복 정의가 core와 reference에 중복되어 있지 않은가?
-- 모든 reference가 실제로 유용한가?
-- scripts/assets가 reasoning 파일로 오용되지 않는가?
+- Can you tell what to do and when from `SKILL.md` alone?
+- Is the condition for reading each support file clear?
+- Is a definition duplicated between the core and a reference?
+- Is every reference actually useful?
+- Are scripts and assets being misused as reasoning files?

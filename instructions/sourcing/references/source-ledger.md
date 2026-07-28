@@ -1,19 +1,21 @@
 # Source Ledger Reference
 
-**목적**: 리서치 산출물의 출처 추적성을 `query → source → claim → caveat`로 남긴다.
+> Korean version: [`source-ledger.ko.md`](source-ledger.ko.md)
+
+**Purpose**: preserve source traceability of a research artifact as `query -> source -> claim -> caveat`.
 
 ---
 
-## 1. Ledger 원칙
+## 1. Ledger principles
 
-- 출처 목록은 bibliography가 아니라 **검증 로그**다.
-- 검색 결과 snippet은 `lead`로 기록할 수 있지만, 최종 claim의 primary evidence가 될 수 없다.
-- `reviewed`와 `cited`를 분리한다. reviewed source는 결론에 쓰지 않았더라도 왜 제외했는지 남긴다.
-- 최신성은 `published/updated`, `accessed_at`, `retrieved_at`, `page_age`, `tool/API version`을 분리한다.
+- The source list is a **verification log**, not a bibliography.
+- A search snippet may be recorded as a `lead`, but it can never be primary evidence for a final claim.
+- Separate `reviewed` from `cited`. For a reviewed source not used in the conclusion, record why it was excluded.
+- Keep recency fields separate: `published/updated`, `accessed_at`, `retrieved_at`, `page_age`, and `tool/API version`.
 
 ---
 
-## 2. Source Ledger Template
+## 2. Source ledger template
 
 ```markdown
 | # | Source | URL/path | Publisher | Published/updated | Accessed/retrieved | Version/freshness | Channel | Grade | Role | Relevant claim | Used? | Caveat |
@@ -21,26 +23,26 @@
 | 1 |  |  |  |  |  |  | official docs/web/github/local | S/A/B/C | lead/primary-evidence/supporting/conflict/rejected |  | yes/no |  |
 ```
 
-### 필드 설명
+### Field definitions
 
-| Field | 기준 |
+| Field | Criterion |
 |---|---|
-| `Source` | 사람이 식별 가능한 제목 |
-| `URL/path` | canonical URL, GitHub permalink, local path |
-| `Publisher` | OpenAI, Anthropic, NIST, OWASP, repo owner 등 |
-| `Published/updated` | 페이지/문서/릴리스 기준 날짜. 없으면 `not stated` |
-| `Accessed/retrieved` | 조사자가 접근한 날짜, fetch timestamp, tool-provided `retrieved_at` |
+| `Source` | A human-identifiable title |
+| `URL/path` | Canonical URL, GitHub permalink, or local path |
+| `Publisher` | OpenAI, Anthropic, NIST, OWASP, repo owner, and so on |
+| `Published/updated` | The page, document, or release date. `not stated` when absent |
+| `Accessed/retrieved` | The date the researcher accessed it, the fetch timestamp, or a tool-provided `retrieved_at` |
 | `Version/freshness` | API mode, tool version, release tag, `page_age`, cache caveat |
 | `Channel` | web, official docs, GitHub, local repo, paper, standard |
 | `Grade` | S/A/B/C |
 | `Role` | lead, primary-evidence, supporting, conflict, rejected |
-| `Relevant claim` | 이 출처가 지지/반박하는 claim 한 문장 |
-| `Used?` | 최종 답변에 citation으로 사용했는지 |
-| `Caveat` | 접근 불가, 오래됨, vendor bias, method gap, scope mismatch |
+| `Relevant claim` | One sentence naming the claim this source supports or refutes |
+| `Used?` | Whether it was cited in the final answer |
+| `Caveat` | Inaccessible, outdated, vendor bias, method gap, scope mismatch |
 
 ---
 
-## 3. Claim-Source Matrix Template
+## 3. Claim-source matrix template
 
 ```markdown
 | Claim | Primary source(s) | Supporting/conflict source(s) | Verification | Confidence | Caveat |
@@ -48,55 +50,55 @@
 |  |  |  | date/version checked, cross-checked, local test, etc. | high/medium/low |  |
 ```
 
-### 사용 기준
+### Usage criteria
 
-- non-obvious claim은 최소 1개 primary source가 있어야 한다.
-- 비교/추천 claim은 criteria별 source가 보여야 한다.
-- 최신성 claim은 absolute date와 source freshness가 있어야 한다.
-- high-stakes claim은 1차 출처가 없으면 confidence를 낮추고 범위를 제한한다.
+- A non-obvious claim must have at least one primary source.
+- A comparison or recommendation claim must show a source per criterion.
+- A recency claim must carry an absolute date and source freshness.
+- For a high-stakes claim without a primary source, lower the confidence and limit the scope.
 
 ---
 
-## 4. Query Log Template
+## 4. Query log template
 
 ```markdown
 | # | Query / command | Channel | Why this query | Result | Follow-up |
 |---:|---|---|---|---|---|
 ```
 
-중복 방지 기준:
+Duplicate-prevention criteria:
 
-- 동일 문장 또는 의미상 같은 query를 반복하지 않는다.
-- 추가 query는 관점을 바꾼다: official, changelog, security, benchmark, counter-evidence, region, date.
-- 이미 확보한 source floor를 채웠다면 검색을 멈추고 검증으로 이동한다.
+- Do not repeat an identical or semantically equivalent query.
+- Change the angle for additional queries: official, changelog, security, benchmark, counter-evidence, region, date.
+- Once the source floor is met, stop searching and move to verification.
 
 ---
 
-## 5. Rejected / Conflict Table
+## 5. Rejected / conflict table
 
 ```markdown
 | Source | Reason | Better source / resolution |
 |---|---|---|
 ```
 
-기록해야 하는 제외 사유:
+Exclusion reasons that must be recorded:
 
-- 공식 문서보다 오래된 vendor blog
-- 검색 snippet만 있고 원문 접근 불가
-- 적용 버전이 다름
-- 방법론이나 sample이 불명확함
-- 홍보성/편향 가능성이 높음
-- 다른 S/A 출처와 충돌함
+- A vendor blog older than the official documentation
+- Only a search snippet, with the original inaccessible
+- A different applicable version
+- Unclear methodology or sample
+- High likelihood of promotional content or bias
+- Conflict with another S/A source
 
 ---
 
-## 6. Minimum Floors
+## 6. Minimum floors
 
 | Research mode | Reviewed | Cited | Matrix |
 |---|---:|---:|---|
-| quick | 3+ | 2+ | 핵심 claim만 |
-| default | 6+ | 4+ | 필수 |
-| deep/parallel | 10+ | 6+ | 필수 + conflict/rejected table |
-| official-doc update | 4+ S급 우선 | 3+ S급 우선 | 필수 |
+| quick | 3+ | 2+ | Key claims only |
+| default | 6+ | 4+ | Required |
+| deep/parallel | 10+ | 6+ | Required + conflict/rejected table |
+| official-doc update | 4+, prefer grade S | 3+, prefer grade S | Required |
 
-사용자가 별도 floor를 지정하면 사용자 지정값이 우선한다.
+When the user specifies a different floor, the user-specified value wins.

@@ -1,76 +1,78 @@
 # Autoresearch Core Loop
 
-Autoresearch core loop는 agent가 반복 실행할 수 있는 최소 폐쇄 루프다. 핵심은 “시도”가 아니라 “비교 가능한 시도”다.
+> Korean version: [`core-loop.ko.md`](core-loop.ko.md)
+
+The autoresearch core loop is the minimum closed loop an agent can run repeatedly. The point is not an "attempt" but a **comparable** attempt.
 
 ## 1. Loop contract
 
-| 단계 | 목적 | 산출 |
+| Stage | Purpose | Artifact |
 |---|---|---|
-| Plan | Goal/Scope/Metric/Verify/Guard/Iterations를 고정 | config |
-| Baseline | 현재 상태 metric을 측정 | iteration 0 row |
-| Review | 이전 결과와 git/log history를 읽음 | 다음 가설 |
-| Modify | 하나의 atomic change | patch/commit |
-| Verify | metric을 다시 측정 | numeric result 또는 판정 |
-| Guard | regression을 확인 | pass/fail |
-| Decide | keep/discard/revert/no-op/crash 분류 | decision |
-| Log | 결과를 TSV/markdown에 기록 | results row |
-| Evals | trend/plateau/regression 분석 | recommendation |
-| Stop/Handoff | 종료 또는 chain 연결 | summary/handoff |
+| Plan | Fix Goal, Scope, Metric, Verify, Guard, Iterations | config |
+| Baseline | Measure the metric of the current state | iteration 0 row |
+| Review | Read previous results and git/log history | the next hypothesis |
+| Modify | One atomic change | patch/commit |
+| Verify | Measure the metric again | a numeric result or a judgment |
+| Guard | Check for regression | pass/fail |
+| Decide | Classify as keep, discard, revert, no-op, or crash | decision |
+| Log | Record the result to TSV or markdown | results row |
+| Evals | Analyze trend, plateau, regression | recommendation |
+| Stop/Handoff | Terminate or connect the chain | summary/handoff |
 
 ## 2. Atomic change rule
 
-한 iteration에는 하나의 논리 변경만 허용한다.
+Allow exactly one logical change per iteration.
 
-좋은 예:
+Good examples:
 
-- 테스트 누락 한 케이스 추가
-- 하나의 lint rule 위반 패턴 제거
-- 특정 hot path의 memoization 한 곳 적용
-- 하나의 hypothesis를 검증하기 위한 작은 config 변경
+- Adding one missing test case
+- Removing one lint-rule violation pattern
+- Applying memoization at one specific hot path
+- A small config change to test one hypothesis
 
-나쁜 예:
+Bad examples:
 
-- 성능 최적화, 리팩토링, 테스트 추가를 한 번에 섞음
-- 여러 파일의 독립 문제를 한 commit에 해결
-- metric이 좋아졌을 때 원인을 알 수 없는 큰 변경
+- Mixing performance optimization, refactoring, and test additions at once
+- Solving independent problems across several files in one commit
+- A large change whose cause cannot be identified when the metric improves
 
 ## 3. Baseline and frontier
 
-Autoresearch는 항상 현재 best known state를 frontier로 본다.
+Autoresearch always treats the current best known state as the frontier.
 
-- baseline metric을 먼저 기록한다.
-- keep된 변경만 frontier를 전진시킨다.
-- discard된 변경은 학습 데이터로 기록하지만 현재 상태에는 남기지 않는다.
-- 실패도 중요하다. 같은 방향을 반복하지 않도록 log에 남긴다.
+- Record the baseline metric first.
+- Only kept changes advance the frontier.
+- Discarded changes are recorded as learning data but do not remain in the current state.
+- Failures matter too. Record them in the log so the same direction is not repeated.
 
 ## 4. Decision table
 
-| 조건 | 결정 | 처리 |
+| Condition | Decision | Handling |
 |---|---|---|
-| metric 개선 + guard pass | keep | commit 유지 |
-| metric 악화 | discard | revert/reset |
-| metric 개선 + guard fail | discard | revert, guard failure 기록 |
-| verify crash | crash | revert, stderr 요약 기록 |
-| metric parse 실패 | metric-error | revert 또는 human review |
-| 변경 없음 | no-op | log 후 다음 가설 |
-| hook/permission 차단 | hook-blocked | log 후 중단 또는 대체 경로 |
+| Metric improved + guard passed | keep | Keep the commit |
+| Metric worsened | discard | revert/reset |
+| Metric improved + guard failed | discard | Revert and record the guard failure |
+| Verify crashed | crash | Revert and record a stderr summary |
+| Metric parse failed | metric-error | Revert or send to human review |
+| No change | no-op | Log and move to the next hypothesis |
+| Hook/permission blocked | hook-blocked | Log, then stop or take an alternate path |
 
 ## 5. Stop conditions
 
-반복은 무한히 도는 것이 기본이 아니다. 다음 중 하나에서 멈춘다.
+Looping forever is not the default. Stop on any of the following.
 
-- max iterations 도달
-- goal threshold 달성
-- 3개 이상 eval checkpoint에서 plateau
-- 같은 failure class가 반복되어 의미 있는 새 가설이 없음
-- verify/guard가 신뢰 불가능함
-- scope 밖 변경이 필요함
-- destructive/credential/production side effect가 필요함
-- 사용자 interrupt
+- Max iterations reached
+- Goal threshold achieved
+- Plateau across 3 or more eval checkpoints
+- The same failure class repeats with no meaningful new hypothesis
+- Verify or guard is no longer trustworthy
+- A change outside scope is required
+- A destructive, credential, or production side effect is required
+- User interrupt
 
 ## 6. Loop output
 
-권장 output directory:
+Recommended output directory:
 
 ```text
 autoresearch/{mode}-{YYMMDD}-{HHMM}/
@@ -80,10 +82,10 @@ autoresearch/{mode}-{YYMMDD}-{HHMM}/
 └── evals-summary.md
 ```
 
-최소 TSV column:
+Minimum TSV columns:
 
 ```tsv
 iteration timestamp commit metric delta guard status description
 ```
 
-Debug/reason/scenario 같은 command는 metric 대신 hypothesis, severity, candidate_label, judge_verdict 같은 column을 추가할 수 있다.
+Commands such as debug, reason, and scenario may add columns like hypothesis, severity, candidate_label, and judge_verdict instead of a metric.

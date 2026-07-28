@@ -1,73 +1,75 @@
 # Autoresearch Config and Metrics
 
-Autoresearch의 품질은 config 품질에서 대부분 결정된다. 특히 metric과 verify가 약하면 agent가 열심히 반복해도 잘못된 방향으로 최적화한다.
+> Korean version: [`config-and-metrics.ko.md`](config-and-metrics.ko.md)
+
+Autoresearch quality is mostly decided by config quality. When the metric and verify are weak in particular, the agent iterates hard while optimizing in the wrong direction.
 
 ## 1. Required config fields
 
-| Field | 설명 | 좋은 기준 |
+| Field | Description | Good standard |
 |---|---|---|
-| Goal | 개선하려는 결과 | 수치 threshold 또는 명확한 상태 포함 |
-| Scope | 수정 가능한 파일/모듈 | glob과 exclude가 명시됨 |
-| Metric | 비교할 값 | 숫자 하나 또는 명확한 판정 기준 |
-| Direction | higher/lower is better | metric 해석이 모호하지 않음 |
-| Verify | metric을 얻는 명령/절차 | non-interactive, 재실행 가능, output parse 가능 |
-| Guard | 깨지면 안 되는 검사 | exit code로 pass/fail 확인 가능 |
-| Iterations | 반복 한도 | 기본 bounded, 예산과 위험에 맞음 |
+| Goal | The outcome to improve | Contains a numeric threshold or a clear state |
+| Scope | Files and modules that may be modified | Globs and excludes are explicit |
+| Metric | The value to compare | A single number or a clear judgment criterion |
+| Direction | Higher or lower is better | The metric's interpretation is unambiguous |
+| Verify | The command or procedure that yields the metric | Non-interactive, re-runnable, output is parseable |
+| Guard | The check that must not break | Pass/fail confirmable by exit code |
+| Iterations | Iteration limit | Bounded by default, matched to budget and risk |
 
-## 2. 좋은 metric 조건
+## 2. Conditions for a good metric
 
-좋은 metric은 다음을 만족한다.
+A good metric satisfies the following.
 
-- 빠르게 측정 가능하다.
-- 숫자 또는 안정적인 판정으로 나온다.
-- 목표와 직접 연결된다.
-- noise가 낮거나 median/min-delta 같은 완충 장치가 있다.
-- gaming하기 어렵다.
-- guard와 역할이 다르다.
+- It can be measured quickly.
+- It comes out as a number or a stable judgment.
+- It connects directly to the goal.
+- It has low noise, or a buffer such as median or min-delta.
+- It is hard to game.
+- It plays a different role than the guard.
 
-예:
+Examples:
 
-| 목표 | Metric | Direction | Guard |
+| Goal | Metric | Direction | Guard |
 |---|---|---|---|
-| 테스트 커버리지 증가 | coverage % | higher | full test suite |
-| lint error 제거 | error count | lower | typecheck/build |
-| bundle size 감소 | KB | lower | unit/e2e tests |
-| API latency 개선 | p95 ms | lower | correctness tests |
-| 문서 품질 개선 | broken link count + required section coverage | lower/higher | markdown lint |
+| Increase test coverage | coverage % | higher | full test suite |
+| Remove lint errors | error count | lower | typecheck/build |
+| Reduce bundle size | KB | lower | unit/e2e tests |
+| Improve API latency | p95 ms | lower | correctness tests |
+| Improve documentation quality | broken link count + required section coverage | lower/higher | markdown lint |
 
-## 3. 나쁜 metric 패턴
+## 3. Bad metric patterns
 
-- agent가 스스로 점수를 매기는 metric
-- “더 좋아 보임” 같은 주관 평가만 있는 metric
-- verify output에서 숫자를 안정적으로 뽑을 수 없음
-- 개선 metric과 guard가 같은 명령이라 tradeoff를 볼 수 없음
-- 목표와 무관한 proxy만 최적화
-- 너무 느려서 iteration cost가 큰 metric
+- A metric the agent scores itself
+- A metric with only subjective assessment such as "looks better"
+- A metric whose number cannot be extracted reliably from verify output
+- An improvement metric and a guard sharing one command, so the tradeoff is invisible
+- Optimizing a proxy unrelated to the goal
+- A metric so slow that iteration cost is high
 
-## 4. Verify command 기준
+## 4. Verify command criteria
 
-Verify는 다음 조건을 만족해야 한다.
+Verify must satisfy the following.
 
-- non-interactive
-- deterministic 또는 noise-handled
-- stdout/stderr에서 metric 추출 가능
-- credentials를 출력하지 않음
-- network write, publish, deploy, delete를 하지 않음
-- 실패 시 원인 파악 가능한 output을 남김
+- Non-interactive
+- Deterministic, or with noise handled
+- The metric can be extracted from stdout/stderr
+- Does not print credentials
+- Performs no network write, publish, deploy, or delete
+- Leaves output that makes the cause diagnosable on failure
 
-명령 안전 screen에서 차단할 것:
+Block these in the command safety screen:
 
-- `rm -rf` 같은 파괴 명령
-- `curl | sh` 같은 remote execution
-- credential이 inline으로 들어간 명령
-- production write/deploy/publish
-- fork bomb 또는 resource exhaustion 패턴
+- Destructive commands such as `rm -rf`
+- Remote execution such as `curl | sh`
+- Commands with inline credentials
+- Production write, deploy, or publish
+- Fork bombs or resource exhaustion patterns
 
-## 5. Guard 설계
+## 5. Guard design
 
-Guard는 “최적화 target”이 아니라 “깨지면 안 되는 기본선”이다.
+A guard is not an "optimization target" but the **baseline that must not break**.
 
-예:
+Example:
 
 ```yaml
 Metric: "bundle_kb"
@@ -75,23 +77,23 @@ Verify: "npm run build 2>&1 | grep 'First Load JS'"
 Guard: "npm test && npm run typecheck"
 ```
 
-metric이 좋아져도 guard가 실패하면 keep하지 않는다.
+Even when the metric improves, do not keep the change if the guard fails.
 
 ## 6. Subjective goals
 
-숫자 metric이 없으면 억지 metric을 만들기보다 다음으로 전환한다.
+When there is no numeric metric, do not force one; switch to the following.
 
-- rubric scoring
-- blind judge comparison
-- pairwise candidate tournament
-- convergence threshold
-- human review gate
+- Rubric scoring
+- Blind judge comparison
+- Pairwise candidate tournament
+- Convergence threshold
+- Human review gate
 
-예:
+Example:
 
 ```yaml
-Task: "이 아키텍처 결정을 평가"
-Fitness: "5명 judge의 blind majority vote"
-Convergence: "같은 candidate가 3회 연속 승리"
-Guard: "보안/운영 제약 위반 없음"
+Task: "Evaluate this architecture decision"
+Fitness: "Blind majority vote from 5 judges"
+Convergence: "The same candidate wins 3 times in a row"
+Guard: "No violation of security or operational constraints"
 ```

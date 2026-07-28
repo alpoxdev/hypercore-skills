@@ -1,85 +1,88 @@
 # Core Principles
 
-## 1. Right Altitude
+> Korean version: [`core-principles.ko.md`](core-principles.ko.md)
 
-Instruction은 너무 낮으면 edge-case 덤프가 되고, 너무 높으면 실행 불가능하다.
+## 1. Right altitude
 
-| Too Low | Right Altitude | Too High |
+An instruction that sits too low becomes an edge-case dump; one that sits too high is not executable.
+
+| Too low | Right altitude | Too high |
 |---|---|---|
-| 모든 조건문 나열 | 원칙 + 대표 예시 + 검증 기준 | “알아서 잘” |
-| 도구별 세부 명령 복붙 | capability와 fallback 지정 | 도구 언급 없음 |
-| 특정 모델 버전 행동 가정 | 런타임 profile로 분리 | 모델 차이 무시 |
+| Enumerating every conditional | Principle + representative example + verification criteria | "Just handle it well" |
+| Pasting per-tool command detail | Naming a capability and a fallback | No mention of tools |
+| Assuming a specific model version's behavior | Split into a runtime profile | Ignoring model differences |
 
 ### Pattern
 
 ```markdown
 ## Rule
-[원칙 한 문장]
+[the principle in one sentence]
 
 ## Apply When
-[언제 적용하는지]
+[when it applies]
 
 ## Example
-[좋은 예시 1-2개]
+[one or two good examples]
 
 ## Verify
-[통과/실패 기준]
+[pass/fail criteria]
 ```
 
-## 2. Context Is A Budget
+## 2. Context is a budget
 
-컨텍스트는 무제한 지식창고가 아니다. 읽히는 모든 문장은 다른 근거와 충돌하거나 중요한 정보를 밀어낼 수 있다.
+Context is not an unlimited knowledge store. Every sentence that gets read can conflict with other evidence or push out something important.
 
-| 전략 | 방법 |
+| Strategy | Method |
 |---|---|
-| JIT loading | 루트에는 map만 두고 필요 시 reference 로딩 |
-| Deduplication | 같은 규칙은 한 곳에만 둔다 |
-| Compression | 표, checklist, examples로 압축 |
-| Separation | project rule / runtime quirk / task prompt 분리 |
-| Compaction safety | 긴 작업은 결정·검증·남은 일을 별도 파일에 기록 |
+| JIT loading | Keep only a map at the root and load references on demand |
+| Deduplication | Keep the same rule in exactly one place |
+| Compression | Compress into tables, checklists, and examples |
+| Separation | Separate project rule, runtime quirk, and task prompt |
+| Compaction safety | For long work, record decisions, verification, and remaining tasks in a separate file |
 
-## 3. Explicit Contract
+## 3. Explicit contract
 
-좋은 prompt는 요청이 아니라 계약이다. 역할 프롬프트도 ‘전문가처럼 행동하라’가 아니라 목표, 범위, 권한, 근거, 출력, 검증을 가진 작업 계약이어야 한다.
+A good prompt is a contract, not a request. A role prompt likewise must be a work contract with goal, scope, authority, evidence, output, and verification — not "act like an expert."
 
 ```xml
 <contract>
-  <goal>성공 상태</goal>
-  <scope>대상/제외 대상</scope>
-  <constraints>금지·권한·보안</constraints>
-  <evidence>신뢰할 근거</evidence>
-  <actions>허용된 도구/작업</actions>
-  <verification>완료 증명</verification>
-  <output>산출물 형식</output>
+  <goal>the success state</goal>
+  <scope>targets and exclusions</scope>
+  <constraints>prohibitions, permissions, security</constraints>
+  <evidence>trusted evidence</evidence>
+  <actions>permitted tools and actions</actions>
+  <verification>proof of completion</verification>
+  <output>artifact format</output>
 </contract>
 ```
 
-## 4. Evidence Before Confidence
+## 4. Evidence before confidence
 
-- 최신/변동 정보는 반드시 조회한다.
-- 기술/API 동작은 공식 문서나 repo evidence를 우선한다.
-- 리서치 결과는 source ledger와 claim-source matrix로 남긴다.
-- 불확실성은 제거하지 말고 caveat로 기록한다.
+- Always look up recent or volatile information.
+- Prefer official documentation or repo evidence for technical and API behavior.
+- Record research results in a source ledger and a claim-source matrix.
+- Do not erase uncertainty; record it as a caveat.
 
-## 5. Eval Before Optimization
+## 5. Eval before optimization
 
-Instruction을 “더 좋아 보이게” 바꾸기 전에 현재 실패 사례를 수집한다. 공식 문서 기반 prompt optimizer나 meta-prompt를 쓰더라도 production 반영 전에는 같은 eval set으로 회귀를 확인한다.
+Collect current failure cases before changing an instruction to "look better." Even when using an official prompt optimizer or meta-prompt, confirm regression against the same eval set before shipping to production.
 
 ```text
-Define → Test → Diagnose → Patch → Re-run → Document
+Define -> Test -> Diagnose -> Patch -> Re-run -> Document
 ```
 
 ## Summary
 
-| 원칙 | 핵심 |
+| Principle | Core idea |
 |---|---|
-| Right Altitude | 원칙 + 대표 예시 + 검증 |
-| Context Budget | 짧은 루트, 깊은 reference |
-| Explicit Contract | 목표/범위/권한/검증 명시 |
-| Evidence | 주장보다 근거 우선 |
-| Eval Loop | 개선은 테스트로 증명 |
+| Right altitude | Principle + representative example + verification |
+| Context budget | Short root, deep reference |
+| Explicit contract | State goal, scope, authority, verification |
+| Evidence | Evidence before assertion |
+| Eval loop | Prove improvement with tests |
 
 ## Related
 
-- [`prompt-authoring.md`](prompt-authoring.md): 역할 수행 프롬프트 작성 템플릿
-- `.hypercore/research/2026-06-02-official-llm-prompt-instructions-update.md`: 2026-06-02 공식 문서 리서치 근거
+- [`prompt-authoring.md`](prompt-authoring.md): the role prompt authoring template
+- Official sources follow the Sources table in [`../CONTEXT_ENGINEERING.md`](../CONTEXT_ENGINEERING.md) (checked 2026-07-29).
+- Local re-verification cache (untracked, covered by `.gitignore`): `.hypercore/research/2026-06-02-official-llm-prompt-instructions-update.md`

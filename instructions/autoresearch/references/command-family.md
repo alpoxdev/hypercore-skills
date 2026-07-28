@@ -1,143 +1,203 @@
 # Autoresearch Command Family
 
-이 문서는 `uditgoenka/autoresearch`의 command surface를 이 저장소에서 instruction pattern으로 해석하기 위한 기준이다. 실제 외부 skill을 설치하거나 실행하라는 뜻이 아니다.
+> Korean version: [`command-family.ko.md`](command-family.ko.md)
+
+This document is the basis for interpreting the command surface of `uditgoenka/autoresearch` as instruction patterns in this repository. It does not mean you should install or run the external skill.
 
 ## 1. Core loop
 
-사용 조건:
+Use when:
 
-- scalar metric이 있다.
-- verify command가 있다.
-- scope가 제한되어 있다.
-- rollback 가능하다.
+- A scalar metric exists.
+- A verify command exists.
+- Scope is restricted.
+- Rollback is possible.
 
-패턴:
+Pattern:
 
 ```text
-Goal → Scope → Metric → Verify → Guard → Iterations
-Modify one thing → Verify → Keep/Discard → Log → Repeat
+Goal -> Scope -> Metric -> Verify -> Guard -> Iterations
+Modify one thing -> Verify -> Keep/Discard -> Log -> Repeat
 ```
 
 ## 2. Plan
 
-사용 조건:
+Use when:
 
-- Goal은 있지만 Scope/Metric/Verify가 불분명하다.
-- 바로 반복을 돌리면 metric이 잘못될 위험이 크다.
+- A goal exists but scope, metric, or verify is unclear.
+- Running the loop immediately risks an incorrect metric.
 
-출력:
+Output:
 
-- 실행 가능한 config block
-- verify dry-run 결과
-- handoff payload
+- An executable config block
+- A verify dry-run result
+- A handoff payload
 
 ## 3. Debug
 
-사용 조건:
+Use when:
 
-- 증상은 있지만 root cause가 불분명하다.
-- 여러 hypothesis를 체계적으로 테스트해야 한다.
+- Symptoms exist but the root cause is unclear.
+- Several hypotheses must be tested systematically.
 
-패턴:
+Pattern:
 
 ```text
-symptom → recon → hypothesis → test → confirmed/disproven/inconclusive → log → repeat
+symptom -> recon -> hypothesis -> test -> confirmed/disproven/inconclusive -> log -> repeat
 ```
 
-검증:
+Verification:
 
-- 모든 confirmed finding은 file:line, reproduction, evidence를 가져야 한다.
-- disproven hypothesis도 기록한다.
+- Every confirmed finding must carry file:line, a reproduction, and evidence.
+- Record disproven hypotheses too.
 
 ## 4. Fix
 
-사용 조건:
+Use when:
 
-- test/type/lint/build error count를 줄이는 것이 목표다.
-- error list가 command로 재현된다.
+- The goal is reducing test, type, lint, or build error counts.
+- The error list is reproducible by command.
 
-패턴:
+Pattern:
 
 ```text
-run target → count errors → pick one → fix one → verify → guard → keep/revert
+run target -> count errors -> pick one -> fix one -> verify -> guard -> keep/revert
 ```
 
-금지:
+Forbidden:
 
-- 여러 error category를 한 번에 고치기
-- error count가 줄지 않았는데 keep하기
-- guard failure를 무시하기
+- Fixing several error categories at once
+- Keeping a change when the error count did not drop
+- Ignoring a guard failure
 
 ## 5. Evals
 
-사용 조건:
+Use when:
 
-- 반복 결과 TSV/log가 있다.
-- trend, plateau, regression, success pattern을 분석해야 한다.
+- Iteration results exist as TSV or logs.
+- Trends, plateaus, regressions, and success patterns must be analyzed.
 
-출력:
+Output:
 
-- kept/discarded rate
-- metric trajectory
-- plateau 여부
-- 가장 효과적인 change type
-- 계속/중단/전략 변경 권고
+- Keep/discard rate
+- Metric trajectory
+- Whether a plateau was reached
+- The most effective change type
+- A continue, stop, or strategy-change recommendation
 
 ## 6. Reason
 
-사용 조건:
+Use when:
 
-- numeric metric이 없는 주관/전략/설계 결정이다.
-- blind judge/rubric/convergence를 fitness function으로 만들 수 있다.
+- The decision is subjective, strategic, or architectural with no numeric metric.
+- A blind judge, rubric, or convergence criterion can serve as the fitness function.
 
-패턴:
+Pattern:
 
 ```text
-candidate A → critique → candidate B → synthesis → blind judge panel → incumbent → convergence
+candidate A -> critique -> candidate B -> synthesis -> blind judge panel -> incumbent -> convergence
 ```
 
-주의:
+Caution:
 
-- judge 기준이 없으면 reasoning loop가 취향 싸움이 된다.
-- candidate label을 blind/randomize해야 평가 편향을 줄일 수 있다.
+- Without judge criteria, a reasoning loop degenerates into a taste argument.
+- Candidate labels must be blinded or randomized to reduce evaluation bias.
 
 ## 7. Probe
 
-사용 조건:
+Use when:
 
-- 요구사항이 흐릿하거나 숨은 제약이 많다.
-- 자동 반복 전에 Goal/Scope/Metric/Verify를 더 캐야 한다.
+- Requirements are hazy or hidden constraints abound.
+- Goal, scope, metric, and verify must be dug out before automated iteration.
 
-출력:
+Output:
 
-- constraint list
-- ambiguity list
-- ready-to-run config 또는 plan handoff
+- A constraint list
+- An ambiguity list
+- A ready-to-run config or a plan handoff
 
 ## 8. Learn
 
-사용 조건:
+Use when:
 
-- codebase 문서 생성/갱신/검증이 목표다.
+- The goal is generating, updating, or validating codebase documentation.
 
-패턴:
+Pattern:
 
 ```text
-scout codebase → generate/update docs → validate links/coverage → fix → repeat
+scout codebase -> generate/update docs -> validate links/coverage -> fix -> repeat
 ```
 
-주의:
+Caution:
 
-- docs loop도 metric/coverage/required sections/broken links 같은 검증 기준이 필요하다.
+- A docs loop also needs verification criteria such as metrics, coverage, required sections, and broken links.
 
-## 9. Security and Ship
+## 9. Predict
 
-Security는 기본 read-only audit로 시작한다. fix는 opt-in이다.
+Use when:
 
-Ship은 외부 side effect가 생길 수 있으므로 다음이 필수다.
+- The quality of the hypotheses themselves must improve before iterating.
+- Single-perspective analysis risks anchoring or domain blindness.
 
-- explicit user approval before deploy/publish/push
-- dry-run
-- rollback plan
-- post-verify
-- environment boundary
+Pattern:
+
+```text
+recon -> independent per-persona analysis (no cross-talk) -> structured cross-examination -> voting and consensus -> hypothesis queue
+```
+
+Caution:
+
+- This is one-shot, not a loop. Do not run iterations.
+- Without a rule to detect and block herd behavior, where personas drift toward each other's conclusions, perspective diversity vanishes and the result equals a single perspective.
+- Sharing information between personas during the independent stage destroys the benefit of this pattern.
+
+## 10. Improve
+
+Use when:
+
+- You must decide **what to build**, on evidence, rather than improve code quality.
+- An ICP (ideal customer profile) is defined or definable.
+
+Pattern:
+
+```text
+establish product context -> multi-source research (to saturation) -> rank through the ICP gate -> select -> PRDs with evidence chains
+```
+
+Caution:
+
+- Do not confuse it with code improvement (core loop), bugs (debug), security (security), or architecture decisions (reason).
+- The research stage applies the triangulation, source grading, and duplicate-search prevention rules of [`../../sourcing/reliable-search.md`](../../sourcing/reliable-search.md) as-is.
+- Rankings must connect to evidence; a priority without evidence is no different from a gut-feel roadmap.
+
+## 11. Regression
+
+Use when:
+
+- You must judge "did something that used to work break?" before push or merge.
+- The project has its own verification commands such as test, bench, snapshot, or migrate.
+
+Pattern:
+
+```text
+classification (fix the per-dimension baseline green-set) -> isolated baseline capture at the base ref -> re-run the candidate -> tiered STABLE/UNSTABLE verdict
+```
+
+Caution:
+
+- **It judges only green-to-red transitions.** Things that already failed, absolute quality, and net-new bugs are out of scope.
+- The baseline must be captured from an isolated worktree of the base ref. Using a value re-run in the current tree contaminates the verdict.
+- Without tiering criteria that absorb flaky tests and performance jitter, the gate is neutralized by noise and eventually muted.
+- This is a protocol, not a bundled framework. The verification commands belong to the project.
+
+## 12. Security and Ship
+
+Security starts as a read-only audit by default. Fixes are opt-in.
+
+Ship can produce external side effects, so the following are required.
+
+- Explicit user approval before deploy, publish, or push
+- Dry run
+- Rollback plan
+- Post-verify
+- Environment boundary
