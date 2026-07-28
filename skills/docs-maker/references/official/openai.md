@@ -44,7 +44,7 @@
 
 ## Agent Evals
 - source_url: https://developers.openai.com/api/docs/guides/agent-evals
-- last_verified_at: 2026-03-19
+- last_verified_at: 2026-07-29
 - applies_to: Agent trajectory, tool-use, and goal-completion evaluation
 - refresh_when: agent-eval scope or trajectory grading guidance changes
 - summary: Agent workflows require evaluation of trajectories, tool behavior, and goal completion, not only final text output.

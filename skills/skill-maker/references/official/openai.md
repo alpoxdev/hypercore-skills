@@ -17,8 +17,8 @@
 
 ## Codex Agent Skills
 
-- source_url: https://developers.openai.com/codex/skills
-- last_verified_at: 2026-06-02
+- source_url: https://learn.chatgpt.com/docs/build-skills
+- last_verified_at: 2026-07-29
 - applies_to: skill package shape, `name`/`description`, resources, scripts, progressive disclosure
 - summary: Codex skills package instructions, resources, and optional scripts so Codex can reliably follow reusable workflows.
 - implication_for_skill_maker: Treat skills as triggerable execution packages, not standalone prompt text.
@@ -33,8 +33,8 @@
 
 ## AGENTS.md Guide
 
-- source_url: https://developers.openai.com/codex/guides/agents-md
-- last_verified_at: 2026-06-02
+- source_url: https://learn.chatgpt.com/docs/agent-configuration/agents-md
+- last_verified_at: 2026-07-29
 - applies_to: project instruction discovery, scope, precedence, local guidance layering
 - summary: Repository instructions define scoped guidance for agents and should be considered when operating inside a project.
 - implication_for_skill_maker: Local `instructions/` and project rules outrank generic provider examples.
