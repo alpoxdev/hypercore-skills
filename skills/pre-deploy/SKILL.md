@@ -82,7 +82,7 @@ Run scripts with the current working directory set to the target root so detecti
 | Script | Purpose |
 |------|------|
 | `skills/pre-deploy/scripts/stack-detect.sh` | Detect project stacks (`node`, `rust`, `python`) |
-| `skills/pre-deploy/scripts/deploy-check.sh` | Full verification (`lint/type checks + build`) |
+| `skills/pre-deploy/scripts/deploy-check.sh [--parallel|--sequential]` | Full verification; runs quality and build concurrently by default |
 | `skills/pre-deploy/scripts/lint-check.sh` | Run stack-specific quality checks |
 | `skills/pre-deploy/scripts/build-run.sh` | Run stack-specific build phase |
 | `skills/pre-deploy/scripts/pm-detect.sh` | Node package manager detection (`npm/yarn/pnpm/bun`) |
@@ -91,6 +91,8 @@ Notes:
 
 - Helper scripts detect stacks and package managers relative to the current working directory.
 - `lint-check.sh` already runs independent Node typecheck and lint commands concurrently when both are configured; do not duplicate that internal parallelism with extra agents.
+- `deploy-check.sh` defaults to `--parallel` to reduce wall time while preserving both command logs and failures. Use `--sequential` or `PRE_DEPLOY_MODE=sequential` for resource-constrained runners or tools that cannot safely share caches.
+- Node package scripts are read once per quality run, and Python `compileall` fallbacks exclude generated, dependency, VCS, and virtual-environment directories.
 - Treat skipped checks as "not configured" or "tool unavailable," not as passed.
 
 </scripts>
@@ -142,10 +144,11 @@ When uncertain, classify upward. It is better to preserve evidence and ownership
 From the repository root:
 
 ```bash
-skills/pre-deploy/scripts/deploy-check.sh
+skills/pre-deploy/scripts/deploy-check.sh --parallel
 ```
 
 Do not skip this initial command unless the target root has no supported stack. It establishes the baseline and captures exact blockers.
+The parallel mode is the default fast path. It waits for both phases and fails if either fails; it never treats one successful phase as readiness proof. Use `--sequential` when concurrent toolchains contend for memory, CPU, or shared build caches.
 
 ## Step-by-step validation
 

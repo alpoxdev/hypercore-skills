@@ -25,19 +25,37 @@ resolve_py_tool() {
   return 1
 }
 
-has_package_script() {
-  local name="$1"
-  if ! command -v node >/dev/null 2>&1; then
-    return 1
+NODE_SCRIPTS_LOADED=0
+NODE_HAS_TYPECHECK=0
+NODE_HAS_LINT=0
+
+load_node_scripts() {
+  local scripts
+
+  if [ "$NODE_SCRIPTS_LOADED" -eq 1 ]; then
+    return
   fi
-  node -e "
+  NODE_SCRIPTS_LOADED=1
+
+  if ! command -v node >/dev/null 2>&1; then
+    return
+  fi
+
+  scripts="$(node -e "
     try {
       const p = require('./package.json');
-      process.exit(p && p.scripts && p.scripts['$name'] ? 0 : 1);
+      const s = p && p.scripts ? p.scripts : {};
+      process.stdout.write([Boolean(s.typecheck), Boolean(s.lint)].join('|'));
     } catch {
-      process.exit(1);
+      process.stdout.write('false|false');
     }
-  " >/dev/null 2>&1
+  " 2>/dev/null || printf 'false|false')"
+
+  case "$scripts" in
+    true\|true) NODE_HAS_TYPECHECK=1; NODE_HAS_LINT=1 ;;
+    true\|false) NODE_HAS_TYPECHECK=1 ;;
+    false\|true) NODE_HAS_LINT=1 ;;
+  esac
 }
 
 run_node_checks() {
@@ -53,6 +71,7 @@ run_node_checks() {
   fi
 
   pm="$($PM_DETECT)"
+  load_node_scripts
   tsc_out="$(mktemp)"
   eslint_out="$(mktemp)"
 
@@ -61,7 +80,7 @@ run_node_checks() {
 
   if [ -f "tsconfig.json" ]; then
     has_any=1
-    if has_package_script typecheck; then
+    if [ "$NODE_HAS_TYPECHECK" -eq 1 ]; then
       (
         case "$pm" in
           bun) bun run typecheck ;;
@@ -77,7 +96,7 @@ run_node_checks() {
     tsc_pid=$!
   fi
 
-  if has_package_script lint; then
+  if [ "$NODE_HAS_LINT" -eq 1 ]; then
     has_any=1
     (
       case "$pm" in
@@ -223,7 +242,7 @@ run_python_checks() {
     fi
   else
     echo "--- [python] Type/Syntax ---"
-    if "$py_bin" -m compileall -q .; then
+    if "$py_bin" -m compileall -q -x '(^|/)(\.git|\.venv|node_modules|dist|build)(/|$)' .; then
       echo "✓ Syntax compile check passed (fallback)"
     else
       exit_code=1

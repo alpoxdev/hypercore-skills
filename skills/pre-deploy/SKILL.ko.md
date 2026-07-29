@@ -82,7 +82,7 @@ Detection이 정확하도록 현재 작업 디렉터리를 target root로 설정
 | 스크립트 | 용도 |
 |------|------|
 | `skills/pre-deploy/scripts/stack-detect.sh` | 프로젝트 stack 자동 감지(`node`, `rust`, `python`) |
-| `skills/pre-deploy/scripts/deploy-check.sh` | 전체 검증(품질 검사 + 빌드) |
+| `skills/pre-deploy/scripts/deploy-check.sh [--parallel|--sequential]` | 전체 검증. 기본적으로 품질 검사와 빌드를 동시에 실행 |
 | `skills/pre-deploy/scripts/lint-check.sh` | stack별 품질 검사 실행 |
 | `skills/pre-deploy/scripts/build-run.sh` | stack별 빌드 단계 실행 |
 | `skills/pre-deploy/scripts/pm-detect.sh` | Node package manager 감지(`npm/yarn/pnpm/bun`) |
@@ -91,6 +91,8 @@ Detection이 정확하도록 현재 작업 디렉터리를 target root로 설정
 
 - helper scripts는 현재 작업 디렉터리를 기준으로 stack과 package manager를 감지합니다.
 - `lint-check.sh`는 Node typecheck와 lint가 둘 다 설정된 경우 내부적으로 독립 command를 동시에 실행합니다. 이 내부 병렬성을 추가 agent로 중복하지 않습니다.
+- `deploy-check.sh`는 wall time을 줄이기 위해 기본적으로 `--parallel`을 사용하면서 두 command의 로그와 실패를 모두 보존합니다. 자원이 제한된 runner 또는 cache를 안전하게 공유할 수 없는 tool에서는 `--sequential`이나 `PRE_DEPLOY_MODE=sequential`을 사용합니다.
+- Node package script는 quality run마다 한 번만 읽고, Python `compileall` fallback은 generated, dependency, VCS, virtual-environment directory를 제외합니다.
 - skipped check는 "미설정" 또는 "tool unavailable"로 취급하고, passed로 취급하지 않습니다.
 
 </scripts>
@@ -142,10 +144,11 @@ Detection이 정확하도록 현재 작업 디렉터리를 target root로 설정
 Repository root 기준:
 
 ```bash
-skills/pre-deploy/scripts/deploy-check.sh
+skills/pre-deploy/scripts/deploy-check.sh --parallel
 ```
 
 Target root에 지원 stack이 없는 경우를 제외하고 이 초기 command를 건너뛰지 않습니다. baseline과 정확한 blocker를 확보합니다.
+병렬 mode가 기본 fast path입니다. 두 phase를 모두 기다리고 하나라도 실패하면 전체를 실패 처리하므로, 한 phase의 성공만 readiness 증명으로 취급하지 않습니다. 동시 toolchain이 memory, CPU, shared build cache를 두고 경합하면 `--sequential`을 사용합니다.
 
 ## 단계별 검증
 

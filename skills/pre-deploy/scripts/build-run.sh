@@ -92,12 +92,12 @@ while IFS= read -r stack; do
           echo "✓ Python build completed (python -m build)"
         else
           echo "[python] build module not found. Running compile fallback."
-          "$PY_BIN" -m compileall -q .
+          "$PY_BIN" -m compileall -q -x '(^|/)(\.git|\.venv|node_modules|dist|build)(/|$)' .
           echo "✓ Python compile fallback completed"
         fi
       else
         echo "[python] Packaging files not found. Running compile fallback."
-        "$PY_BIN" -m compileall -q .
+        "$PY_BIN" -m compileall -q -x '(^|/)(\.git|\.venv|node_modules|dist|build)(/|$)' .
         echo "✓ Python compile fallback completed"
       fi
       ;;
