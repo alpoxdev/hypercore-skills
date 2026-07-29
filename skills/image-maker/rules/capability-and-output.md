@@ -2,6 +2,12 @@
 
 Use observed runtime evidence, not product names. A request does not prove a tool, permission, source, or safe destination exists.
 
+## ChatGPT native-image override
+
+When the current runtime is ChatGPT and exposes a native image tool, an image request MUST compile a complete prompt and invoke that tool in the same run. The exposed tool is observed evidence for the actions and return channel it declares. ChatGPT's native returned image satisfies delivery without repository `file_write`, descriptor-relative secure-write, or a separate retrieve/persist adapter; those capabilities govern only an additional local-file copy. Use the runtime's default image model (GPT Image 2 when it is the default), do not ask the user to select it, and never downgrade a successful native image route to `prompt_saved`.
+
+Apply this override after required-input and edit-authorization checks but before the generic file-write and fallback resolver. Retry once only after an objective invocation failure. Prompt fallback is allowed only when the native image action is absent or both attempts objectively fail. A tool refusal or safety failure remains `blocked`.
+
 ## Typed inputs and policy origin
 
 The resolver accepts only the final typed model:
@@ -27,7 +33,7 @@ Apply these rules in order and stop at the first applicable result:
 1. Malformed typed input: `blocked`.
 2. Before compiling, when `material_context=missing`, ask exactly one Korean question, return `awaiting_input`, and do not compile, invoke, or write: `subject` → “이미지의 주제를 알려 주세요.”; `reference` → “참조 이미지 또는 자료를 제공해 주세요.”; `rendered_text` → “이미지에 정확히 넣을 문구를 알려 주세요.”; `preserve_change` → “유지할 요소와 변경할 요소를 알려 주세요.” Do not combine questions or ask for optional style details.
 3. Denied authorization is `blocked` with `E_AUTHORIZATION`. Unknown authorization asks exactly “제공한 원본을 사용하고 편집할 권한이 있나요?” only for a supplied edit source, returning `awaiting_input` without compiling, invoking, or writing; every other unknown-authorization case is `blocked` with `E_AUTHORIZATION`.
-4. `file_write` other than `available`: `blocked` with `E_FILE_WRITE_UNAVAILABLE`. Do not claim an artifact was saved. A route that reaches persistence without descriptor-relative secure-write evidence blocks rather than reporting saved output.
+4. Outside the ChatGPT native-image route, `file_write` other than `available`: `blocked` with `E_FILE_WRITE_UNAVAILABLE`. Do not claim a file artifact was saved. A route that reaches local persistence without descriptor-relative secure-write evidence blocks local-file delivery rather than a successful ChatGPT native return.
 5. An explicit `prompt_only` request selects a pending prompt route.
 6. `generate` may invoke only when image generation and retrieval/persistence are available and inspection is available or optional.
 7. `edit` may invoke only when image editing and retrieval/persistence are available and inspection is available or optional. Generation never substitutes for editing.
@@ -37,12 +43,12 @@ The sole question for the final `unspecified` branch is: “이미지 생성 또
 
 ## Attempts, terminals, and evidence
 
-An image action is `invoke → retrieve/persist → inspect`; invocation is not delivery. Use one immutable compiled brief. Record an ordered attempt history: each entry has its attempt number and either its objective invocation failure or successful returned-result evidence. Retry once only after the first objective invocation failure: two attempts total. Never reinvoke after retrieval or persistence failure.
+An image action is `invoke → native return or retrieve/persist → optional/required inspect`; invocation without a returned or persisted artifact is not delivery. Use one immutable compiled brief. Record an ordered attempt history: each entry has its attempt number and either its objective invocation failure or successful returned-result evidence. Retry once only after the first objective invocation failure: two attempts total. Never reinvoke after retrieval or persistence failure.
 
 Use only these terminals:
 
-- `generated_verified`: invocation, descriptor-relative persisted regular image, and passed required inspection evidence exist. Include the persisted relative path, content digest, and inspection record; only then claim verified visual, text, constraint, or series results.
-- `generated_caveated`: invocation and persisted-image evidence exist; inspection is optional and unavailable or unknown. Include the persisted relative path and content digest, and inspection status; state that visual, rendered-text, exact-constraint, and series results are unverified. An actual inspection failure is `blocked`.
+- `generated_verified`: invocation and either a passed-inspection native returned image or a descriptor-relative persisted regular image with passed required inspection evidence exist. Include the native artifact record or persisted relative path, content digest, and inspection record; only then claim verified visual, text, constraint, or series results.
+- `generated_caveated`: invocation and native returned-image or persisted-image evidence exist; inspection is optional and unavailable or unknown. Include the native artifact record or persisted relative path and content digest, plus inspection status; state that visual, rendered-text, exact-constraint, and series results are unverified. An actual inspection failure is `blocked`.
 - `prompt_saved`: an explicit prompt route or allowed fallback has an exclusive, regular, non-empty contained UTF-8 `.txt` file. Include its relative path and content digest; claim only that a prompt-only file was saved.
 - `awaiting_input`: exactly one stated Korean question or reason, with no compilation, invocation, or write.
 - `blocked`: record the reason and ordered truthful attempt history; claim neither image nor prompt was saved.
