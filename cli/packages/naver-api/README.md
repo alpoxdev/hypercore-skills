@@ -14,13 +14,13 @@ naver-api [--json] config show
 naver-api [--json] config path
 naver-api [--json] config validate
 naver-api [--json] config delete
-naver-api [--json] trends --input <file|->
-naver-api [--json] shopping-insight categories --input <file|->
-naver-api [--json] shopping-insight keywords --input <file|->
+naver-api [--json] trends --input <file>
+naver-api [--json] shopping-insight categories --input <file>
+naver-api [--json] shopping-insight keywords --input <file>
 naver-api [--json] search <type> <query> [--display <count>] [--start <index>] [--sort <sort>] [--filter <filter>] [--format json]
 ```
 
-`--input` accepts a YAML or JSON object. Use `-` to read that request object from standard input. Trend request objects use `startDate`, `endDate`, `timeUnit`, and the API-specific group field (`keywordGroups`, `category`, or `keyword`). See the API HUB schema for the accepted device, age, gender, and group values.
+`--input` accepts a YAML or JSON object. Use `--input=-` (with `=`) to read that request object from standard input; the separated form `--input -` is parsed as a missing option value by the CLI parser. Trend request objects use `startDate`, `endDate`, `timeUnit`, and the API-specific group field (`keywordGroups`, `category`, or `keyword`). See the API HUB schema for the accepted device, age, gender, and group values.
 
 ## Credentials and local configuration
 
