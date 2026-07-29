@@ -5,16 +5,13 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "oxlint --deny-warnings --report-unused-disable-directives .",
+    "lint:fix": "oxlint --deny-warnings --report-unused-disable-directives --fix .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "@eslint/js": "^9.0.0",
-    "eslint": "^9.0.0",
     "oxlint": "^1.76.0",
-    "prettier": "^3.0.0",
-    "typescript-eslint": "^8.0.0"
+    "prettier": "^3.0.0"
   }
 }
