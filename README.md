@@ -6,7 +6,7 @@
 
 > Claude Code · Codex · Cursor · Antigravity에서 그대로 쓰는 한국어 우선 AI 에이전트 스킬 모음.
 
-Hypercore는 코드베이스 분석부터 릴리스까지의 반복 작업을 한 번에 줄여주는 33개 스킬을 한 패키지로 제공합니다. 각 스킬은 트리거, 워크플로, 검증 게이트가 명시되어 있어 어떤 CLI에서 호출해도 같은 의도로 동작합니다.
+Hypercore는 코드베이스 분석부터 릴리스까지의 반복 작업을 한 번에 줄여주는 29개 스킬을 한 패키지로 제공합니다. 각 스킬은 트리거, 워크플로, 검증 게이트가 명시되어 있어 어떤 CLI에서 호출해도 같은 의도로 동작합니다.
 
 - **드롭인 설치**: Claude Code 마켓플레이스에 한 줄, 다른 CLI에는 `npx skills add` 한 줄.
 - **다중 CLI**: Claude Code, Codex, Cursor, Antigravity에서 동일하게 사용.
@@ -150,8 +150,6 @@ cp -R hypercore-skills/skills/git-maker your-project/.claude/skills/
 
 | 스킬 | 설명 | 호환 |
 |------|------|------|
-| `git-commit` | Conventional Commits 기반 커밋 생성 | All |
-| `git-push` | 미푸시 커밋을 안전하게 리모트로 푸시 | All |
 | `git-maker` | 커밋과 푸시를 한 번에 (worktree 인지) | All |
 | `git-worktree` | Git worktree 생성/진입/정리, 병렬 에이전트 워크스페이스 관리 | All |
 | `git-issue` | GitHub issue 생성/재개와 matching branch 세션 전환 | All |
@@ -163,7 +161,6 @@ cp -R hypercore-skills/skills/git-maker your-project/.claude/skills/
 | `research` | 다중 소스, 출처 추적 가능한 마크다운 리서치 보고서 | All |
 | `qa` | 비개발자 이해관계자 요청 분석 및 기술 해석 후 구현 | All |
 | `bug-fix` | 버그 분석 → 수리 옵션 제시 → 검증된 구현 | All |
-| `crawler` | Playwright + CDP 기반 웹 크롤링 플로우 설계 및 코드 생성 | All |
 
 ### 콘텐츠 · SEO
 
@@ -177,13 +174,6 @@ cp -R hypercore-skills/skills/git-maker your-project/.claude/skills/
 | 스킬 | 설명 | 호환 |
 |------|------|------|
 | `execute` | 난이도 적응형 사고 깊이로 즉시 작업 수행 | All |
-
-### 외부 CLI 브리지
-
-| 스킬 | 설명 | 호환 |
-|------|------|------|
-| `claude-code` | Anthropic Claude Code CLI 실행 및 세션 관리 | Claude |
-| `gemini` | Google Gemini CLI 실행 및 세션 관리 | Gemini |
 
 ### 도메인 도구
 
@@ -239,7 +229,7 @@ hypercore-skills/
 │       └── color/         # @kood/color-cli — color-cli 스킬이 호출
 ├── instructions/          # 프로젝트 LLM 작업 베이스 (context/harness/sourcing/validation)
 ├── scripts/               # 보조 스크립트
-├── skills/                # 33개 스킬의 단일 원본 (각 폴더에 SKILL.md / SKILL.ko.md)
+├── skills/                # 29개 스킬의 단일 원본 (각 폴더에 SKILL.md / SKILL.ko.md)
 └── plugins/hypercore/     # Codex 플러그인 (`skills`는 ../../skills 심볼릭 링크)
 ```
 
@@ -304,7 +294,7 @@ pnpm -C cli format      # Prettier
 PR 환영합니다. 작업 흐름:
 
 1. 이슈를 열거나 기존 이슈에 의도를 적습니다 (한국어/영어 모두 환영).
-2. 새 브랜치에서 변경 후 `git-maker` 또는 `git-commit`으로 Conventional Commits를 생성합니다.
+2. 새 브랜치에서 변경 후 `git-maker`로 Conventional Commits를 생성합니다.
 3. 스킬 변경은 `SKILL.md`(영어 정본)와 `SKILL.ko.md`(한국어 번역)을 함께 갱신합니다.
 4. 가능하면 `skill-tester`나 `autoresearch-skill`의 검증 결과를 PR 본문에 첨부해 주세요.
 5. 큰 구조 변경은 [AGENTS.md](AGENTS.md)의 작업 원칙(작은 변경, 되돌리기 쉬움, 전역 환경 비의존)을 따릅니다.

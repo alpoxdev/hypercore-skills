@@ -15,7 +15,7 @@ Use the repository's `@kood/naver-api-cli` package to perform supported Naver AP
 </purpose>
 
 <routing_rule>
-Use this skill for Naver Search (`blog`, `news`, `cafearticle`, `kin`, `local`, `encyc`, `webkr`, `image`, `adult`, `errata`), DataLab search trends, and Shopping Insight category or keyword trends. Do not use it for retired search types (`shop`, `book`, `doc`), arbitrary URLs/endpoints, scraping, Naver login automation, or unrelated research. Use a browser/crawler skill when the requested source is a web page rather than API HUB.
+Use this skill for Naver Search (`blog`, `news`, `cafearticle`, `kin`, `local`, `encyc`, `webkr`, `image`, `adult`, `errata`), DataLab search trends, and Shopping Insight category or keyword trends. Do not use it for retired search types (`shop`, `book`, `doc`), arbitrary URLs/endpoints, scraping, Naver login automation, or unrelated research. Use available browser tooling when the requested source is a web page rather than API HUB.
 </routing_rule>
 
 <instruction_contract>

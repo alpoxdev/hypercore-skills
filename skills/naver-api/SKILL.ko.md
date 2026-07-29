@@ -15,7 +15,7 @@ compatibility: Node.js 20 이상, npm 패키지 설치 기능, API 호출용 네
 </purpose>
 
 <routing_rule>
-네이버 검색(`blog`, `news`, `cafearticle`, `kin`, `local`, `encyc`, `webkr`, `image`, `adult`, `errata`), 데이터랩 검색어 트렌드, 쇼핑인사이트 분야별/키워드별 트렌드에 사용합니다. 폐기된 검색 유형(`shop`, `book`, `doc`), 임의 URL/엔드포인트, 스크래핑, 네이버 로그인 자동화, 무관한 조사에는 사용하지 않습니다. 요청 대상이 API HUB가 아니라 웹 페이지이면 브라우저/크롤러 스킬로 라우팅합니다.
+네이버 검색(`blog`, `news`, `cafearticle`, `kin`, `local`, `encyc`, `webkr`, `image`, `adult`, `errata`), 데이터랩 검색어 트렌드, 쇼핑인사이트 분야별/키워드별 트렌드에 사용합니다. 폐기된 검색 유형(`shop`, `book`, `doc`), 임의 URL/엔드포인트, 스크래핑, 네이버 로그인 자동화, 무관한 조사에는 사용하지 않습니다. 요청 대상이 API HUB가 아니라 웹 페이지이면 사용 가능한 브라우저 도구로 라우팅합니다.
 </routing_rule>
 
 <instruction_contract>
