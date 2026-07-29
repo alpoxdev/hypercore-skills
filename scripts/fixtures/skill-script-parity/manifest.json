@@ -1,0 +1,44 @@
+{
+  "scripts": [
+    {"path":"skills/autoresearch-code/scripts/render-dashboard.mjs","family":"autoresearch-code","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/autoresearch-skill/scripts/render-dashboard.mjs","family":"autoresearch-skill","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/git-maker/scripts/git-commit.mjs","family":"git-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/git-maker/scripts/git-maker-fast.mjs","family":"git-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/git-maker/scripts/git-push.mjs","family":"git-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/git-maker/scripts/repo-discover.mjs","family":"git-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/git-maker/scripts/repo-status.mjs","family":"git-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/git-worktree/scripts/validate-git-worktree-skill.mjs","family":"git-worktree","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/image-maker/scripts/validate-image-maker.mjs","family":"image-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/nextjs-architecture/scripts/validate-nextjs-architecture-skill.mjs","family":"nextjs-architecture","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/prd-maker/scripts/build-preview.mjs","family":"prd-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/prd-maker/scripts/render-planning-map.mjs","family":"prd-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/pre-deploy/scripts/build-run.mjs","family":"pre-deploy","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/pre-deploy/scripts/deploy-check.mjs","family":"pre-deploy","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/pre-deploy/scripts/lint-check.mjs","family":"pre-deploy","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/pre-deploy/scripts/pm-detect.mjs","family":"pre-deploy","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/pre-deploy/scripts/stack-detect.mjs","family":"pre-deploy","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/prompt-maker/scripts/validate-prompt-maker.mjs","family":"prompt-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/seo-maker/scripts/render-dashboard.mjs","family":"seo-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/skill-maker/scripts/validate-skill-maker.mjs","family":"skill-maker","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/skill-tester/scripts/validate-skill.mjs","family":"skill-tester","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/skill-tester/scripts/validate-skills-corpus.mjs","family":"skill-tester","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/version-update/scripts/git-commit.mjs","family":"version-update","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/version-update/scripts/git-push.mjs","family":"version-update","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/version-update/scripts/stack-detect.mjs","family":"version-update","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/version-update/scripts/version-apply.mjs","family":"version-update","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/version-update/scripts/version-bump.mjs","family":"version-update","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/version-update/scripts/version-current.mjs","family":"version-update","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/version-update/scripts/version-find.mjs","family":"version-update","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"},
+    {"path":"skills/vite-architecture/scripts/validate-vite-architecture-skill.mjs","family":"vite-architecture","legacyOrigin":"native-mjs","usage":"Bun CLI skill command","behavior":"standalone deterministic skill operation"}
+  ],
+  "forbiddenDetectorReferences": {
+    "detector": "git-commit-detect",
+    "externalCandidatePaths": [{"path":"external/git-commit-detect.mjs","state":"missing","handoff":"not-applicable"}],
+    "allowlist": ["scripts/fixtures/skill-script-parity/manifest.json", "scripts/validate-skills.mjs"],
+    "selfAudit": {"production":"zero","docs":"zero","manifest":"allowlist-only","behavior":"zero"}
+  },
+  "versionUpdateDetectorAbsentCorrection": {
+    "baseline": "version-update lifecycle uses only version-update/scripts/git-commit.mjs and git-push.mjs",
+    "rollback": "revert the correction only with a reviewed replacement and restore the same zero-reference audit"
+  }
+}

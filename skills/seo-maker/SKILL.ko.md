@@ -191,7 +191,7 @@ Complexity: [simple/complex] — [한 줄 이유]
 - `sources.md`는 source ledger다. 각 external 또는 official source-sensitive claim에 URL, accessed 또는 published date, applicable claim, evidence class, scope/availability limitation을 기록한다.
 - `flow.json`은 complex 경로에서 단계 상태를 추적한다.
 - 폴더가 아직 없으면 기본적으로 [assets/report.template.ko.md](assets/report.template.ko.md)로 report를 만든다. 영어가 명시적으로 필요할 때만 [assets/report.template.md](assets/report.template.md)를 사용한다.
-- `results.json`이 확정되면 `scripts/render-dashboard.sh <artifact-dir>`로 dashboard를 렌더한다.
+- `results.json`이 확정되면 `scripts/render-dashboard.mjs <artifact-dir>`로 dashboard를 렌더한다.
 
 </artifact_contract>
 
@@ -303,7 +303,7 @@ complex로 분류되면 `flow.json`을 쓰고 각 단계가 진행될 때마다 
 실행이 끝나면 다음이 `.hypercore/seo-maker/[slug]/`에 남아 있어야 한다:
 
 - `results.json` — 구조화된 감사 결과 (`status: complete`)
-- `dashboard.html` — 브라우저 대시보드 (`render-dashboard.sh`로 생성)
+- `dashboard.html` — 브라우저 대시보드 (`render-dashboard.mjs`로 생성)
 - `results.js` — `file://` 폴백
 - `report.md` — 마크다운 리포트
 - `sources.md` — 출처 기록

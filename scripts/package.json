@@ -1,0 +1,15 @@
+{
+  "name": "@hypercore/skill-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "checkjs": "bunx tsc --project tsconfig.scripts.json",
+    "test": "bun test tests/skill-scripts.test.mjs",
+    "validate": "bun validate-skills.mjs",
+    "verify": "bun run checkjs && bun run test && bun run validate"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.5",
+    "typescript": "5.9.3"
+  }
+}

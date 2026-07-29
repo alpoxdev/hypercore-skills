@@ -5,7 +5,7 @@
 Tracked remediation은 다음 이후에만 사용합니다.
 
 1. Target root가 존재하고 stack detection을 실행했습니다.
-2. 지원 stack이 없는 경우를 제외하고, 초기 full `skills/pre-deploy/scripts/deploy-check.sh`가 baseline failure를 캡처했습니다.
+2. 지원 stack이 없는 경우를 제외하고, 초기 full `skills/pre-deploy/scripts/deploy-check.mjs`가 baseline failure를 캡처했습니다.
 3. Leader가 failure shape를 complex로 분류했습니다.
 
 ## Flow file
@@ -24,11 +24,11 @@ Repository root에 `.hypercore/pre-deploy/flow.json`을 만들거나 재개합�
     {
       "phase": "detect",
       "status": "complete",
-      "evidence": "stack-detect.sh output",
+      "evidence": "stack-detect.mjs output",
       "updated_at": "ISO-8601 timestamp"
     }
   ],
-  "baseline_command": "skills/pre-deploy/scripts/deploy-check.sh",
+  "baseline_command": "skills/pre-deploy/scripts/deploy-check.mjs",
   "failure_groups": [
     {
       "id": "node-typecheck",
@@ -51,7 +51,7 @@ Repository root에 `.hypercore/pre-deploy/flow.json`을 만들거나 재개합�
   ],
   "validation_history": [
     {
-      "command": "skills/pre-deploy/scripts/deploy-check.sh",
+      "command": "skills/pre-deploy/scripts/deploy-check.mjs",
       "status": "failed",
       "evidence": "summary 또는 captured output path"
     }

@@ -173,7 +173,7 @@ Render order:
 3. Render `dashboard.html` from the current results.
 4. Write `report.md` and `sources.md` with links or file references. `sources.md` is a source ledger: for every external or official claim, record its URL, accessed or published date, applicable claim, evidence class, and any scope/availability limitation.
 
-When `results.json` is finalized, render the dashboard with `scripts/render-dashboard.sh <artifact-dir>`.
+When `results.json` is finalized, render the dashboard with `scripts/render-dashboard.mjs <artifact-dir>`.
 
 </artifact_contract>
 

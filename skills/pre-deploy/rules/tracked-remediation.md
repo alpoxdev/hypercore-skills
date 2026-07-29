@@ -5,7 +5,7 @@
 Use tracked remediation only after:
 
 1. The target root exists and stack detection has run.
-2. The initial full `skills/pre-deploy/scripts/deploy-check.sh` has captured the baseline failure, unless no supported stack was detected.
+2. The initial full `skills/pre-deploy/scripts/deploy-check.mjs` has captured the baseline failure, unless no supported stack was detected.
 3. The leader has classified the failure shape as complex.
 
 ## Flow file
@@ -24,11 +24,11 @@ Minimum schema:
     {
       "phase": "detect",
       "status": "complete",
-      "evidence": "stack-detect.sh output",
+      "evidence": "stack-detect.mjs output",
       "updated_at": "ISO-8601 timestamp"
     }
   ],
-  "baseline_command": "skills/pre-deploy/scripts/deploy-check.sh",
+  "baseline_command": "skills/pre-deploy/scripts/deploy-check.mjs",
   "failure_groups": [
     {
       "id": "node-typecheck",
@@ -51,7 +51,7 @@ Minimum schema:
   ],
   "validation_history": [
     {
-      "command": "skills/pre-deploy/scripts/deploy-check.sh",
+      "command": "skills/pre-deploy/scripts/deploy-check.mjs",
       "status": "failed",
       "evidence": "summary or path to captured output"
     }

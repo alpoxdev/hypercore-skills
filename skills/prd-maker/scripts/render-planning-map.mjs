@@ -1,13 +1,20 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+// @ts-check
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
 
+/**
+ * @typedef {{ label: string, summary: string, children?: string[] }} PlanningBranch
+ * @typedef {{ title?: string, subtitle?: string, branches?: PlanningBranch[] }} PlanningMap
+ * @typedef {{ size?: number, weight?: number, fill?: string }} TextOptions
+ */
 const [, , inputPath, outputPath] = process.argv;
 if (!inputPath || !outputPath) {
   console.error('Usage: node render-planning-map.mjs <diagram.data.json> <diagram.svg>');
   process.exit(1);
 }
 
+/** @type {PlanningMap} */
 const data = JSON.parse(readFileSync(inputPath, 'utf8'));
 const branches = Array.isArray(data.branches) ? data.branches : [];
 const width = 1400;
@@ -21,6 +28,7 @@ const childH = 54;
 const branchX = 560;
 const childX = 980;
 
+/** @param {string} value @returns {string} */
 function esc(value = '') {
   return String(value)
     .replaceAll('&', '&amp;')
@@ -29,6 +37,7 @@ function esc(value = '') {
     .replaceAll('"', '&quot;');
 }
 
+/** @param {string} text @param {number} [max] @returns {string[]} */
 function wrap(text, max = 34) {
   const words = String(text || '').split(/\s+/).filter(Boolean);
   const lines = [];
@@ -45,6 +54,7 @@ function wrap(text, max = 34) {
   return lines.slice(0, 2);
 }
 
+/** @param {string[]} lines @param {number} x @param {number} y @param {TextOptions} [opts] @returns {string} */
 function textLines(lines, x, y, opts = {}) {
   const size = opts.size || 16;
   const weight = opts.weight || 500;
@@ -52,6 +62,7 @@ function textLines(lines, x, y, opts = {}) {
   return lines.map((line, i) => `<text x="${x}" y="${y + i * (size + 5)}" font-size="${size}" font-weight="${weight}" fill="${fill}">${esc(line)}</text>`).join('\n');
 }
 
+/** @param {number} x @param {number} y @param {number} w @param {number} h @param {string} title @param {string} subtitle @param {string} [accent] @returns {string} */
 function card(x, y, w, h, title, subtitle, accent = '#ff5b6e') {
   const titleLines = wrap(title, 26);
   const subtitleLines = wrap(subtitle, 42);
@@ -64,6 +75,7 @@ function card(x, y, w, h, title, subtitle, accent = '#ff5b6e') {
   </g>`;
 }
 
+/** @param {number} x1 @param {number} y1 @param {number} x2 @param {number} y2 @returns {string} */
 function connector(x1, y1, x2, y2) {
   const c1 = x1 + Math.max(80, (x2 - x1) * 0.45);
   const c2 = x2 - Math.max(80, (x2 - x1) * 0.45);

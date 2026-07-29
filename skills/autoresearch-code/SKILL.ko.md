@@ -239,7 +239,7 @@ Codebase 구조가 약하면 abstraction/dependency 추가보다 dead code 삭�
 
 - Phase 0: 대상 코드, 검증 명령, 시스템 문서, 소유 경계, 병목 유형, 비회귀 제약, 초기 지표를 수정 전에 읽고 기록한다.
 - Phase 1: 성공 조건을 서로 겹치지 않는 이진 eval로 바꾸며, 최소 한 eval은 사용자의 실제 병목을 점검한다.
-- Phase 2: `.hypercore/autoresearch-code/[codebase-name]/`를 만들고 `baseline.md`, `results.tsv`, `results.json`, `changelog.md`를 초기화한 뒤 `scripts/render-dashboard.sh`로 `dashboard.html`을 렌더링한다.
+- Phase 2: `.hypercore/autoresearch-code/[codebase-name]/`를 만들고 `baseline.md`, `results.tsv`, `results.json`, `changelog.md`를 초기화한 뒤 `bun scripts/render-dashboard.mjs`로 `dashboard.html`을 렌더링한다.
 - Phase 3: 수정 전 코드베이스를 실행하고 모든 eval을 점수화해 실험 `0`을 `baseline`으로 기록한다.
 - Phase 4: 가장 가치 큰 실패 하나를 골라 한 가설과 정확히 하나의 변이를 적용하고, 같은 eval과 Guard를 재실행한다. 점수가 오르고 guard가 통과할 때만 keep한다. 같거나 나빠지거나, 복잡도가 늘거나, guard가 실패하면 discard 또는 rework한다. 유지한 변경마다 수정 파일, 지표 이전/이후, proof command 출력, guard 결과, 롤백 조건을 기록한다.
 - Phase 5: [rules/validation-and-exit.md](rules/validation-and-exit.md)가 허용하는 user stop, budget limit, stable high score에서만 멈추고 점수 변화, 실험 수, keep 비율, best change, 지표 이동, 수정 파일, proof/guard 근거, 남은 실패, promotion 상태를 한국어로 보고한다.

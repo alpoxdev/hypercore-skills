@@ -1,4 +1,5 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+// @ts-check
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join, dirname, normalize } from 'node:path';
 
@@ -10,22 +11,28 @@ if (!target) {
 
 const skillDir = normalize(target);
 const skillPath = join(skillDir, 'SKILL.md');
+/** @type {string[]} */
 const failures = [];
+/** @type {string[]} */
 const warnings = [];
 
+/** @param {string} message @returns {void} */
 function fail(message) {
   failures.push(message);
 }
 
+/** @param {string} message @returns {void} */
 function warn(message) {
   warnings.push(message);
 }
 
+/** @param {string} text @param {RegExp} pattern @returns {number} */
 function countMatches(text, pattern) {
   const matches = text.match(pattern);
   return matches ? matches.length : 0;
 }
 
+/** @param {string} text @param {RegExp} startPattern @param {RegExp} endPattern @returns {number | null} */
 function countBulletsBetween(text, startPattern, endPattern) {
   const start = text.search(startPattern);
   if (start === -1) return null;

@@ -1,10 +1,21 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+// @ts-check
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, normalize, relative, resolve, sep } from 'node:path';
 
+/**
+ * @typedef {{ root: string, only: string[] | null, json: boolean, help: boolean }} Arguments
+ * @typedef {{ code: string, message: string, [key: string]: unknown }} ValidationError
+ * @typedef {{ skillFile: boolean, frontmatter: boolean, name: boolean, description: boolean, supportLinks: boolean, bilingualPairs: boolean, codeFences: boolean }} Checks
+ * @typedef {{ name: string, path: string, ok: boolean, failures: ValidationError[], warnings: ValidationError[], checks: Checks }} SkillResult
+ * @typedef {{ marker: string, line: number }} Fence
+ * @typedef {{ ok: boolean, root: string, totalTopLevelSkills: number, selectedSkills: string[], selectedCount: number, checkedCount: number, summary: { passed: number, failed: number, warnings: number }, skills: SkillResult[], errors: ValidationError[] }} CorpusResult
+ */
 const DEFAULT_ROOT = 'skills';
 
+/** @param {string[]} argv @returns {Arguments} */
 function parseArgs(argv) {
+  /** @type {Arguments} */
   const args = {
     root: DEFAULT_ROOT,
     only: null,
@@ -33,6 +44,7 @@ function parseArgs(argv) {
   return args;
 }
 
+/** @param {string[]} argv @param {number} index @param {string} flag @returns {string} */
 function requireValue(argv, index, flag) {
   const value = argv[index];
   if (!value || value.startsWith('--')) {
@@ -41,6 +53,7 @@ function requireValue(argv, index, flag) {
   return value;
 }
 
+/** @returns {void} */
 function printHelp() {
   console.log(`Usage: node skills/skill-tester/scripts/validate-skills-corpus.mjs --root <skills-dir> [--only a,b,c] [--json]
 
@@ -54,26 +67,38 @@ Options:
 `);
 }
 
+/**
+ * @param {string} code
+ * @param {string} message
+ * @param {Record<string, unknown>} [extra]
+ * @returns {Error & { code: string, [key: string]: unknown }}
+ */
 function makeError(code, message, extra = {}) {
-  const error = new Error(message);
-  error.code = code;
-  Object.assign(error, extra);
-  return error;
+  return Object.assign(new Error(message), { code }, extra);
 }
 
+/**
+ * @param {string} code
+ * @param {string} message
+ * @param {Record<string, unknown>} [extra]
+ * @returns {ValidationError}
+ */
 function errorObject(code, message, extra = {}) {
   return { code, message, ...extra };
 }
 
+/** @param {string} filePath @returns {string} */
 function normalizePath(filePath) {
   return filePath.split(sep).join('/');
 }
 
+/** @param {string} filePath @returns {string} */
 function displayPath(filePath) {
   const rel = relative(process.cwd(), filePath);
   return normalizePath(rel || filePath);
 }
 
+/** @param {string} rootAbs @param {ValidationError[]} errors @returns {string[]} */
 function listTopLevelDirectories(rootAbs, errors) {
   try {
     return readdirSync(rootAbs, { withFileTypes: true })
@@ -83,24 +108,27 @@ function listTopLevelDirectories(rootAbs, errors) {
   } catch (error) {
     errors.push(errorObject('ROOT_READ_FAILED', `Cannot read skills root: ${displayPath(rootAbs)}`, {
       path: displayPath(rootAbs),
-      detail: error.message,
+      detail: error instanceof Error ? error.message : String(error),
     }));
     return [];
   }
 }
 
+/** @param {string} dirAbs @param {ValidationError[]} errors @returns {string[]} */
 function walkMarkdownFiles(dirAbs, errors) {
+  /** @type {string[]} */
   const files = [];
   const stack = [dirAbs];
   while (stack.length > 0) {
     const current = stack.pop();
+    if (!current) continue;
     let entries = [];
     try {
       entries = readdirSync(current, { withFileTypes: true });
     } catch (error) {
       errors.push(errorObject('DIR_READ_FAILED', `Cannot read directory: ${displayPath(current)}`, {
         path: displayPath(current),
-        detail: error.message,
+        detail: error instanceof Error ? error.message : String(error),
       }));
       continue;
     }
@@ -117,15 +145,19 @@ function walkMarkdownFiles(dirAbs, errors) {
   return files.sort();
 }
 
+/** @param {string} filePath @returns {string} */
 function readText(filePath) {
   return readFileSync(filePath, 'utf8');
 }
 
+/** @param {string} rootAbs @param {string} skillName @returns {SkillResult} */
 function validateSkill(rootAbs, skillName) {
   const skillDir = join(rootAbs, skillName);
   const skillRel = normalizePath(relative(rootAbs, skillDir));
   const skillPath = join(skillDir, 'SKILL.md');
+  /** @type {ValidationError[]} */
   const failures = [];
+  /** @type {ValidationError[]} */
   const warnings = [];
   const checks = {
     skillFile: false,
@@ -161,6 +193,15 @@ function validateSkill(rootAbs, skillName) {
   };
 }
 
+/**
+ * @param {string} skillDir
+ * @param {string} skillPath
+ * @param {string} skillName
+ * @param {ValidationError[]} failures
+ * @param {ValidationError[]} warnings
+ * @param {Checks} checks
+ * @returns {void}
+ */
 function validateSkillFile(skillDir, skillPath, skillName, failures, warnings, checks) {
   const body = readText(skillPath);
   if (body.startsWith('---\n')) {
@@ -206,6 +247,7 @@ function validateSkillFile(skillDir, skillPath, skillName, failures, warnings, c
   }
 
   const supportLinks = [...body.matchAll(/^@([^\r\n]+)$/gm)].map((match) => match[1].trim());
+  /** @type {string[]} */
   const missingLinks = [];
   for (const link of supportLinks) {
     const target = resolve(dirname(skillPath), link);
@@ -230,9 +272,12 @@ function validateSkillFile(skillDir, skillPath, skillName, failures, warnings, c
   }
 }
 
+/** @param {string} skillDir @param {string[]} markdownFiles @param {ValidationError[]} failures @param {Checks} checks @returns {void} */
 function validateBilingualPairs(skillDir, markdownFiles, failures, checks) {
   const markdownSet = new Set(markdownFiles.map((filePath) => normalizePath(relative(skillDir, filePath))));
+  /** @type {string[]} */
   const missing = [];
+  /** @type {string[]} */
   const orphan = [];
 
   for (const relPath of markdownSet) {
@@ -262,11 +307,13 @@ function validateBilingualPairs(skillDir, markdownFiles, failures, checks) {
   checks.bilingualPairs = missing.length === 0 && orphan.length === 0;
 }
 
+/** @param {string} skillDir @param {string[]} markdownFiles @param {ValidationError[]} failures @param {Checks} checks @returns {void} */
 function validateCodeFences(skillDir, markdownFiles, failures, checks) {
   let ok = true;
   for (const filePath of markdownFiles) {
     const relPath = normalizePath(relative(skillDir, filePath));
     const lines = readText(filePath).split(/\r?\n/);
+    /** @type {Fence[]} */
     const stack = [];
     for (let index = 0; index < lines.length; index += 1) {
       const match = /^(\s*)(`{3,}|~{3,})/.exec(lines[index]);
@@ -289,13 +336,16 @@ function validateCodeFences(skillDir, markdownFiles, failures, checks) {
   checks.codeFences = ok;
 }
 
+/** @param {string} root @param {string} target @returns {boolean} */
 function isInside(root, target) {
   const rel = relative(root, target);
   return rel === '' || (!rel.startsWith('..') && !rel.startsWith('/') && !rel.match(/^[A-Za-z]:/));
 }
 
+/** @param {Arguments} args @returns {CorpusResult} */
 function buildResult(args) {
   const rootAbs = resolve(normalize(args.root));
+  /** @type {ValidationError[]} */
   const errors = [];
 
   if (!existsSync(rootAbs) || !statSync(rootAbs).isDirectory()) {
@@ -333,7 +383,7 @@ function buildResult(args) {
   const warnings = skills.reduce((count, skill) => count + skill.warnings.length, 0);
   const validationErrors = skills.flatMap((skill) => skill.failures.map((failure) => ({
     ...failure,
-    skill: failure.skill || skill.name,
+    skill: typeof failure.skill === 'string' ? failure.skill : skill.name,
   })));
   const allErrors = [...errors, ...validationErrors];
 
@@ -354,6 +404,7 @@ function buildResult(args) {
   };
 }
 
+/** @param {CorpusResult} result @param {boolean} json @returns {void} */
 function writeResult(result, json) {
   if (json) {
     console.log(JSON.stringify(result, null, 2));
@@ -371,7 +422,9 @@ function writeResult(result, json) {
   }
 }
 
+/** @returns {number} */
 function run() {
+  /** @type {Arguments} */
   let args;
   try {
     args = parseArgs(process.argv.slice(2));
@@ -385,7 +438,10 @@ function run() {
       checkedCount: 0,
       summary: { passed: 0, failed: 0, warnings: 0 },
       skills: [],
-      errors: [errorObject(error.code || 'ARG_ERROR', error.message)],
+      errors: [errorObject(
+        error instanceof Error && 'code' in error && typeof error.code === 'string' ? error.code : 'ARG_ERROR',
+        error instanceof Error ? error.message : String(error),
+      )],
     };
     writeResult(result, true);
     return 2;

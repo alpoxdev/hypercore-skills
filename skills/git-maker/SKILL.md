@@ -85,12 +85,12 @@ Boundary trigger:
 
 | Script | Purpose |
 |------|------|
-| `scripts/git-maker-fast.sh inspect [start_dir] [--jobs N]` | Fast preflight: pruned repo discovery, parallel repo status, file inventory |
-| `scripts/git-maker-fast.sh push [--force] [repo...]` | Push explicit repos without rediscovering; non-interactive; protected force-push guard |
-| `scripts/git-commit.sh [--repo path] "msg" [files...]` | Commit staged or selected files in one repository |
-| `scripts/git-push.sh [--force]` | Legacy/discovered safe push fallback |
-| `scripts/repo-discover.sh [start_dir]` | Legacy repo discovery fallback |
-| `scripts/repo-status.sh [repo]` | Legacy status fallback |
+| `scripts/git-maker-fast.mjs inspect [start_dir] [--jobs N]` | Fast preflight: pruned repo discovery, parallel repo status, file inventory |
+| `scripts/git-maker-fast.mjs push [--force] [repo...]` | Push explicit repos without rediscovering; non-interactive; protected force-push guard |
+| `scripts/git-commit.mjs [--repo path] "msg" [files...]` | Commit staged or selected files in one repository |
+| `scripts/git-push.mjs [--force]` | Legacy/discovered safe push fallback |
+| `scripts/repo-discover.mjs [start_dir]` | Legacy repo discovery fallback |
+| `scripts/repo-status.mjs [repo]` | Legacy status fallback |
 
 </scripts>
 
@@ -139,7 +139,7 @@ Stop if an explicit filter does not match actual git state.
 Run the fast helper first:
 
 ```bash
-scripts/git-maker-fast.sh inspect . --jobs 4
+scripts/git-maker-fast.mjs inspect . --jobs 4
 ```
 
 Use its repo list and file inventory to decide:
@@ -153,9 +153,9 @@ Use its repo list and file inventory to decide:
 If the helper fails or insufficient detail is available, fall back to:
 
 ```bash
-scripts/repo-discover.sh
-scripts/repo-status.sh
-scripts/repo-status.sh path/to/repo
+scripts/repo-discover.mjs
+scripts/repo-status.mjs
+scripts/repo-status.mjs path/to/repo
 ```
 
 ## Phase 2. Group and commit
@@ -163,8 +163,8 @@ scripts/repo-status.sh path/to/repo
 Partition changes into logical groups. Commit each group sequentially per repository:
 
 ```bash
-scripts/git-commit.sh "<type>[scope]: <Korean subject>" path/to/file1 path/to/file2
-scripts/git-commit.sh --repo path/to/repo "<type>[scope]: <Korean subject>" path/to/file1
+scripts/git-commit.mjs "<type>[scope]: <Korean subject>" path/to/file1 path/to/file2
+scripts/git-commit.mjs --repo path/to/repo "<type>[scope]: <Korean subject>" path/to/file1
 ```
 
 Rules:
@@ -185,15 +185,15 @@ After all commit groups succeed, push without asking for confirmation.
 Prefer reusing the preflight repo list:
 
 ```bash
-scripts/git-maker-fast.sh push /absolute/repo/path
-scripts/git-maker-fast.sh push --force /absolute/repo/path
+scripts/git-maker-fast.mjs push /absolute/repo/path
+scripts/git-maker-fast.mjs push --force /absolute/repo/path
 ```
 
 Fallback:
 
 ```bash
-scripts/git-push.sh
-scripts/git-push.sh --force
+scripts/git-push.mjs
+scripts/git-push.mjs --force
 ```
 
 ## Phase 4. Report
@@ -209,7 +209,7 @@ Report:
 
 <parallelization>
 
-- Parallelize read-only repository inspection with `scripts/git-maker-fast.sh inspect --jobs N`.
+- Parallelize read-only repository inspection with `scripts/git-maker-fast.mjs inspect --jobs N`.
 - For complex dirty trees, read `rules/agent-parallelism.md` before using Claude Code/Codex subagents; subagents may only review and propose.
 - Do not parallelize commits in the same repository because the git index is shared.
 - Multi-repo commits may be worked independently only after repo boundaries and file groups are clear.
@@ -225,7 +225,7 @@ Report:
 | Automatic push | Do not ask whether to push after successful commits. |
 | Safety | Never force push to `main` or `master`; never push from detached HEAD. |
 | Upstream | If no upstream exists, push with `-u origin <branch>`. |
-| Reuse preflight | Prefer `git-maker-fast.sh push [repo...]` to avoid duplicate discovery. |
+| Reuse preflight | Prefer `git-maker-fast.mjs push [repo...]` to avoid duplicate discovery. |
 | Worktrees | Linked worktrees are supported; use checkout root paths, not the common git dir. |
 | Agent boundaries | Subagents may review and propose, but the main integrator owns staging, commit, and push. |
 | Validation | Run `rules/validation.md` checks before final reporting. |

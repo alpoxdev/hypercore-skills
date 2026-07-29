@@ -85,12 +85,12 @@ Boundary trigger:
 
 | Script | Purpose |
 |------|------|
-| `scripts/git-maker-fast.sh inspect [start_dir] [--jobs N]` | 빠른 preflight: pruned repo discovery, parallel repo status, file inventory |
-| `scripts/git-maker-fast.sh push [--force] [repo...]` | 재탐색 없이 명시 repo push; non-interactive; protected force-push guard |
-| `scripts/git-commit.sh [--repo path] "msg" [files...]` | 한 저장소에서 staged 또는 선택 파일 커밋 |
-| `scripts/git-push.sh [--force]` | legacy/discovered safe push fallback |
-| `scripts/repo-discover.sh [start_dir]` | legacy repo discovery fallback |
-| `scripts/repo-status.sh [repo]` | legacy status fallback |
+| `scripts/git-maker-fast.mjs inspect [start_dir] [--jobs N]` | 빠른 preflight: pruned repo discovery, parallel repo status, file inventory |
+| `scripts/git-maker-fast.mjs push [--force] [repo...]` | 재탐색 없이 명시 repo push; non-interactive; protected force-push guard |
+| `scripts/git-commit.mjs [--repo path] "msg" [files...]` | 한 저장소에서 staged 또는 선택 파일 커밋 |
+| `scripts/git-push.mjs [--force]` | legacy/discovered safe push fallback |
+| `scripts/repo-discover.mjs [start_dir]` | legacy repo discovery fallback |
+| `scripts/repo-status.mjs [repo]` | legacy status fallback |
 
 </scripts>
 
@@ -139,7 +139,7 @@ Boundary trigger:
 먼저 fast helper를 실행한다:
 
 ```bash
-scripts/git-maker-fast.sh inspect . --jobs 4
+scripts/git-maker-fast.mjs inspect . --jobs 4
 ```
 
 출력된 repo list와 file inventory로 다음을 결정한다:
@@ -153,9 +153,9 @@ scripts/git-maker-fast.sh inspect . --jobs 4
 helper가 실패하거나 정보가 부족하면 다음으로 fallback한다:
 
 ```bash
-scripts/repo-discover.sh
-scripts/repo-status.sh
-scripts/repo-status.sh path/to/repo
+scripts/repo-discover.mjs
+scripts/repo-status.mjs
+scripts/repo-status.mjs path/to/repo
 ```
 
 ## Phase 2. Group and commit
@@ -163,8 +163,8 @@ scripts/repo-status.sh path/to/repo
 변경사항을 논리 그룹으로 나눈다. 각 그룹은 저장소별로 순차 커밋한다:
 
 ```bash
-scripts/git-commit.sh "<type>[scope]: <한국어 subject>" path/to/file1 path/to/file2
-scripts/git-commit.sh --repo path/to/repo "<type>[scope]: <한국어 subject>" path/to/file1
+scripts/git-commit.mjs "<type>[scope]: <한국어 subject>" path/to/file1 path/to/file2
+scripts/git-commit.mjs --repo path/to/repo "<type>[scope]: <한국어 subject>" path/to/file1
 ```
 
 규칙:
@@ -185,15 +185,15 @@ scripts/git-commit.sh --repo path/to/repo "<type>[scope]: <한국어 subject>" p
 preflight repo list 재사용을 우선한다:
 
 ```bash
-scripts/git-maker-fast.sh push /absolute/repo/path
-scripts/git-maker-fast.sh push --force /absolute/repo/path
+scripts/git-maker-fast.mjs push /absolute/repo/path
+scripts/git-maker-fast.mjs push --force /absolute/repo/path
 ```
 
 Fallback:
 
 ```bash
-scripts/git-push.sh
-scripts/git-push.sh --force
+scripts/git-push.mjs
+scripts/git-push.mjs --force
 ```
 
 ## Phase 4. Report
@@ -209,7 +209,7 @@ scripts/git-push.sh --force
 
 <parallelization>
 
-- `scripts/git-maker-fast.sh inspect --jobs N`으로 read-only repo inspection을 병렬화한다.
+- `scripts/git-maker-fast.mjs inspect --jobs N`으로 read-only repo inspection을 병렬화한다.
 - 복잡한 dirty tree에서 Claude Code/Codex subagent를 쓰기 전에는 `rules/agent-parallelism.md`를 읽는다; subagent는 검토와 제안만 수행한다.
 - 같은 저장소 안의 commit은 git index를 공유하므로 병렬화하지 않는다.
 - multi-repo commit은 repo boundary와 file group이 명확할 때만 독립적으로 진행할 수 있다.
@@ -225,7 +225,7 @@ scripts/git-push.sh --force
 | Automatic push | 성공한 commit 뒤 push 여부를 묻지 않는다. |
 | Safety | `main`/`master` force push 금지; detached HEAD push 금지. |
 | Upstream | upstream이 없으면 `-u origin <branch>`로 push한다. |
-| Reuse preflight | 중복 discovery를 피하기 위해 `git-maker-fast.sh push [repo...]`를 우선한다. |
+| Reuse preflight | 중복 discovery를 피하기 위해 `git-maker-fast.mjs push [repo...]`를 우선한다. |
 | Worktrees | 연결 worktree를 지원한다; common git dir가 아니라 checkout root 경로를 사용한다. |
 | Agent boundaries | subagent는 검토와 제안만 수행하고, main integrator가 staging, commit, push를 소유한다. |
 | Validation | 최종 보고 전 `rules/validation.md` checks를 실행한다. |

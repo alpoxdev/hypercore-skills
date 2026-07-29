@@ -58,7 +58,7 @@ Use a different language only when the user explicitly requests it, an existing 
 | Evidence | Use stack detection, the initial full deploy-check output, failing command logs, relevant configs, and targeted recheck output before editing. |
 | Tools | Use the repository-local scripts, local reads/edits, and bounded subagents only for independent lanes; no deploy or production side effects are implied. |
 | Output | Korean readiness report with scope, detected stacks, mode, blockers, fixes, validation commands, skipped checks, and risks. |
-| Verification | Run full `skills/pre-deploy/scripts/deploy-check.sh` first and again before any readiness claim, with targeted checks after fixes. |
+| Verification | Run full `skills/pre-deploy/scripts/deploy-check.mjs` first and again before any readiness claim, with targeted checks after fixes. |
 | Stop condition | Stop when deploy readiness is proven, validate-only blockers are reported, unsupported stack is reported, or a handoff/permission blocker is reached. |
 
 </instruction_contract>
@@ -81,17 +81,17 @@ Run scripts with the current working directory set to the target root so detecti
 
 | Script | Purpose |
 |------|------|
-| `skills/pre-deploy/scripts/stack-detect.sh` | Detect project stacks (`node`, `rust`, `python`) |
-| `skills/pre-deploy/scripts/deploy-check.sh [--parallel|--sequential]` | Full verification; runs quality and build concurrently by default |
-| `skills/pre-deploy/scripts/lint-check.sh` | Run stack-specific quality checks |
-| `skills/pre-deploy/scripts/build-run.sh` | Run stack-specific build phase |
-| `skills/pre-deploy/scripts/pm-detect.sh` | Node package manager detection (`npm/yarn/pnpm/bun`) |
+| `skills/pre-deploy/scripts/stack-detect.mjs` | Detect project stacks (`node`, `rust`, `python`) |
+| `skills/pre-deploy/scripts/deploy-check.mjs [--parallel|--sequential]` | Full verification; runs quality and build concurrently by default |
+| `skills/pre-deploy/scripts/lint-check.mjs` | Run stack-specific quality checks |
+| `skills/pre-deploy/scripts/build-run.mjs` | Run stack-specific build phase |
+| `skills/pre-deploy/scripts/pm-detect.mjs` | Node package manager detection (`npm/yarn/pnpm/bun`) |
 
 Notes:
 
 - Helper scripts detect stacks and package managers relative to the current working directory.
-- `lint-check.sh` already runs independent Node typecheck and lint commands concurrently when both are configured; do not duplicate that internal parallelism with extra agents.
-- `deploy-check.sh` defaults to `--parallel` to reduce wall time while preserving both command logs and failures. Use `--sequential` or `PRE_DEPLOY_MODE=sequential` for resource-constrained runners or tools that cannot safely share caches.
+- `lint-check.mjs` already runs independent Node typecheck and lint commands concurrently when both are configured; do not duplicate that internal parallelism with extra agents.
+- `deploy-check.mjs` defaults to `--parallel` to reduce wall time while preserving both command logs and failures. Use `--sequential` or `PRE_DEPLOY_MODE=sequential` for resource-constrained runners or tools that cannot safely share caches.
 - Node package scripts are read once per quality run, and Python `compileall` fallbacks exclude generated, dependency, VCS, and virtual-environment directories.
 - Treat skipped checks as "not configured" or "tool unavailable," not as passed.
 
@@ -129,7 +129,7 @@ When uncertain, classify upward. It is better to preserve evidence and ownership
 
 <execution_modes>
 
-- **Validate-only**: run detection and `deploy-check.sh`, report detected stacks, passed/failed/skipped checks, and blockers. No edits.
+- **Validate-only**: run detection and `deploy-check.mjs`, report detected stacks, passed/failed/skipped checks, and blockers. No edits.
 - **Fix-now**: for simple/medium reproduced blockers, create TodoWrite items, fix narrowly, re-run targeted checks, then re-run full deploy check.
 - **Parallel remediation**: after failure grouping, use bounded subagents/background agents only for independent diagnosis or disjoint edit lanes. The leader owns integration and final verification. Load `rules/parallel-remediation.md` first.
 - **Tracked remediation**: for complex cases, load `rules/tracked-remediation.md`, then create or resume `.hypercore/pre-deploy/flow.json` with phases `detect`, `baseline`, `triage`, `fix`, `verify`, `report`.
@@ -144,7 +144,7 @@ When uncertain, classify upward. It is better to preserve evidence and ownership
 From the repository root:
 
 ```bash
-skills/pre-deploy/scripts/deploy-check.sh --parallel
+skills/pre-deploy/scripts/deploy-check.mjs --parallel
 ```
 
 Do not skip this initial command unless the target root has no supported stack. It establishes the baseline and captures exact blockers.
@@ -156,13 +156,13 @@ From the repository root:
 
 ```bash
 # 1) quality checks
-skills/pre-deploy/scripts/lint-check.sh
+skills/pre-deploy/scripts/lint-check.mjs
 
 # 2) build phase
-skills/pre-deploy/scripts/build-run.sh
+skills/pre-deploy/scripts/build-run.mjs
 ```
 
-Use step-by-step commands for targeted rechecks after a fix, but the final readiness claim still requires a full `deploy-check.sh` run.
+Use step-by-step commands for targeted rechecks after a fix, but the final readiness claim still requires a full `deploy-check.mjs` run.
 
 ## Stack behavior summary
 
@@ -198,12 +198,12 @@ Use this report shape:
 **Initial blockers**: [none or summarized failures]
 **Fixes applied**: [changed files or none]
 **Validation**:
-- `skills/pre-deploy/scripts/deploy-check.sh`: [passed/failed/not run with reason]
+- `skills/pre-deploy/scripts/deploy-check.mjs`: [passed/failed/not run with reason]
 - Skipped/not configured checks: [list]
 **Remaining risks**: [none or explicit caveats]
 ```
 
-Only say "ready to deploy" when the final full `deploy-check.sh` run passed.
+Only say "ready to deploy" when the final full `deploy-check.mjs` run passed.
 
 </completion_report>
 
@@ -213,7 +213,7 @@ Execution checklist:
 
 - [ ] Target root or workspace validated
 - [ ] Supported stack detected, or unsupported stack reported and stopped
-- [ ] Full `skills/pre-deploy/scripts/deploy-check.sh` run first for supported stacks
+- [ ] Full `skills/pre-deploy/scripts/deploy-check.mjs` run first for supported stacks
 - [ ] Failures tracked by stack/command/priority
 - [ ] Root-cause evidence collected before edits
 - [ ] Structured reasoning pass completed at the right depth

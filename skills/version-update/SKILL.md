@@ -1,17 +1,17 @@
 ---
 name: version-update
-description: "[Hyper] Update semantic versions across node/rust/python projects, keep discovered version files synchronized, and prefer the installed `git-commit` skill for the final git step with a direct fallback when it is unavailable."
+description: "[Hyper] Update semantic versions across node/rust/python projects, keep discovered version files synchronized, and use this skill's Bun MJS helpers for optional commits and pushes."
 allowed-tools: Bash Read Edit
-compatibility: Requires a git repository and scripts under skills/version-update/scripts. Detects `git-commit` only from repository-local skill paths such as `skills/git-commit`, `.agents/skills/git-commit`, `.claude/skills/git-commit`, or `.codex/skills/git-commit` before choosing the final git path.
+compatibility: Requires Bun, a git repository, and MJS scripts under skills/version-update/scripts.
 ---
 
 # Version Update Skill
 
-> Cross-stack semantic version update for node/rust/python with conditional `git-commit` handoff.
+> Cross-stack semantic version update for node/rust/python with direct optional git operations.
 
 <output_language>
 
-Default all user-facing deliverables, saved artifacts, reports, plans, generated docs, summaries, handoff notes, commit/message drafts, and validation notes to Korean, even when this canonical skill file is written in English.
+Default all user-facing deliverables, saved artifacts, reports, plans, generated docs, summaries, coordination notes, commit/message drafts, and validation notes to Korean, even when this canonical skill file is written in English.
 
 Preserve source code identifiers, CLI commands, file paths, schema keys, JSON/YAML field names, API names, package names, proper nouns, and quoted source excerpts in their required or original language.
 
@@ -23,8 +23,7 @@ Use a different language only when the user explicitly requests it, an existing 
 
 - Update one semantic version across node, rust, and python version-bearing files.
 - Keep discovered manifest files and inline version markers synchronized.
-- Prefer the installed `git-commit` skill for the final git add/commit/push flow.
-- Fall back to local direct git execution only when `git-commit` is unavailable.
+- Use this skill's direct git helpers for requested commit and push operations.
 
 </purpose>
 
@@ -34,12 +33,12 @@ Use a different language only when the user explicitly requests it, an existing 
 |---|---|
 | Intent | Update synchronized semantic versions across supported project files. |
 | Trigger | Activate on version bump/set requests, especially when the user asks to update versions and optionally commit them. |
-| Scope | Own stack detection, version-file discovery, target-version calculation, version application, diff review, and git-path selection. |
-| Authority | User and project instructions outrank this skill; discovered version files, semver rules, detector output, and diffs are evidence. |
-| Evidence | Use `version-find.sh`, `version-current.sh`, target argument parsing, `git diff`, and project-local `git-commit` detection before git writes. |
-| Tools | Use Bash helpers and local file edits; git writes are delegated to project-local `git-commit` when available or fallback scripts only when it is missing. |
-| Output | Korean report of current version, target version, changed files, git path chosen, commit/push status, and caveats. |
-| Verification | Confirm all intended version files changed consistently, review diff, run `git-commit-detect.sh`, and execute optional git steps only when requested. |
+| Scope | Own stack detection, version-file discovery, target-version calculation, version application, diff review, and requested git operations. |
+| Authority | User and project instructions outrank this skill; discovered version files, semver rules, script output, and diffs are evidence. |
+| Evidence | Use Bun MJS helpers, target argument parsing, and `git diff` before git writes. |
+| Tools | Use `bun scripts/*.mjs` helpers and local file edits; use this skill's direct git helpers only when requested. |
+| Output | Korean report of current version, target version, changed files, commit/push status, and caveats. |
+| Verification | Confirm all intended version files changed consistently, review diff, and execute optional git steps only when requested. |
 | Stop condition | Stop when version files are updated and reviewed, or when requested git steps are completed or blocked with evidence. |
 
 </instruction_contract>
@@ -51,7 +50,7 @@ Use a different language only when the user explicitly requests it, an existing 
 | "bump this package to 1.4.0" | yes |
 | "update the version and commit it" | yes |
 | "increase patch version for this crate" | yes |
-| "just make a git commit" | no, use `git-commit` |
+| "just make a git commit" | no |
 | "rewrite this release runbook" | no |
 
 </trigger_conditions>
@@ -73,26 +72,22 @@ Use a different language only when the user explicitly requests it, an existing 
 
 | Script | Purpose |
 |------|------|
-| `scripts/stack-detect.sh` | Detect stacks (`node`, `rust`, `python`) |
-| `scripts/version-find.sh [--plain]` | Discover version-bearing files |
-| `scripts/version-current.sh [file]` | Extract current semver (`file|version`) |
-| `scripts/version-bump.sh <current> <type>` | Calculate next semver |
-| `scripts/version-apply.sh <new> [files...]` | Apply version to discovered/selected files |
-| `scripts/git-commit-detect.sh` | Detect whether a usable project-local `git-commit` skill exists in repository skill directories |
-| `scripts/git-commit.sh "msg" [files]` | Fallback direct commit helper when `git-commit` is not installed |
-| `scripts/git-push.sh` | Fallback direct push helper when `git-commit` is not installed |
+| `bun scripts/stack-detect.mjs` | Detect stacks (`node`, `rust`, `python`) |
+| `bun scripts/version-find.mjs [--plain]` | Discover version-bearing files |
+| `bun scripts/version-current.mjs [file]` | Extract current semver (`file|version`) |
+| `bun scripts/version-bump.mjs <current> <type>` | Calculate next semver |
+| `bun scripts/version-apply.mjs <new> [files...]` | Apply version to discovered/selected files |
+| `bun scripts/git-commit.mjs "msg" [files]` | Directly commit the specified version-update files |
+| `bun scripts/git-push.mjs` | Directly push after an explicit user request |
 
 </scripts>
 
 <git_integration>
 
-- Run `scripts/git-commit-detect.sh` before the final git step.
-- The detector checks, in order: `skills/git-commit`, `.agents/skills/git-commit`, `.claude/skills/git-commit`, and `.codex/skills/git-commit` inside the current repository.
-- Use `git-commit` only when the detector returns `installed|...`.
-- When handing off to `git-commit`, pass only the files changed by `version-update` and use `chore: bump version to x.y.z` unless the user requested a different message.
-- If the detector returns `missing|...`, use the local fallback scripts in `skills/version-update/scripts/`.
 - If the user asked for version-only work, stop after the version files and diff review. Do not commit or push.
-- If push is requested and the detector returns `installed|...`, let `git-commit` own push confirmation. Otherwise use `scripts/git-push.sh` only after explicit user request.
+- For a requested commit, run `bun scripts/git-commit.mjs "chore: bump version to x.y.z" [files...]` with only the files changed by `version-update`, unless the user requested a different message.
+- For a requested push, run `bun scripts/git-push.mjs` only after the commit succeeds and the user explicitly requested push.
+- Keep git write operations sequential.
 
 </git_integration>
 
@@ -113,39 +108,31 @@ Use a different language only when the user explicitly requests it, an existing 
 
 ```bash
 # 1) detect stack(s)
-scripts/stack-detect.sh
+bun scripts/stack-detect.mjs
 
 # 2) find version-bearing files
-scripts/version-find.sh
+bun scripts/version-find.mjs
 
 # 3) read current version
-scripts/version-current.sh
+bun scripts/version-current.mjs
 # output: <file>|<version>
 
 # 4) compute next version
-scripts/version-bump.sh 1.2.3 +minor
+bun scripts/version-bump.mjs 1.2.3 +minor
 # -> 1.3.0
 
 # 5) apply to all discovered files (or selected files)
-scripts/version-apply.sh 1.3.0
+bun scripts/version-apply.mjs 1.3.0
 
 # 6) review the final diff and changed file list
 git diff --stat
 git diff
 
-# 7) detect whether a git-commit skill is actually usable
-scripts/git-commit-detect.sh
-# -> installed|/abs/path/to/current-repo/skills/git-commit
-# or missing|comma,separated,current-repo,paths|reason
+# 7) optional commit only when explicitly requested
+bun scripts/git-commit.mjs "chore: bump version to 1.3.0" package.json
 
-# 8a) if git-commit is installed and usable, hand off the git step to that skill
-# target message: chore: bump version to 1.3.0
-
-# 8b) otherwise, use the local fallback
-scripts/git-commit.sh "chore: bump version to 1.3.0" package.json
-
-# 9) optional push only when explicitly requested
-scripts/git-push.sh
+# 8) optional push only when explicitly requested
+bun scripts/git-push.mjs
 ```
 
 </workflow>
@@ -165,21 +152,19 @@ scripts/git-push.sh
 | Category | Required |
 |------|------|
 | Input | Parse ARGUMENT as bump rule or explicit semver |
-| Discovery | Run `version-find.sh` before applying updates |
-| Current state | Read the current version with `version-current.sh` before computing the target version |
+| Discovery | Run `bun scripts/version-find.mjs` before applying updates |
+| Current state | Read the current version with `bun scripts/version-current.mjs` before computing the target version |
 | Consistency | Keep all discovered version files synchronized |
-| Git detection | Run `scripts/git-commit-detect.sh` before choosing the git path |
-| Git scope | If handing off to `git-commit`, constrain it to the version-update file set |
+| Git scope | Commit only the version-update file set |
 | Safety | Use conventional commit message (`chore: bump version to x.y.z`) unless the user requests otherwise |
-| Git | Keep git write operations sequential |
+| Git | Use `bun scripts/git-commit.mjs` and `bun scripts/git-push.mjs` only for requested git writes, sequentially |
 
 </required>
 
 <scope_boundaries>
 
-- `version-update` owns version discovery, target calculation, file updates, and diff review.
-- `git-commit` owns repository inspection, staging discipline, commit creation, and push confirmation when the detector confirms that a repository-local skill is usable.
-- The local git scripts are fallback helpers, not the preferred path when `git-commit` is available.
+- `version-update` owns version discovery, target calculation, file updates, diff review, and requested git operations.
+- Commit only files changed by `version-update`.
 
 </scope_boundaries>
 
@@ -212,21 +197,18 @@ Trigger checks:
 
 Execution checklist:
 
-- [ ] Current version identified with `version-current.sh`
-- [ ] Target version computed via `version-bump.sh` (or explicit semver validated)
-- [ ] `version-apply.sh` updated all intended files
+- [ ] Current version identified with `bun scripts/version-current.mjs`
+- [ ] Target version computed via `bun scripts/version-bump.mjs` (or explicit semver validated)
+- [ ] `bun scripts/version-apply.mjs` updated all intended files
 - [ ] `git diff` reviewed
-- [ ] `scripts/git-commit-detect.sh` run before choosing the git path
-- [ ] The detector searched only `skills/git-commit`, `.agents/skills/git-commit`, `.claude/skills/git-commit`, and `.codex/skills/git-commit` inside the current repository
-- [ ] If the detector returns `installed|...`, the final git step is handed off with the narrowed version-update scope
-- [ ] If the detector returns `missing|...`, the fallback `scripts/git-commit.sh` is used with only the version-update files
-- [ ] Optional push executed only when requested
+- [ ] Requested commit used `bun scripts/git-commit.mjs` with only the version-update files
+- [ ] Requested push used `bun scripts/git-push.mjs` only after a successful commit
 
 Forbidden:
 
 - [ ] Starting updates without reading current version
 - [ ] Updating only one file when multiple version files exist
-- [ ] Using the fallback git scripts when the detector already returned `installed|...` without reason
+- [ ] Committing files outside the version-update file set
 - [ ] Force-pushing protected branches
 
 </validation>

@@ -58,7 +58,7 @@ compatibility: 지원 스택(node/rust/python) 중 하나 이상의 로컬 툴�
 | Evidence | 수정 전에 stack detection, initial full deploy-check output, failing command log, 관련 config, targeted recheck output을 사용합니다. |
 | Tools | repository-local script, local read/edit, independent lane용 bounded subagent를 사용합니다. deploy 또는 production side effect는 암시되지 않습니다. |
 | Output | scope, detected stack, mode, blocker, fix, validation command, skipped check, risk를 포함한 한국어 readiness report입니다. |
-| Verification | readiness claim 전 full `skills/pre-deploy/scripts/deploy-check.sh`를 처음과 마지막에 실행하고, fix 후 targeted check를 실행합니다. |
+| Verification | readiness claim 전 full `skills/pre-deploy/scripts/deploy-check.mjs`를 처음과 마지막에 실행하고, fix 후 targeted check를 실행합니다. |
 | Stop condition | deploy readiness가 증명되었거나, validate-only blocker가 보고되었거나, unsupported stack이 보고되었거나, handoff/permission blocker에 도달했을 때 멈춥니다. |
 
 </instruction_contract>
@@ -81,17 +81,17 @@ Detection이 정확하도록 현재 작업 디렉터리를 target root로 설정
 
 | 스크립트 | 용도 |
 |------|------|
-| `skills/pre-deploy/scripts/stack-detect.sh` | 프로젝트 stack 자동 감지(`node`, `rust`, `python`) |
-| `skills/pre-deploy/scripts/deploy-check.sh [--parallel|--sequential]` | 전체 검증. 기본적으로 품질 검사와 빌드를 동시에 실행 |
-| `skills/pre-deploy/scripts/lint-check.sh` | stack별 품질 검사 실행 |
-| `skills/pre-deploy/scripts/build-run.sh` | stack별 빌드 단계 실행 |
-| `skills/pre-deploy/scripts/pm-detect.sh` | Node package manager 감지(`npm/yarn/pnpm/bun`) |
+| `skills/pre-deploy/scripts/stack-detect.mjs` | 프로젝트 stack 자동 감지(`node`, `rust`, `python`) |
+| `skills/pre-deploy/scripts/deploy-check.mjs [--parallel|--sequential]` | 전체 검증. 기본적으로 품질 검사와 빌드를 동시에 실행 |
+| `skills/pre-deploy/scripts/lint-check.mjs` | stack별 품질 검사 실행 |
+| `skills/pre-deploy/scripts/build-run.mjs` | stack별 빌드 단계 실행 |
+| `skills/pre-deploy/scripts/pm-detect.mjs` | Node package manager 감지(`npm/yarn/pnpm/bun`) |
 
 메모:
 
 - helper scripts는 현재 작업 디렉터리를 기준으로 stack과 package manager를 감지합니다.
-- `lint-check.sh`는 Node typecheck와 lint가 둘 다 설정된 경우 내부적으로 독립 command를 동시에 실행합니다. 이 내부 병렬성을 추가 agent로 중복하지 않습니다.
-- `deploy-check.sh`는 wall time을 줄이기 위해 기본적으로 `--parallel`을 사용하면서 두 command의 로그와 실패를 모두 보존합니다. 자원이 제한된 runner 또는 cache를 안전하게 공유할 수 없는 tool에서는 `--sequential`이나 `PRE_DEPLOY_MODE=sequential`을 사용합니다.
+- `lint-check.mjs`는 Node typecheck와 lint가 둘 다 설정된 경우 내부적으로 독립 command를 동시에 실행합니다. 이 내부 병렬성을 추가 agent로 중복하지 않습니다.
+- `deploy-check.mjs`는 wall time을 줄이기 위해 기본적으로 `--parallel`을 사용하면서 두 command의 로그와 실패를 모두 보존합니다. 자원이 제한된 runner 또는 cache를 안전하게 공유할 수 없는 tool에서는 `--sequential`이나 `PRE_DEPLOY_MODE=sequential`을 사용합니다.
 - Node package script는 quality run마다 한 번만 읽고, Python `compileall` fallback은 generated, dependency, VCS, virtual-environment directory를 제외합니다.
 - skipped check는 "미설정" 또는 "tool unavailable"로 취급하고, passed로 취급하지 않습니다.
 
@@ -129,7 +129,7 @@ Detection이 정확하도록 현재 작업 디렉터리를 target root로 설정
 
 <execution_modes>
 
-- **Validate-only**: detection과 `deploy-check.sh`를 실행하고 detected stacks, passed/failed/skipped checks, blockers를 보고합니다. 수정하지 않습니다.
+- **Validate-only**: detection과 `deploy-check.mjs`를 실행하고 detected stacks, passed/failed/skipped checks, blockers를 보고합니다. 수정하지 않습니다.
 - **Fix-now**: simple/medium 재현 blocker는 TodoWrite에 등록하고 좁게 수정한 뒤 targeted check와 full deploy check를 재실행합니다.
 - **Parallel remediation**: 실패를 grouping한 뒤 독립 diagnosis 또는 겹치지 않는 edit lane에 한해 bounded subagent/background agent를 사용합니다. leader가 integration과 final verification을 소유합니다. 먼저 `rules/parallel-remediation.ko.md`를 읽습니다.
 - **Tracked remediation**: complex case에서는 `rules/tracked-remediation.ko.md`를 읽은 뒤 `.hypercore/pre-deploy/flow.json`을 만들거나 재개하며 phase는 `detect`, `baseline`, `triage`, `fix`, `verify`, `report`입니다.
@@ -144,7 +144,7 @@ Detection이 정확하도록 현재 작업 디렉터리를 target root로 설정
 Repository root 기준:
 
 ```bash
-skills/pre-deploy/scripts/deploy-check.sh --parallel
+skills/pre-deploy/scripts/deploy-check.mjs --parallel
 ```
 
 Target root에 지원 stack이 없는 경우를 제외하고 이 초기 command를 건너뛰지 않습니다. baseline과 정확한 blocker를 확보합니다.
@@ -156,13 +156,13 @@ Repository root 기준:
 
 ```bash
 # 1) 품질 검사
-skills/pre-deploy/scripts/lint-check.sh
+skills/pre-deploy/scripts/lint-check.mjs
 
 # 2) 빌드 단계
-skills/pre-deploy/scripts/build-run.sh
+skills/pre-deploy/scripts/build-run.mjs
 ```
 
-수정 후 targeted recheck에는 단계별 command를 사용할 수 있지만, 최종 readiness claim에는 반드시 full `deploy-check.sh` 실행이 필요합니다.
+수정 후 targeted recheck에는 단계별 command를 사용할 수 있지만, 최종 readiness claim에는 반드시 full `deploy-check.mjs` 실행이 필요합니다.
 
 ## Stack별 동작 요약
 
@@ -198,12 +198,12 @@ skills/pre-deploy/scripts/build-run.sh
 **Initial blockers**: [없음 또는 실패 요약]
 **Fixes applied**: [변경 파일 또는 없음]
 **Validation**:
-- `skills/pre-deploy/scripts/deploy-check.sh`: [passed/failed/not run + reason]
+- `skills/pre-deploy/scripts/deploy-check.mjs`: [passed/failed/not run + reason]
 - Skipped/not configured checks: [목록]
 **Remaining risks**: [없음 또는 명시적 caveat]
 ```
 
-최종 full `deploy-check.sh`가 통과했을 때만 "ready to deploy"라고 말합니다.
+최종 full `deploy-check.mjs`가 통과했을 때만 "ready to deploy"라고 말합니다.
 
 </completion_report>
 
@@ -213,7 +213,7 @@ Execution checklist:
 
 - [ ] Target root 또는 workspace 검증됨
 - [ ] 지원 stack 감지됨, 또는 unsupported stack을 보고하고 중단함
-- [ ] 지원 stack에서는 full `skills/pre-deploy/scripts/deploy-check.sh`를 먼저 실행함
+- [ ] 지원 stack에서는 full `skills/pre-deploy/scripts/deploy-check.mjs`를 먼저 실행함
 - [ ] 실패가 stack/command/priority 기준으로 추적됨
 - [ ] 수정 전 root-cause evidence를 수집함
 - [ ] 적절한 깊이의 구조화 사고 패스 완료

@@ -239,7 +239,7 @@ When the codebase structure is weak, prefer deleting dead code, reducing duplica
 
 - Phase 0: read target code, validation commands, system docs, ownership boundary, bottleneck class, non-regression constraints, and initial metrics before editing.
 - Phase 1: convert success conditions into binary, non-overlapping evals; at least one eval must inspect the user's actual bottleneck.
-- Phase 2: create `.hypercore/autoresearch-code/[codebase-name]/`, write `baseline.md`, initialize `results.tsv`, `results.json`, `changelog.md`, and render `dashboard.html` with `scripts/render-dashboard.sh`.
+- Phase 2: create `.hypercore/autoresearch-code/[codebase-name]/`, write `baseline.md`, initialize `results.tsv`, `results.json`, `changelog.md`, and render `dashboard.html` with `bun scripts/render-dashboard.mjs`.
 - Phase 3: run the unmodified codebase, score every eval, and record experiment `0` as `baseline`.
 - Phase 4: choose the highest-value failure, form one hypothesis, apply exactly one mutation, re-run the same evals and guards. Keep a mutation only when score improves and guards pass; discard or rework it when flat/worse, when complexity rises, or when any guard fails. Log changed files, metric before/after, proof command output, guard result, and rollback condition for every kept change.
 - Phase 5: stop only when [rules/validation-and-exit.md](rules/validation-and-exit.md) allows it: user stop, budget limit, or stable high score. Then report score delta, experiment count, keep ratio, best change, metric movement, changed files, proof/guard evidence, remaining failures, and promotion state in Korean.

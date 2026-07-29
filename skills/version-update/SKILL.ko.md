@@ -1,13 +1,13 @@
 ---
 name: version-update
-description: node/rust/python 프로젝트의 semantic version을 일관되게 갱신하고, 마지막 git 단계에서는 설치된 `git-commit` 스킬을 우선 사용하며 없을 때만 직접 fallback 하는 스킬입니다.
+description: node/rust/python 프로젝트의 semantic version을 일관되게 갱신하고, 이 스킬의 Bun MJS helper로 요청된 commit과 push를 직접 수행하는 스킬입니다.
 allowed-tools: Bash Read Edit
-compatibility: Git 저장소와 `skills/version-update/scripts` 하위 스크립트가 필요합니다. 마지막 git 경로를 고르기 전에 현재 저장소 안의 `skills/git-commit`, `.agents/skills/git-commit`, `.claude/skills/git-commit`, `.codex/skills/git-commit` 만 탐지합니다.
+compatibility: Bun, Git 저장소, `skills/version-update/scripts` 하위 MJS 스크립트가 필요합니다.
 ---
 
 # Version Update Skill
 
-> node/rust/python 공통 semantic version 업데이트 스킬. 마지막 git 단계는 조건부로 `git-commit` 에 handoff 한다.
+> node/rust/python 공통 semantic version 업데이트 스킬. 요청된 마지막 git 단계는 직접 수행한다.
 
 <output_language>
 
@@ -23,8 +23,7 @@ compatibility: Git 저장소와 `skills/version-update/scripts` 하위 스크립
 
 - node, rust, python 프로젝트의 semantic version을 한 번에 갱신한다.
 - manifest 파일과 inline version 패턴을 같은 버전으로 동기화한다.
-- 마지막 `git add`/`git commit`/`git push` 단계는 설치된 `git-commit` 스킬을 우선 사용한다.
-- `git-commit` 이 없을 때만 로컬 fallback 스크립트로 직접 수행한다.
+- 요청된 commit과 push에는 이 스킬의 직접 git helper를 사용한다.
 
 </purpose>
 
@@ -34,12 +33,12 @@ compatibility: Git 저장소와 `skills/version-update/scripts` 하위 스크립
 |---|---|
 | Intent | 지원되는 project file 전반의 semantic version을 동기화해 업데이트합니다. |
 | Trigger | version bump/set 요청, 특히 version update와 optional commit 요청에 활성화합니다. |
-| Scope | stack detection, version-file discovery, target-version calculation, version application, diff review, git-path selection을 담당합니다. |
-| Authority | 사용자와 프로젝트 지시가 이 스킬보다 우선합니다. discovered version file, semver rule, detector output, diff는 근거입니다. |
-| Evidence | git write 전에 `version-find.sh`, `version-current.sh`, target argument parsing, `git diff`, project-local `git-commit` detection을 사용합니다. |
-| Tools | Bash helper와 local file edit를 사용합니다. git write는 가능하면 project-local `git-commit`에 위임하고, missing일 때만 fallback script를 사용합니다. |
-| Output | current version, target version, changed file, 선택된 git path, commit/push status, caveat에 대한 한국어 report입니다. |
-| Verification | 의도한 모든 version file이 일관되게 변경되었는지 확인하고, diff를 검토하며, `git-commit-detect.sh`를 실행하고, 요청된 경우에만 optional git step을 수행합니다. |
+| Scope | stack detection, version-file discovery, target-version calculation, version application, diff review, 요청된 git operation을 담당합니다. |
+| Authority | 사용자와 프로젝트 지시가 이 스킬보다 우선합니다. discovered version file, semver rule, script output, diff는 근거입니다. |
+| Evidence | git write 전에 Bun MJS helper, target argument parsing, `git diff`를 사용합니다. |
+| Tools | `bun scripts/*.mjs` helper와 local file edit를 사용합니다. 요청된 경우에만 이 스킬의 직접 git helper를 사용합니다. |
+| Output | current version, target version, changed file, commit/push status, caveat에 대한 한국어 report입니다. |
+| Verification | 의도한 모든 version file이 일관되게 변경되었는지 확인하고, diff를 검토하며, 요청된 경우에만 optional git step을 수행합니다. |
 | Stop condition | version file이 업데이트 및 검토되었거나, 요청된 git step이 완료 또는 근거 있는 blocker로 보고되었을 때 멈춥니다. |
 
 </instruction_contract>
@@ -51,7 +50,7 @@ compatibility: Git 저장소와 `skills/version-update/scripts` 하위 스크립
 | "이 패키지를 1.4.0으로 올려줘" | yes |
 | "버전 올리고 커밋까지 해줘" | yes |
 | "이 crate patch 버전만 올려줘" | yes |
-| "그냥 git commit만 해줘" | no, `git-commit` 사용 |
+| "그냥 git commit만 해줘" | no |
 | "릴리즈 문서 정리해줘" | no |
 
 </trigger_conditions>
@@ -73,26 +72,22 @@ compatibility: Git 저장소와 `skills/version-update/scripts` 하위 스크립
 
 | 스크립트 | 용도 |
 |------|------|
-| `scripts/stack-detect.sh` | 스택 감지(`node`, `rust`, `python`) |
-| `scripts/version-find.sh [--plain]` | 버전 관련 파일 탐색 |
-| `scripts/version-current.sh [file]` | 현재 버전 추출 (`file|version`) |
-| `scripts/version-bump.sh <current> <type>` | 다음 버전 계산 |
-| `scripts/version-apply.sh <new> [files...]` | 탐색/지정 파일에 버전 일괄 반영 |
-| `scripts/git-commit-detect.sh` | 현재 저장소의 스킬 디렉터리에 usable 한 `git-commit` 스킬이 있는지 판정 |
-| `scripts/git-commit.sh "msg" [files]` | `git-commit` 스킬이 없을 때만 사용하는 fallback 직접 커밋 helper |
-| `scripts/git-push.sh` | `git-commit` 스킬이 없을 때만 사용하는 fallback 직접 푸시 helper |
+| `bun scripts/stack-detect.mjs` | 스택 감지(`node`, `rust`, `python`) |
+| `bun scripts/version-find.mjs [--plain]` | 버전 관련 파일 탐색 |
+| `bun scripts/version-current.mjs [file]` | 현재 버전 추출 (`file|version`) |
+| `bun scripts/version-bump.mjs <current> <type>` | 다음 버전 계산 |
+| `bun scripts/version-apply.mjs <new> [files...]` | 탐색/지정 파일에 버전 일괄 반영 |
+| `bun scripts/git-commit.mjs "msg" [files]` | 지정한 version-update 파일을 직접 커밋 |
+| `bun scripts/git-push.mjs` | 명시적인 사용자 요청 후 직접 푸시 |
 
 </scripts>
 
 <git_integration>
 
-- 마지막 git 단계 전에 `scripts/git-commit-detect.sh` 를 먼저 실행한다.
-- detector는 현재 저장소 안에서 순서대로 `skills/git-commit`, `.agents/skills/git-commit`, `.claude/skills/git-commit`, `.codex/skills/git-commit` 만 검사한다.
-- detector가 `installed|...` 를 반환할 때만 마지막 git 단계를 `git-commit` 스킬에 넘긴다.
-- `git-commit` 에 넘길 때는 `version-update` 로 실제 변경된 파일만 범위로 넘기고, 기본 메시지는 `chore: bump version to x.y.z` 를 사용한다.
-- detector가 `missing|...` 를 반환하면 `skills/version-update/scripts/` 아래 fallback 스크립트로 직접 처리한다.
 - 사용자가 버전만 바꾸라고 했다면 diff 확인까지만 하고 커밋/푸시는 하지 않는다.
-- push 요청이 있을 때 detector가 `installed|...` 를 반환하면 push 확인은 `git-commit` 이 담당한다. 아니면 명시적 요청 이후에만 `scripts/git-push.sh` 를 사용한다.
+- 커밋을 요청한 경우 사용자가 다른 메시지를 요청하지 않았다면 `version-update` 로 실제 변경된 파일만 지정하여 `bun scripts/git-commit.mjs "chore: bump version to x.y.z" [files...]` 를 실행한다.
+- 푸시를 요청한 경우 커밋 성공 후 사용자가 명시적으로 푸시를 요청했을 때만 `bun scripts/git-push.mjs` 를 실행한다.
+- Git 쓰기 작업은 순차 실행한다.
 
 </git_integration>
 
@@ -113,39 +108,31 @@ compatibility: Git 저장소와 `skills/version-update/scripts` 하위 스크립
 
 ```bash
 # 1) 스택 감지
-scripts/stack-detect.sh
+bun scripts/stack-detect.mjs
 
 # 2) 버전 파일 탐색
-scripts/version-find.sh
+bun scripts/version-find.mjs
 
 # 3) 현재 버전 확인
-scripts/version-current.sh
+bun scripts/version-current.mjs
 # 출력: <file>|<version>
 
 # 4) 새 버전 계산
-scripts/version-bump.sh 1.2.3 +minor
+bun scripts/version-bump.mjs 1.2.3 +minor
 # -> 1.3.0
 
 # 5) 버전 일괄 반영
-scripts/version-apply.sh 1.3.0
+bun scripts/version-apply.mjs 1.3.0
 
 # 6) 최종 diff와 변경 파일 확인
 git diff --stat
 git diff
 
-# 7) git-commit 스킬이 실제로 usable 한지 확인
-scripts/git-commit-detect.sh
-# -> installed|/abs/path/to/current-repo/skills/git-commit
-# 또는 missing|comma,separated,current-repo,paths|reason
+# 7) (선택) 명시적으로 요청된 경우에만 커밋
+bun scripts/git-commit.mjs "chore: bump version to 1.3.0" package.json
 
-# 8a) git-commit 이 설치되어 있고 usable 하면 그 스킬로 마지막 git 단계 handoff
-# 기본 메시지: chore: bump version to 1.3.0
-
-# 8b) 아니면 fallback 직접 실행
-scripts/git-commit.sh "chore: bump version to 1.3.0" package.json
-
-# 9) (선택) 푸시는 명시적으로 요청된 경우에만
-scripts/git-push.sh
+# 8) (선택) 명시적으로 요청된 경우에만 푸시
+bun scripts/git-push.mjs
 ```
 
 </workflow>
@@ -165,21 +152,19 @@ scripts/git-push.sh
 | 분류 | 필수 |
 |------|------|
 | Input | ARGUMENT를 bump 규칙 또는 semver로 파싱 |
-| Discovery | 업데이트 전 `version-find.sh` 실행 |
-| Current state | 목표 버전 계산 전에 `version-current.sh` 로 현재 버전 확인 |
+| Discovery | 업데이트 전 `bun scripts/version-find.mjs` 실행 |
+| Current state | 목표 버전 계산 전에 `bun scripts/version-current.mjs` 로 현재 버전 확인 |
 | Consistency | 탐색된 버전 파일을 모두 동기화 |
-| Git detection | git 경로를 고르기 전에 `scripts/git-commit-detect.sh` 실행 |
-| Git scope | `git-commit` 에 handoff 할 때는 version-update 파일 집합으로 범위를 제한 |
+| Git scope | version-update 파일 집합만 커밋 |
 | Safety | 사용자가 다르게 요청하지 않으면 커밋 메시지 규칙(`chore: bump version to x.y.z`) 준수 |
-| Git | Git 쓰기 작업은 순차 실행 |
+| Git | 요청된 Git 쓰기에는 `bun scripts/git-commit.mjs`, `bun scripts/git-push.mjs` 만 순차적으로 사용 |
 
 </required>
 
 <scope_boundaries>
 
-- `version-update` 는 버전 탐색, 목표 버전 계산, 파일 갱신, diff 검토를 담당한다.
-- detector가 현재 저장소의 그 스킬이 usable 하다고 확인했을 때만 저장소 상태 확인, 스테이징 규율, 커밋 생성, push 확인은 `git-commit` 이 담당한다.
-- `skills/version-update/scripts/git-commit.sh`, `git-push.sh` 는 fallback helper일 뿐이고, `git-commit` 이 있을 때 기본 경로가 아니다.
+- `version-update` 는 버전 탐색, 목표 버전 계산, 파일 갱신, diff 검토, 요청된 git operation을 담당한다.
+- version-update 로 변경된 파일만 커밋한다.
 
 </scope_boundaries>
 
@@ -212,21 +197,18 @@ Trigger 체크:
 
 실행 체크리스트:
 
-- [ ] `version-current.sh`로 현재 버전 확인
-- [ ] `version-bump.sh` 또는 직접 semver 검증 완료
-- [ ] `version-apply.sh`로 대상 파일 업데이트
+- [ ] `bun scripts/version-current.mjs`로 현재 버전 확인
+- [ ] `bun scripts/version-bump.mjs` 또는 직접 semver 검증 완료
+- [ ] `bun scripts/version-apply.mjs`로 대상 파일 업데이트
 - [ ] `git diff`로 변경 검토
-- [ ] git 경로 선택 전에 `scripts/git-commit-detect.sh` 실행
-- [ ] detector가 현재 저장소 안의 `skills/git-commit`, `.agents/skills/git-commit`, `.claude/skills/git-commit`, `.codex/skills/git-commit` 만 검사함
-- [ ] detector가 `installed|...` 를 반환하면 좁혀진 version-update 범위로 마지막 git 단계 handoff
-- [ ] detector가 `missing|...` 를 반환하면 fallback `scripts/git-commit.sh` 로 해당 파일만 직접 커밋
-- [ ] 푸시는 요청된 경우에만 실행
+- [ ] 요청된 커밋은 `bun scripts/git-commit.mjs` 로 version-update 파일만 사용
+- [ ] 요청된 푸시는 커밋 성공 후 `bun scripts/git-push.mjs` 로 실행
 
 금지:
 
 - [ ] 현재 버전 확인 없이 업데이트 시작
 - [ ] 여러 버전 파일이 있는데 일부만 수정
-- [ ] detector가 이미 `installed|...` 를 반환했는데 이유 없이 fallback git 스크립트를 기본 경로처럼 사용
+- [ ] version-update 파일 집합 밖의 파일 커밋
 - [ ] 보호 브랜치에 force push
 
 </validation>

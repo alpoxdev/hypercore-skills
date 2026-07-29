@@ -1,9 +1,40 @@
-#!/usr/bin/env node
-// allow: SIZE_OK - Standalone no-dependency CLI validator for one skill package.
+#!/usr/bin/env bun
+// @ts-check
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+/**
+ * @typedef {Object} CliArgs
+ * @property {string} root
+ * @property {string} evals
+ * @property {boolean} json
+ * @property {boolean} [help]
+ *
+ * @typedef {Object} ValidationIssue
+ * @property {string} code
+ * @property {string} message
+ * @property {string} [path]
+ * @property {string} [detail]
+ */
+/**
+ * @typedef {Record<string, unknown>} JsonRecord
+ *
+ * @typedef {Object} EvalRow
+ * @property {unknown} id
+ * @property {unknown} category
+ * @property {unknown} language
+ * @property {unknown} intent
+ * @property {unknown} prompt
+ * @property {unknown} context
+ * @property {unknown} metrics
+ * @property {unknown} shouldTrigger
+ * @property {unknown} expected
+ *
+ * @typedef {Object} EvalRowError
+ * @property {string} message
+ * @property {JsonRecord} extra
+ */
 const VALIDATION_DATE = process.env.SKILL_MAKER_VALIDATION_DATE || new Date().toISOString().slice(0, 10);
 const REQUIRED_SECTIONS = [
   "output_language",
@@ -22,6 +53,7 @@ const REQUIRED_SECTIONS = [
   "forbidden",
   "validation",
 ];
+/** @type {Record<string, number>} */
 const CATEGORY_FLOORS = {
   positive: 3,
   negative: 2,
@@ -32,6 +64,7 @@ const CATEGORY_FLOORS = {
   adversarial: 1,
   regression: 1,
 };
+/** @type {Record<string, number>} */
 const LANGUAGE_FLOORS = {
   en: 1,
   ko: 1,
@@ -39,7 +72,13 @@ const LANGUAGE_FLOORS = {
 };
 const STRAY_DOC_NAMES = new Set(["README.md", "CHANGELOG.md", "QUICK_REFERENCE.md"]);
 
+/**
+ * Parses the standalone validator command line.
+ * @param {string[]} argv
+ * @returns {CliArgs}
+ */
 function parseArgs(argv) {
+  /** @type {CliArgs} */
   const args = {
     root: "skills/skill-maker",
     evals: "skills/skill-maker/assets/evals/skill-maker-cases.jsonl",
@@ -64,6 +103,12 @@ function parseArgs(argv) {
   return args;
 }
 
+/**
+ * @param {string[]} argv
+ * @param {number} index
+ * @param {string} flag
+ * @returns {string}
+ */
 function requireValue(argv, index, flag) {
   const value = argv[index];
   if (!value || value.startsWith("--")) {
@@ -72,25 +117,37 @@ function requireValue(argv, index, flag) {
   return value;
 }
 
+/**
+ * @param {string} code
+ * @param {string} message
+ * @param {Record<string, unknown>} [extra]
+ * @returns {Error & { code: string }}
+ */
 function validationError(code, message, extra = {}) {
-  const error = new Error(message);
+  const error = /** @type {Error & { code: string }} */ (new Error(message));
   error.code = code;
   Object.assign(error, extra);
   return error;
 }
 
+/**
+ * @param {string} root
+ * @param {ValidationIssue[] | null} [errors]
+ * @returns {string[]}
+ */
 function walkFiles(root, errors = null) {
   const files = [];
   const stack = [root];
   while (stack.length > 0) {
     const current = stack.pop();
+    if (!current) continue;
     let entries = [];
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
     } catch (error) {
       const item = errorObject("DIR_READ_FAILED", `Cannot read directory: ${path.relative(process.cwd(), current)}`, {
         path: path.relative(process.cwd(), current),
-        detail: error.message,
+        detail: error instanceof Error ? error.message : String(error),
       });
       if (!errors) {
         throw validationError(item.code, item.message, item);
@@ -110,18 +167,32 @@ function walkFiles(root, errors = null) {
   return files.sort();
 }
 
+/**
+ * @param {string} root
+ * @param {string} filePath
+ * @returns {string}
+ */
 function relative(root, filePath) {
   return path.relative(root, filePath).split(path.sep).join("/");
 }
 
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
 function readText(filePath) {
   return fs.readFileSync(filePath, "utf8");
 }
 
+/**
+ * @param {string} root
+ * @param {ValidationIssue[]} errors
+ */
 function checkDiscoveryMetadata(root, errors) {
   const skillPath = path.join(root, "SKILL.md");
   const koreanPath = path.join(root, "SKILL.ko.md");
   const expectedName = path.basename(root);
+  /** @type {{ ok: boolean, expectedName: string, files: Array<{ path: string, name: string, descriptionLength: number }> }} */
   const result = { ok: true, expectedName, files: [] };
   for (const filePath of [skillPath, koreanPath]) {
     if (!fs.existsSync(filePath)) {
@@ -149,12 +220,21 @@ function checkDiscoveryMetadata(root, errors) {
   return result;
 }
 
+/**
+ * @param {string} text
+ * @param {string} key
+ * @returns {string}
+ */
 function frontmatterValue(text, key) {
   const block = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text)?.[1] || "";
   const value = new RegExp(`^${escapeRegExp(key)}:\\s*(.+)$`, "m").exec(block)?.[1]?.trim() || "";
   return value.replace(/^["']|["']$/g, "");
 }
 
+/**
+ * @param {string} root
+ * @param {ValidationIssue[]} errors
+ */
 function checkCoreParity(root, errors) {
   const englishPath = path.join(root, "SKILL.md");
   const koreanPath = path.join(root, "SKILL.ko.md");
@@ -174,16 +254,29 @@ function checkCoreParity(root, errors) {
   return { ok: tags && supportLinks, tags, supportLinks };
 }
 
+/**
+ * @param {string} text
+ * @returns {string[]}
+ */
 function extractStructuralTags(text) {
   return [...text.matchAll(/^<\/?([a-z][a-z0-9_]*)>\s*$/gim)].map((match) => match[0].toLowerCase());
 }
 
+/**
+ * @param {string} value
+ * @returns {string}
+ */
 function normalizeLocalizedPath(value) {
   return value.replace(/\.ko\.md$/, ".md");
 }
 
+/**
+ * @param {string} root
+ * @param {ValidationIssue[]} errors
+ */
 function checkRequiredSections(root, errors) {
   const skillPath = path.join(root, "SKILL.md");
+  /** @type {Record<string, boolean>} */
   const found = {};
   for (const section of REQUIRED_SECTIONS) {
     found[section] = false;
@@ -209,8 +302,15 @@ function checkRequiredSections(root, errors) {
   return { ok: missing.length === 0, required: REQUIRED_SECTIONS, found, missing };
 }
 
+/**
+ * @param {string} root
+ * @param {string[]} markdownFiles
+ * @param {ValidationIssue[]} errors
+ */
 function checkLinks(root, markdownFiles, errors) {
+  /** @type {Array<{ from: string, href: string }>} */
   const checked = [];
+  /** @type {Array<{ from: string, href: string, resolved: string }>} */
   const missing = [];
   for (const filePath of markdownFiles) {
     const text = readText(filePath);
@@ -235,22 +335,34 @@ function checkLinks(root, markdownFiles, errors) {
   return { ok: missing.length === 0, checked: checked.length, missing };
 }
 
+/**
+ * @param {string} text
+ * @returns {string[]}
+ */
 function extractAtLinks(text) {
+  /** @type {string[]} */
   const refs = [];
   const pattern = /^@([^\s]+\.md)\s*$/gm;
   let match;
   while ((match = pattern.exec(text)) !== null) {
-    refs.push(match[1]);
+    const ref = match[1];
+    if (ref) refs.push(ref);
   }
   return refs;
 }
 
+/**
+ * @param {string} text
+ * @returns {string[]}
+ */
 function extractMarkdownLinks(text) {
+  /** @type {string[]} */
   const refs = [];
   const pattern = /!?\[[^\]\n]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
   let match;
   while ((match = pattern.exec(text)) !== null) {
     const href = match[1];
+    if (!href) continue;
     if (
       href.startsWith("http://") ||
       href.startsWith("https://") ||
@@ -264,25 +376,42 @@ function extractMarkdownLinks(text) {
   return refs;
 }
 
+/**
+ * @param {string} ref
+ * @returns {string}
+ */
 function stripAnchor(ref) {
   return decodeURIComponent(ref.split("#")[0]);
 }
 
+/**
+ * @param {string} root
+ * @param {string} target
+ * @returns {boolean}
+ */
 function isInside(root, target) {
   const relativePath = path.relative(root, target);
   return relativePath === "" || (!relativePath.startsWith("..") && !path.isAbsolute(relativePath));
 }
 
+/**
+ * @param {string} root
+ * @param {string[]} markdownFiles
+ * @param {ValidationIssue[]} errors
+ */
 function checkCodeFences(root, markdownFiles, errors) {
+  /** @type {Array<{ path: string, balanced: boolean, unclosed?: Array<{ fence: string, line: number }> }>} */
   const files = [];
   for (const filePath of markdownFiles) {
     const text = readText(filePath);
+    /** @type {Array<{ fence: string, line: number }>} */
     const stack = [];
     const lines = text.split(/\r?\n/);
     for (let index = 0; index < lines.length; index += 1) {
       const match = /^(\s*)(`{3,}|~{3,})/.exec(lines[index]);
       if (!match) continue;
-      const fence = match[2][0];
+      const fence = match[2]?.[0];
+      if (!fence) continue;
       if (stack.length > 0 && stack[stack.length - 1].fence === fence) {
         stack.pop();
       } else {
@@ -290,6 +419,7 @@ function checkCodeFences(root, markdownFiles, errors) {
       }
     }
     const balanced = stack.length === 0;
+    /** @type {{ path: string, balanced: boolean, unclosed?: Array<{ fence: string, line: number }> }} */
     const item = { path: relative(root, filePath), balanced };
     files.push(item);
     if (!balanced) {
@@ -300,9 +430,16 @@ function checkCodeFences(root, markdownFiles, errors) {
   return { ok: files.every((file) => file.balanced), files };
 }
 
+/**
+ * @param {string} root
+ * @param {string[]} markdownFiles
+ * @param {ValidationIssue[]} errors
+ */
 function checkBilingualPairs(root, markdownFiles, errors) {
   const markdownSet = new Set(markdownFiles.map((filePath) => relative(root, filePath)));
+  /** @type {string[]} */
   const missing = [];
+  /** @type {string[]} */
   const orphan = [];
   for (const file of markdownSet) {
     if (file.endsWith(".ko.md")) {
@@ -323,11 +460,19 @@ function checkBilingualPairs(root, markdownFiles, errors) {
   return { ok: missing.length === 0 && orphan.length === 0, missing, orphan };
 }
 
+/**
+ * @param {string} root
+ * @param {ValidationIssue[]} errors
+ */
 function checkStrayDocs(root, errors) {
+  /** @type {string[]} */
   const found = [];
+  /** @type {Array<{ dir: string, depth: number }>} */
   const stack = [{ dir: root, depth: 0 }];
   while (stack.length > 0) {
-    const { dir, depth } = stack.pop();
+    const current = stack.pop();
+    if (!current) continue;
+    const { dir, depth } = current;
     if (depth > 2) continue;
     let entries = [];
     try {
@@ -335,7 +480,7 @@ function checkStrayDocs(root, errors) {
     } catch (error) {
       errors.push(errorObject("DIR_READ_FAILED", `Cannot read directory while checking stray docs: ${relative(root, dir)}`, {
         path: relative(root, dir),
-        detail: error.message,
+        detail: error instanceof Error ? error.message : String(error),
       }));
       continue;
     }
@@ -353,10 +498,18 @@ function checkStrayDocs(root, errors) {
   return { ok: found.length === 0, found };
 }
 
+/**
+ * @param {string} evalsPath
+ * @param {ValidationIssue[]} errors
+ */
 function checkEvalCases(evalsPath, errors) {
+  /** @type {EvalRow[]} */
   const rows = [];
+  /** @type {Record<string, number>} */
   const counts = {};
+  /** @type {Record<string, number>} */
   const languageCounts = {};
+  /** @type {Set<string>} */
   const ids = new Set();
   if (!fs.existsSync(evalsPath)) {
     errors.push(errorObject("EVAL_FILE_MISSING", `Eval JSONL file is missing: ${evalsPath}`, { path: evalsPath }));
@@ -375,18 +528,19 @@ function checkEvalCases(evalsPath, errors) {
   lines.forEach((line, index) => {
     const lineNumber = index + 1;
     if (line.trim() === "") return;
+    /** @type {unknown} */
     let row;
     try {
       row = JSON.parse(line);
     } catch (error) {
-      pushEvalError(errors, `Eval case line ${lineNumber} is not valid JSON: ${error.message}`, { line: lineNumber });
+      pushEvalError(errors, `Eval case line ${lineNumber} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`, { line: lineNumber });
       return;
     }
     const rowErrors = validateEvalRow(row, lineNumber);
     for (const error of rowErrors) {
       pushEvalError(errors, error.message, error.extra);
     }
-    if (row && typeof row === "object" && !Array.isArray(row)) {
+    if (isEvalRow(row)) {
       if (nonEmptyString(row.id)) {
         if (ids.has(row.id)) {
           pushEvalError(errors, `Duplicate eval case id: ${row.id}`, { line: lineNumber, id: row.id });
@@ -394,8 +548,8 @@ function checkEvalCases(evalsPath, errors) {
         ids.add(row.id);
       }
       rows.push(row);
-      counts[row.category] = (counts[row.category] || 0) + 1;
-      languageCounts[row.language] = (languageCounts[row.language] || 0) + 1;
+      if (typeof row.category === "string") counts[row.category] = (counts[row.category] || 0) + 1;
+      if (typeof row.language === "string") languageCounts[row.language] = (languageCounts[row.language] || 0) + 1;
     }
   });
 
@@ -413,6 +567,12 @@ function checkEvalCases(evalsPath, errors) {
   };
 }
 
+/**
+ * @param {Record<string, number>} floors
+ * @param {Record<string, number>} counts
+ * @param {string} dimension
+ * @param {ValidationIssue[]} errors
+ */
 function checkFloors(floors, counts, dimension, errors) {
   for (const [name, floor] of Object.entries(floors)) {
     if ((counts[name] || 0) < floor) {
@@ -426,55 +586,86 @@ function checkFloors(floors, counts, dimension, errors) {
   }
 }
 
+/**
+ * @param {unknown} value
+ * @returns {value is JsonRecord}
+ */
+function isRecord(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+/**
+ * @param {unknown} row
+ * @returns {row is EvalRow}
+ */
+function isEvalRow(row) {
+  return isRecord(row);
+}
+
+/**
+ * @param {unknown} row
+ * @param {number} lineNumber
+ * @returns {EvalRowError[]}
+ */
 function validateEvalRow(row, lineNumber) {
+  /** @type {EvalRowError[]} */
   const errors = [];
+  /** @param {string} message @param {JsonRecord} [extra] */
   const fail = (message, extra = {}) => errors.push({ message, extra: { line: lineNumber, ...extra } });
-  if (!row || typeof row !== "object" || Array.isArray(row)) {
+  if (!isEvalRow(row)) {
     fail("Eval case must be a JSON object");
     return errors;
   }
   if (!nonEmptyString(row.id)) fail("Eval case requires non-empty id", { id: row.id });
-  if (!Object.hasOwn(CATEGORY_FLOORS, row.category)) fail("Eval case requires a supported category", { id: row.id, category: row.category });
-  if (!Object.hasOwn(LANGUAGE_FLOORS, row.language)) fail("Eval case requires language en, ko, or mixed", { id: row.id, language: row.language });
+  if (typeof row.category !== "string" || !Object.hasOwn(CATEGORY_FLOORS, row.category)) fail("Eval case requires a supported category", { id: row.id, category: row.category });
+  if (typeof row.language !== "string" || !Object.hasOwn(LANGUAGE_FLOORS, row.language)) fail("Eval case requires language en, ko, or mixed", { id: row.id, language: row.language });
   if (!nonEmptyString(row.intent)) fail("Eval case requires non-empty intent", { id: row.id });
   if (!nonEmptyString(row.prompt)) fail("Eval case requires non-empty prompt", { id: row.id });
-  if (
-    !row.context ||
-    typeof row.context !== "object" ||
-    Array.isArray(row.context) ||
-    !Array.isArray(row.context.files) ||
-    !Array.isArray(row.context.sources)
-  ) {
+  const context = isRecord(row.context) ? row.context : null;
+  if (!context || !Array.isArray(context.files) || !Array.isArray(context.sources)) {
     fail("EVAL_CASE_INVALID: eval case context requires files and sources arrays", { id: row.id });
   }
   if (!Array.isArray(row.metrics) || row.metrics.length === 0 || row.metrics.some((metric) => !nonEmptyString(metric))) {
     fail("EVAL_CASE_INVALID: eval case requires non-empty metrics", { id: row.id });
   }
-  if (["positive", "negative", "boundary"].includes(row.category) && ![true, false, "depends"].includes(row.shouldTrigger)) {
+  const isTriggerCategory = typeof row.category === "string" && ["positive", "negative", "boundary"].includes(row.category);
+  const hasValidTrigger = row.shouldTrigger === true || row.shouldTrigger === false || row.shouldTrigger === "depends";
+  if (isTriggerCategory && !hasValidTrigger) {
     fail("EVAL_CASE_INVALID: trigger eval requires shouldTrigger true, false, or depends", { id: row.id });
   }
-  if (!row.expected || typeof row.expected !== "object" || Array.isArray(row.expected)) {
+  const expected = isRecord(row.expected) ? row.expected : null;
+  if (!expected) {
     fail("EVAL_CASE_INVALID: eval case requires expected object", { id: row.id });
     return errors;
   }
-  if (!Array.isArray(row.expected.must) || row.expected.must.length === 0) {
+  if (!Array.isArray(expected.must) || expected.must.length === 0) {
     fail("EVAL_CASE_INVALID: expected.must must be a non-empty array", { id: row.id });
   }
-  if (!Array.isArray(row.expected.mustNot) || row.expected.mustNot.length === 0) {
+  if (!Array.isArray(expected.mustNot) || expected.mustNot.length === 0) {
     fail("EVAL_CASE_INVALID: expected.mustNot must be a non-empty array", { id: row.id });
   }
   return errors;
 }
 
+/**
+ * @param {ValidationIssue[]} errors
+ * @param {string} message
+ * @param {JsonRecord} extra
+ */
 function pushEvalError(errors, message, extra) {
   errors.push(errorObject("EVAL_CASE_INVALID", message.includes("EVAL_CASE_INVALID") ? message : `EVAL_CASE_INVALID: ${message}`, extra));
 }
 
+/**
+ * @param {string} root
+ * @param {ValidationIssue[]} errors
+ */
 function checkOfficialLastVerified(root, errors) {
   const officialRoot = path.join(root, "references", "official");
   const files = fs.existsSync(officialRoot)
     ? walkFiles(officialRoot, errors).filter((filePath) => filePath.endsWith(".md"))
     : [];
+  /** @type {Array<{ path: string, dates: string[], invalidDates: string[] }>} */
   const invalid = [];
   for (const filePath of files) {
     const text = readText(filePath);
@@ -493,19 +684,37 @@ function checkOfficialLastVerified(root, errors) {
   return { ok: invalid.length === 0, validationDate: VALIDATION_DATE, checked: files.length, invalid };
 }
 
+/**
+ * @param {string} value
+ * @returns {boolean}
+ */
 function isValidDate(value) {
   const parsed = new Date(`${value}T00:00:00Z`);
   return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
 }
 
+/**
+ * @param {unknown} value
+ * @returns {value is string}
+ */
 function nonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+/**
+ * @param {string} code
+ * @param {string} message
+ * @param {JsonRecord} [extra]
+ * @returns {ValidationIssue}
+ */
 function errorObject(code, message, extra = {}) {
   return { code, message, ...extra };
 }
 
+/**
+ * @param {string} value
+ * @returns {string}
+ */
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -523,13 +732,20 @@ Options:
 `);
 }
 
+/**
+ * @returns {number}
+ */
 function run() {
+  /** @type {CliArgs} */
   let args;
   try {
     args = parseArgs(process.argv.slice(2));
   } catch (error) {
     const result = emptyResult();
-    result.errors.push(errorObject(error.code || "ARG_ERROR", error.message));
+    result.errors.push(errorObject(
+      error instanceof Error && "code" in error && typeof error.code === "string" ? error.code : "ARG_ERROR",
+      error instanceof Error ? error.message : String(error),
+    ));
     writeResult(result, true);
     return 2;
   }
@@ -541,6 +757,7 @@ function run() {
 
   const root = path.resolve(args.root);
   const evalsPath = path.resolve(args.evals);
+  /** @type {ValidationIssue[]} */
   const errors = [];
 
   if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
@@ -568,6 +785,9 @@ function run() {
   return result.ok ? 0 : 1;
 }
 
+/**
+ * @returns {{ ok: boolean, discoveryMetadata: null, requiredSections: null, links: null, codeFences: null, bilingualPairs: null, bilingualCoreParity: null, triggerCases: null, officialLastVerifiedGuard: null, strayDocs: null, errors: ValidationIssue[] }}
+ */
 function emptyResult() {
   return {
     ok: false,
@@ -584,6 +804,10 @@ function emptyResult() {
   };
 }
 
+/**
+ * @param {{ ok: boolean, errors: ValidationIssue[] }} result
+ * @param {boolean} json
+ */
 function writeResult(result, json) {
   if (json) {
     console.log(JSON.stringify(result, null, 2));

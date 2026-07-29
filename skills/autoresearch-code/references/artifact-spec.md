@@ -27,8 +27,8 @@ In `$autoresearch` runs, this `.hypercore` directory is the domain-specific resu
 Canonical generated assets:
 
 - template: `skills/autoresearch-code/assets/dashboard-template.html`
-- renderer: `skills/autoresearch-code/scripts/render-dashboard.sh`
-- renderer runtime: `python3` standard JSON library
+- renderer: `skills/autoresearch-code/scripts/render-dashboard.mjs`
+- renderer runtime: Bun
 
 ## `baseline.md`
 
@@ -225,7 +225,7 @@ Required behavior:
 Lifecycle rules:
 
 - Render `dashboard.html` from `skills/autoresearch-code/assets/dashboard-template.html`
-- Use `skills/autoresearch-code/scripts/render-dashboard.sh <artifact-dir>` as the default renderer
+- Use `bun skills/autoresearch-code/scripts/render-dashboard.mjs <artifact-dir>` as the default renderer
 - After creating `dashboard.html`, open it immediately when the runtime makes that safe
 - Update `results.tsv` and `results.json` after every experiment
 - Keep `scope`, `eval_pack`, `proof_commands`, `environment`, and experiment `dimensions` synchronized with the current run

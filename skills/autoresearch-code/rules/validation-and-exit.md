@@ -130,6 +130,6 @@ The final report must include, in Korean:
 find skills/autoresearch-code -maxdepth 3 -type f | sort
 wc -l skills/autoresearch-code/SKILL.md
 rg -n "results.tsv|results.json|results.js|dashboard.html|changelog.md|baseline.md|code-explanation.md|final-report.md|run-contract.md|trace-summary.md|source-ledger.md" skills/autoresearch-code/SKILL.md skills/autoresearch-code/references skills/autoresearch-code/rules
-bash -n skills/autoresearch-code/scripts/render-dashboard.sh
+bun --check skills/autoresearch-code/scripts/render-dashboard.mjs
 find .hypercore -maxdepth 3 -type f | sort | rg "autoresearch-code"
 ```

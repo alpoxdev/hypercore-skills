@@ -1,4 +1,5 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+// @ts-check
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -56,7 +57,13 @@ const forbidden = [
   `${'feature'} layer`,
   `${'features'}<`,
 ]
+/** @type {string[]} */
 const mdFiles = []
+/**
+ * Recursively collects package Markdown files.
+ * @param {string} dir
+ * @returns {void}
+ */
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name)

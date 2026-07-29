@@ -27,8 +27,8 @@
 정식 생성 자산:
 
 - template: `skills/autoresearch-code/assets/dashboard-template.html`
-- renderer: `skills/autoresearch-code/scripts/render-dashboard.sh`
-- renderer runtime: `python3` 표준 JSON 라이브러리
+- renderer: `skills/autoresearch-code/scripts/render-dashboard.mjs`
+- renderer runtime: Bun
 
 ## `baseline.md`
 
@@ -225,7 +225,7 @@ experiment\tscore\tmax_score\tpass_rate\tstatus\tdescription
 생명주기 규칙:
 
 - `skills/autoresearch-code/assets/dashboard-template.html`에서 `dashboard.html`을 렌더한다
-- 기본 렌더러는 `skills/autoresearch-code/scripts/render-dashboard.sh <artifact-dir>`를 사용한다
+- 기본 렌더러는 `bun skills/autoresearch-code/scripts/render-dashboard.mjs <artifact-dir>`를 사용한다
 - `dashboard.html`을 만든 뒤, 런타임이 안전하면 즉시 연다
 - 매 실험 뒤 `results.tsv`와 `results.json`을 업데이트한다
 - `scope`, `eval_pack`, `proof_commands`, `environment`, 실험 `dimensions`를 현재 실행과 동기화한다

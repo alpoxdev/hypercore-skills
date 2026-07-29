@@ -4,7 +4,7 @@
 
 ## Parallel lane을 사용할 때
 
-초기 full `skills/pre-deploy/scripts/deploy-check.sh`가 실패를 캡처하고 leader가 실패를 그룹화한 뒤에만 parallel lane을 사용합니다.
+초기 full `skills/pre-deploy/scripts/deploy-check.mjs`가 실패를 캡처하고 leader가 실패를 그룹화한 뒤에만 parallel lane을 사용합니다.
 
 다음 조건 중 하나 이상이면 spawn 또는 handoff합니다.
 
@@ -42,7 +42,7 @@
 
 - lane finding의 충돌, 중복 수정, 누락 check를 비교합니다.
 - final validation 전 모든 changed file을 확인합니다.
-- leader context에서 final `skills/pre-deploy/scripts/deploy-check.sh`를 직접 실행합니다.
+- leader context에서 final `skills/pre-deploy/scripts/deploy-check.mjs`를 직접 실행합니다.
 - subagent 사용 여부와 미검증 lane output을 caveat로 보고합니다.
 
 ## Lane templates
@@ -76,7 +76,7 @@ Stop condition: targeted check passes, blocked, ownership conflict, or broader f
 | Failure shape | Safe lane split |
 |------|------|
 | Node + Rust + Python 실패 | stack당 한 lane, shared config edit 금지 |
-| Node typecheck + Node lint | 보통 나누지 않음; `lint-check.sh`가 이미 동시에 실행함 |
+| Node typecheck + Node lint | 보통 나누지 않음; `lint-check.mjs`가 이미 동시에 실행함 |
 | Tooling/script failure + application failure | read-only tooling lane + 하나의 application-fix lane |
 | Lockfile/package manager issue | leader 또는 단일 owner lane 하나만 |
 | Shared build config failure | ownership을 독점시킬 수 없으면 leader가 처리 |

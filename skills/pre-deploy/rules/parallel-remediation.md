@@ -4,7 +4,7 @@
 
 ## When to use parallel lanes
 
-Use parallel lanes after the initial full `skills/pre-deploy/scripts/deploy-check.sh` captures failures and the leader has grouped them.
+Use parallel lanes after the initial full `skills/pre-deploy/scripts/deploy-check.mjs` captures failures and the leader has grouped them.
 
 Spawn or hand off only when at least one condition is true:
 
@@ -42,7 +42,7 @@ After delegation:
 
 - Compare lane findings for conflicts, duplicate fixes, and missing checks.
 - Inspect all changed files before final validation.
-- Run final `skills/pre-deploy/scripts/deploy-check.sh` directly in the leader context.
+- Run final `skills/pre-deploy/scripts/deploy-check.mjs` directly in the leader context.
 - Report subagent usage and any unverified lane output as caveats.
 
 ## Lane templates
@@ -76,7 +76,7 @@ Stop condition: targeted check passes, blocked, ownership conflict, or broader f
 | Failure shape | Safe lane split |
 |------|------|
 | Node + Rust + Python failures | one lane per stack, no shared config edits |
-| Node typecheck + Node lint | usually do not split; `lint-check.sh` already runs them concurrently |
+| Node typecheck + Node lint | usually do not split; `lint-check.mjs` already runs them concurrently |
 | Tooling/script failure + application failure | read-only tooling lane plus one application-fix lane |
 | Lockfile/package manager issue | keep in leader or one single owner lane only |
 | Shared build config failure | keep in leader unless ownership can be made exclusive |

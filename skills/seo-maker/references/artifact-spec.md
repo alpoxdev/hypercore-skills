@@ -19,7 +19,7 @@ Create this directory at the repository root, not inside the skill folder.
 Canonical generated assets:
 
 - template: `skills/seo-maker/assets/dashboard-template.html`
-- renderer: `skills/seo-maker/scripts/render-dashboard.sh`
+- renderer: `skills/seo-maker/scripts/render-dashboard.mjs`
 
 ## `results.json`
 
@@ -251,7 +251,7 @@ Generate it from the existing `assets/report.template.md`. It is a Markdown rend
 3. Add findings to `results.json` as each phase completes.
 4. After all phases finish, set `status` to `complete` and calculate `overall_grade`.
 4-1. In Optimize mode, populate `score_history`, `best_run`, and `validator`, then record the evidence for the highest score or plateau.
-5. Run `render-dashboard.sh` to generate `dashboard.html` and `results.js`.
+5. Run `render-dashboard.mjs` to generate `dashboard.html` and `results.js`.
 6. Write `report.md` and `sources.md` as well.
 7. Open `dashboard.html` in a browser if the runtime is safe.
 
@@ -270,6 +270,6 @@ Average only comparable categories whose `status` is `measured`. Record the incl
 ### Render Order
 
 ```bash
-skills/seo-maker/scripts/render-dashboard.sh .hypercore/seo-maker/my-site
+skills/seo-maker/scripts/render-dashboard.mjs .hypercore/seo-maker/my-site
 open .hypercore/seo-maker/my-site/dashboard.html
 ```

@@ -1,8 +1,31 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+// @ts-check
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+/**
+ * @typedef {Object} CliArgs
+ * @property {string} root
+ * @property {string|null} evals
+ * @property {boolean} json
+ * @property {boolean} help
+ *
+ * @typedef {Error & { code: string }} CliError
+ *
+ * @typedef {{ code: string, message: string } & Record<string, unknown>} ValidationError
+ *
+ * @typedef {{ message: string, extra: Record<string, unknown> }} EvalRowError
+ *
+ * @typedef {{ marker: string, length: number, line: number }} Fence
+ *
+ * @typedef {Record<string, unknown>} JsonObject
+ *
+ * @typedef {Object} EvalCase
+ * @property {string} id
+ * @property {string} category
+ * @property {string} language
+ */
 const DEFAULT_ROOT = "skills/prompt-maker";
 const REQUIRED_MARKERS = [
   "output_language",
@@ -25,11 +48,13 @@ const CONTRACT_LABELS = [
   "Verification",
   "Stop condition",
 ];
+/** @type {Record<string, number>} */
 const ACTIVATION_FLOORS = {
   positive: 3,
   negative: 2,
   boundary: 1,
 };
+/** @type {Record<string, number>} */
 const EVAL_CATEGORY_FLOORS = {
   positive: 1,
   negative: 1,
@@ -49,6 +74,7 @@ const REQUIRED_TEMPLATES = [
   "assets/source-ledger.template.ko.md",
   "assets/eval-harness.template.json",
 ];
+/** @type {{ name: string, pattern: RegExp }[]} */
 const REQUIRED_TEMPLATE_CONCEPTS = [
   { name: "identity", pattern: /\bidentity\b/i },
   { name: "variables", pattern: /\bvariables?\b/i },
@@ -60,7 +86,13 @@ const REQUIRED_TEMPLATE_CONCEPTS = [
   { name: "version note", pattern: /\bversion[- ]note\b/i },
 ];
 
+/**
+ * Parses command-line options for the package validator.
+ * @param {string[]} argv
+ * @returns {CliArgs}
+ */
 function parseArgs(argv) {
+  /** @type {CliArgs} */
   const args = {
     root: DEFAULT_ROOT,
     evals: null,
@@ -89,6 +121,12 @@ function parseArgs(argv) {
   return args;
 }
 
+/**
+ * @param {string[]} argv
+ * @param {number} index
+ * @param {string} flag
+ * @returns {string}
+ */
 function requireValue(argv, index, flag) {
   const value = argv[index];
   if (!value || value.startsWith("--")) {
@@ -97,19 +135,31 @@ function requireValue(argv, index, flag) {
   return value;
 }
 
+/**
+ * @param {string} code
+ * @param {string} message
+ * @returns {CliError}
+ */
 function makeCliError(code, message) {
   const error = new Error(message);
-  error.code = code;
-  return error;
+  return Object.assign(error, { code });
 }
 
+/**
+ * Runs validation and returns the process exit code.
+ * @returns {number}
+ */
 function run() {
+  /** @type {CliArgs} */
   let args;
   try {
     args = parseArgs(process.argv.slice(2));
   } catch (error) {
     const result = emptyResult(DEFAULT_ROOT, path.join(DEFAULT_ROOT, "assets/evals/prompt-maker-cases.jsonl"));
-    result.errors.push(errorObject(error.code || "ARG_ERROR", error.message));
+    const cliError = error instanceof Error && "code" in error && typeof error.code === "string"
+      ? /** @type {CliError} */ (error)
+      : makeCliError("ARG_ERROR", error instanceof Error ? error.message : String(error));
+    result.errors.push(errorObject(cliError.code, cliError.message));
     writeResult(result, process.argv.includes("--json"));
     return result.ok ? 0 : 1;
   }
@@ -120,8 +170,11 @@ function run() {
   }
 
   const rootAbs = path.resolve(args.root);
-  const evalsAbs = path.resolve(args.evals);
+  const evals = args.evals || path.join(args.root, "assets/evals/prompt-maker-cases.jsonl");
+  const evalsAbs = path.resolve(evals);
+  /** @type {ValidationError[]} */
   const errors = [];
+  /** @type {ValidationError[]} */
   const warnings = [];
 
   if (!existsDirectory(rootAbs)) {
@@ -144,7 +197,7 @@ function run() {
   const result = {
     ok: errors.length === 0,
     root: normalizePath(args.root),
-    evals: normalizePath(args.evals),
+    evals: normalizePath(evals),
     errors,
     warnings,
     summary: {
@@ -165,11 +218,17 @@ function run() {
   return result.ok ? 0 : 1;
 }
 
+/**
+ * @param {string} root
+ * @param {string} evals
+ * @returns {{ ok: false, root: string, evals: string, errors: ValidationError[], warnings: ValidationError[], summary: { markdownFiles: number, evalCases: number, evalCategories: Record<string, number>, linksChecked: number } }}
+ */
 function emptyResult(root, evals) {
   return {
     ok: false,
     root: normalizePath(root),
     evals: normalizePath(evals),
+    /** @type {ValidationError[]} */
     errors: [],
     warnings: [],
     summary: {
@@ -181,8 +240,10 @@ function emptyResult(root, evals) {
   };
 }
 
+/** @param {string} rootAbs @param {ValidationError[]} errors */
 function validateSkillFile(rootAbs, errors) {
   const skillPath = path.join(rootAbs, "SKILL.md");
+  /** @type {{ exists: boolean, frontmatterName: boolean, markers: Record<string, boolean>, contractLabels: Record<string, boolean>, activationExamples: Record<string, number> }} */
   const checks = {
     exists: false,
     frontmatterName: false,
@@ -251,6 +312,7 @@ function validateSkillFile(rootAbs, errors) {
   return checks;
 }
 
+/** @param {string} rootAbs @param {string[]} markdownFiles @param {ValidationError[]} errors */
 function validateLinks(rootAbs, markdownFiles, errors) {
   const missing = [];
   let checked = 0;
@@ -292,6 +354,7 @@ function validateLinks(rootAbs, markdownFiles, errors) {
   return { ok: missing.length === 0, checked, missing };
 }
 
+/** @param {string} text @returns {string[]} */
 function extractLocalReferences(text) {
   const refs = [];
   let match;
@@ -309,6 +372,7 @@ function extractLocalReferences(text) {
   return refs;
 }
 
+/** @param {string} rootAbs @param {string} filePath @param {string} href @returns {string} */
 function resolvePackageReference(rootAbs, filePath, href) {
   if (href.startsWith("/")) {
     return path.resolve(rootAbs, `.${href}`);
@@ -319,6 +383,7 @@ function resolvePackageReference(rootAbs, filePath, href) {
   return path.resolve(path.dirname(filePath), decodeURIComponent(href));
 }
 
+/** @param {string} rootAbs @param {string[]} markdownFiles @param {ValidationError[]} errors */
 function validateCodeFences(rootAbs, markdownFiles, errors) {
   const invalid = [];
   for (const filePath of markdownFiles) {
@@ -335,7 +400,9 @@ function validateCodeFences(rootAbs, markdownFiles, errors) {
   return { ok: invalid.length === 0, checked: markdownFiles.length, invalid };
 }
 
+/** @param {string} text @returns {Fence[]} */
 function unclosedFences(text) {
+  /** @type {Fence[]} */
   const stack = [];
   const lines = text.split(/\r?\n/);
   for (let index = 0; index < lines.length; index += 1) {
@@ -353,6 +420,7 @@ function unclosedFences(text) {
   return stack;
 }
 
+/** @param {string} rootAbs @param {string[]} markdownFiles @param {ValidationError[]} errors */
 function validateBilingualPairs(rootAbs, markdownFiles, errors) {
   const eligible = markdownFiles
     .map((filePath) => relativePath(rootAbs, filePath))
@@ -386,6 +454,7 @@ function validateBilingualPairs(rootAbs, markdownFiles, errors) {
   return { ok: missing.length === 0 && orphan.length === 0, checked: eligible.length, missing, orphan };
 }
 
+/** @param {string} rootAbs @param {string[]} files @param {ValidationError[]} errors */
 function validateStrayDocs(rootAbs, files, errors) {
   const found = [];
   for (const filePath of files) {
@@ -400,6 +469,7 @@ function validateStrayDocs(rootAbs, files, errors) {
   return { ok: found.length === 0, found };
 }
 
+/** @param {string} rootAbs @param {string[]} files @param {ValidationError[]} errors */
 function validateAuthorityReferences(rootAbs, files, errors) {
   const forbidden = [
     "~/" + ".agents",
@@ -423,6 +493,7 @@ function validateAuthorityReferences(rootAbs, files, errors) {
   return { ok: hits.length === 0, hits };
 }
 
+/** @param {string} rootAbs @param {ValidationError[]} errors */
 function validateTemplates(rootAbs, errors) {
   const missing = [];
   const present = [];
@@ -440,6 +511,7 @@ function validateTemplates(rootAbs, errors) {
     combined += `\n${readText(filePath)}`;
   }
 
+  /** @type {Record<string, boolean>} */
   const concepts = {};
   for (const concept of REQUIRED_TEMPLATE_CONCEPTS) {
     const found = concept.pattern.test(combined);
@@ -460,9 +532,12 @@ function validateTemplates(rootAbs, errors) {
   };
 }
 
+/** @param {string} evalsAbs @param {ValidationError[]} errors */
 function validateEvalCases(evalsAbs, errors) {
+  /** @type {Record<string, number>} */
   const categories = {};
   let total = 0;
+  /** @type {Map<string, number>} */
   const seenIds = new Map();
   if (!fs.existsSync(evalsAbs)) {
     errors.push(errorObject("EVAL_FILE_MISSING", `Eval JSONL file is missing: ${displayPath(evalsAbs)}`, {
@@ -480,7 +555,8 @@ function validateEvalCases(evalsAbs, errors) {
     try {
       row = JSON.parse(line);
     } catch (error) {
-      pushEvalCaseError(errors, `Eval case line ${lineNumber} is not valid JSON: ${error.message}`, { line: lineNumber });
+      const detail = error instanceof Error ? error.message : String(error);
+      pushEvalCaseError(errors, `Eval case line ${lineNumber} is not valid JSON: ${detail}`, { line: lineNumber });
       continue;
     }
 
@@ -489,7 +565,7 @@ function validateEvalCases(evalsAbs, errors) {
       pushEvalCaseError(errors, rowError.message, rowError.extra);
     }
 
-    if (row && typeof row === "object" && !Array.isArray(row)) {
+    if (isJsonObject(row)) {
       total += 1;
       if (nonEmptyString(row.category) && ALLOWED_EVAL_CATEGORIES.has(row.category.trim())) {
         const category = row.category.trim();
@@ -515,10 +591,20 @@ function validateEvalCases(evalsAbs, errors) {
   };
 }
 
+/**
+ * @param {unknown} row
+ * @param {number} lineNumber
+ * @param {Map<string, number>} seenIds
+ * @returns {EvalRowError[]}
+ */
 function validateEvalRow(row, lineNumber, seenIds) {
+  /** @type {EvalRowError[]} */
   const errors = [];
-  const fail = (message, extra = {}) => errors.push({ message, extra: { line: lineNumber, ...extra } });
-  if (!row || typeof row !== "object" || Array.isArray(row)) {
+  /** @type {(message: string, extra?: Record<string, unknown>) => void} */
+  const fail = (message, extra = {}) => {
+    errors.push({ message, extra: { line: lineNumber, ...extra } });
+  };
+  if (!isJsonObject(row)) {
     fail("Eval case must be a JSON object");
     return errors;
   }
@@ -542,7 +628,7 @@ function validateEvalRow(row, lineNumber, seenIds) {
     });
   }
   if (!nonEmptyString(row.prompt)) fail("Eval case requires non-empty string prompt", { id: row.id });
-  if (!row.expected || typeof row.expected !== "object" || Array.isArray(row.expected)) {
+  if (!isJsonObject(row.expected)) {
     fail("Eval case requires expected object", { id: row.id });
     return errors;
   }
@@ -561,6 +647,12 @@ function validateEvalRow(row, lineNumber, seenIds) {
   return errors;
 }
 
+/**
+ * @param {unknown[]} values
+ * @param {string} field
+ * @param {unknown} id
+ * @param {(message: string, extra?: Record<string, unknown>) => void} fail
+ */
 function validateStringArray(values, field, id, fail) {
   for (let index = 0; index < values.length; index += 1) {
     const value = values[index];
@@ -570,10 +662,12 @@ function validateStringArray(values, field, id, fail) {
   }
 }
 
+/** @param {ValidationError[]} errors @param {string} message @param {Record<string, unknown>} extra */
 function pushEvalCaseError(errors, message, extra) {
   errors.push(errorObject("EVAL_CASE_INVALID", message, extra));
 }
 
+/** @param {string} text @returns {string|null} */
 function parseFrontmatter(text) {
   if (!text.startsWith("---\n")) return null;
   const end = text.indexOf("\n---", 4);
@@ -581,18 +675,21 @@ function parseFrontmatter(text) {
   return text.slice(4, end);
 }
 
+/** @param {string} rootAbs @param {ValidationError[]} errors @returns {string[]} */
 function walkFiles(rootAbs, errors) {
   const files = [];
+  /** @type {string[]} */
   const stack = [rootAbs];
   while (stack.length > 0) {
     const current = stack.pop();
+    if (!current) continue;
     let entries;
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
     } catch (error) {
       errors.push(errorObject("DIR_READ_FAILED", `Cannot read directory: ${displayPath(current)}`, {
         path: displayPath(current),
-        detail: error.message,
+        detail: error instanceof Error ? error.message : String(error),
       }));
       continue;
     }
@@ -608,6 +705,7 @@ function walkFiles(rootAbs, errors) {
   return files.sort();
 }
 
+/** @param {string} filePath @returns {boolean} */
 function existsDirectory(filePath) {
   try {
     return fs.statSync(filePath).isDirectory();
@@ -616,52 +714,71 @@ function existsDirectory(filePath) {
   }
 }
 
+/** @param {string} filePath @returns {string} */
 function readText(filePath) {
   return fs.readFileSync(filePath, "utf8");
 }
 
+/** @param {string} filePath @returns {boolean} */
 function isTextLike(filePath) {
   return /\.(?:md|markdown|txt|json|jsonl|mjs|js|yaml|yml)$/i.test(filePath);
 }
 
+/** @param {string} href @returns {boolean} */
 function isExternalHref(href) {
   return /^(?:https?:|mailto:|tel:)/i.test(href);
 }
 
+/** @param {string} href @returns {string} */
 function stripAnchor(href) {
   return href.split("#")[0];
 }
 
+/** @param {string} rootAbs @param {string} targetAbs @returns {boolean} */
 function isInside(rootAbs, targetAbs) {
   const rel = path.relative(rootAbs, targetAbs);
   return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
 }
 
+/** @param {string} rootAbs @param {string} filePath @returns {string} */
 function relativePath(rootAbs, filePath) {
   return normalizePath(path.relative(rootAbs, filePath));
 }
 
+/** @param {string} filePath @returns {string} */
 function displayPath(filePath) {
   return normalizePath(path.relative(process.cwd(), filePath) || filePath);
 }
 
+/** @param {string} filePath @returns {string} */
 function normalizePath(filePath) {
   return filePath.split(path.sep).join("/");
 }
 
+/** @param {string} text @param {string} word @returns {number} */
 function countWord(text, word) {
   const matches = text.match(new RegExp(`\\b${escapeRegExp(word)}\\b`, "gi"));
   return matches ? matches.length : 0;
 }
 
+/** @param {unknown} value @returns {value is string} */
 function nonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+/**
+ * @param {unknown} value
+ * @returns {value is JsonObject}
+ */
+function isJsonObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+/** @param {string} code @param {string} message @param {Record<string, unknown>} [extra] @returns {ValidationError} */
 function errorObject(code, message, extra = {}) {
   return { code, message, ...extra };
 }
 
+/** @param {string} value @returns {string} */
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -679,6 +796,7 @@ Options:
 `);
 }
 
+/** @param {{ ok: boolean, errors: ValidationError[], summary: { markdownFiles: number, evalCases: number } }} result @param {boolean} json */
 function writeResult(result, json) {
   if (json) {
     console.log(JSON.stringify(result, null, 2));

@@ -1,4 +1,5 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+// @ts-check
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -80,7 +81,13 @@ for (const [rel, needles] of Object.entries(mustContain)) {
 const skillLines = fs.readFileSync(path.join(root, 'SKILL.md'), 'utf8').split('\n').length;
 if (skillLines > 300) errors.push(`SKILL.md too long: ${skillLines} lines > 300`);
 
+/** @type {string[]} */
 const mdFiles = [];
+/**
+ * Recursively collects package Markdown files.
+ * @param {string} dir
+ * @returns {void}
+ */
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
