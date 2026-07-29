@@ -32,7 +32,8 @@ fast helper가 실패하거나 필요한 detail을 빠뜨리면 `repo-discover.s
 |------|------|
 | repository discovery | current repo/worktree short-circuit; descendant discovery는 무거운 generated directory를 prune하고 linked worktree `.git` file을 인식한다 |
 | multi-repo inspection | `--jobs` / `GIT_MAKER_JOBS`를 통한 parallel per-repo status block |
-| file inventory | grouping을 위한 staged, unstaged, untracked file list를 출력한다 |
+| file inventory | repository마다 porcelain status snapshot 하나를 수집하고, 세 번의 중복 file scan 대신 여기서 staged, unstaged, untracked list를 도출한다 |
+| legacy helper | `repo-discover.sh`는 generated tree를 prune하고, `repo-status.sh`는 수집한 status/stat 출력을 재사용하며, `git-push.sh`는 유지보수되는 fast push 구현에 위임한다 |
 | worktree context | operator가 checkout root를 common git dir와 분리해 유지하도록 `worktree|primary` 또는 `worktree|linked`와 git dir metadata를 출력한다 |
 | push | explicit repo path를 받고 `GIT_TERMINAL_PROMPT=0`을 사용하며 detached HEAD를 건너뛰고 protected force push를 차단한다 |
 
@@ -61,5 +62,7 @@ helper는 피할 수 있는 overhead를 제거하기 위한 것이지 safety를 
 - common generated folder를 prune해 큰 descendant tree scan 단축
 - `.git`이 directory라고 가정하지 않고 checkout root를 resolve하는 linked worktree run
 - read-only work를 병렬화하는 multiple-repository status check
+- raw status와 grouped file inventory에 하나의 status snapshot을 재사용하는 single-repository inspection
+- `grep` process를 만들지 않는 Bash 내부 commit-message 검증
 
 diff inspection, logical change grouping, 올바른 commit message 작성, hook failure 처리가 필요 없어진 것은 아니다.

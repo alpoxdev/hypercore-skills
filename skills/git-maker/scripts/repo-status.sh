@@ -19,28 +19,39 @@ if ! git rev-parse --git-dir >/dev/null 2>&1; then
 fi
 
 ROOT="$(git rev-parse --show-toplevel)"
+STATUS_SHORT="$(git status --short --no-renames)"
+STAGED_STAT="$(git diff --staged --stat)"
+UNSTAGED_STAT="$(git diff --stat)"
 
 echo "repo|$ROOT"
 echo "status|begin"
-git status --short --branch
+if [ -n "$STATUS_SHORT" ]; then
+  printf '%s\n' "$STATUS_SHORT"
+fi
 echo "status|end"
 
 echo "staged|begin"
-if git diff --staged --quiet; then
+if [ -z "$STAGED_STAT" ]; then
   echo "(no staged changes)"
 else
-  git diff --staged --stat
+  printf '%s\n' "$STAGED_STAT"
 fi
 echo "staged|end"
 
 echo "unstaged|begin"
-UNTRACKED_FILES="$(git ls-files --others --exclude-standard)"
+UNTRACKED_FILES="$(
+  while IFS= read -r line; do
+    if [ "${line:0:2}" = "??" ]; then
+      printf '%s\n' "${line:3}"
+    fi
+  done <<< "$STATUS_SHORT"
+)"
 
-if git diff --quiet && [ -z "$UNTRACKED_FILES" ]; then
+if [ -z "$UNSTAGED_STAT" ] && [ -z "$UNTRACKED_FILES" ]; then
   echo "(no unstaged changes)"
 else
-  if ! git diff --quiet; then
-    git diff --stat
+  if [ -n "$UNSTAGED_STAT" ]; then
+    printf '%s\n' "$UNSTAGED_STAT"
   fi
 
   if [ -n "$UNTRACKED_FILES" ]; then

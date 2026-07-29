@@ -81,7 +81,7 @@ discover_repos() {
 
 status_one_repo() {
   local repo=$1
-  local root branch upstream ahead staged unstaged untracked git_dir common_dir worktree
+  local root branch upstream ahead git_dir common_dir worktree status_short line code file
 
   if ! is_git_repo "$repo"; then
     printf 'repo|%s\nerror|not a git work tree\n' "$repo"
@@ -99,9 +99,7 @@ status_one_repo() {
     ahead="$(git -C "$root" rev-list --count '@{upstream}..HEAD' 2>/dev/null || echo 0)"
   fi
 
-  staged="$(git -C "$root" diff --cached --name-only)"
-  unstaged="$(git -C "$root" diff --name-only)"
-  untracked="$(git -C "$root" ls-files --others --exclude-standard)"
+  status_short="$(git -C "$root" status --short --no-renames)"
 
   printf 'repo|%s\n' "$root"
   printf 'worktree|%s\n' "$worktree"
@@ -111,17 +109,27 @@ status_one_repo() {
   printf 'upstream|%s\n' "${upstream:-none}"
   printf 'ahead|%s\n' "$ahead"
   printf 'status|begin\n'
-  git -C "$root" status --short --branch
+  if [[ -n "$status_short" ]]; then
+    printf '%s\n' "$status_short"
+  fi
   printf 'status|end\n'
   printf 'files|begin\n'
-  if [[ -n "$staged" ]]; then
-    while IFS= read -r file; do [[ -n "$file" ]] && printf 'staged|%s\n' "$file"; done <<< "$staged"
-  fi
-  if [[ -n "$unstaged" ]]; then
-    while IFS= read -r file; do [[ -n "$file" ]] && printf 'unstaged|%s\n' "$file"; done <<< "$unstaged"
-  fi
-  if [[ -n "$untracked" ]]; then
-    while IFS= read -r file; do [[ -n "$file" ]] && printf 'untracked|%s\n' "$file"; done <<< "$untracked"
+  if [[ -n "$status_short" ]]; then
+    while IFS= read -r line; do
+      [[ -z "$line" ]] && continue
+      code="${line:0:2}"
+      file="${line:3}"
+      if [[ "$code" == "??" ]]; then
+        printf 'untracked|%s\n' "$file"
+        continue
+      fi
+      if [[ "${code:0:1}" != " " ]]; then
+        printf 'staged|%s\n' "$file"
+      fi
+      if [[ "${code:1:1}" != " " ]]; then
+        printf 'unstaged|%s\n' "$file"
+      fi
+    done <<< "$status_short"
   fi
   printf 'files|end\n'
 }

@@ -32,7 +32,8 @@ If the fast helper fails or omits needed detail, fall back to `repo-discover.sh`
 |------|------|
 | repository discovery | current repo/worktree short-circuit; descendant discovery prunes heavy generated directories and recognizes linked worktree `.git` files |
 | multi-repo inspection | parallel per-repo status blocks via `--jobs` / `GIT_MAKER_JOBS` |
-| file inventory | emits staged, unstaged, and untracked file lists for grouping |
+| file inventory | captures one porcelain status snapshot per repo and derives staged, unstaged, and untracked lists from it instead of running three duplicate file scans |
+| legacy helpers | `repo-discover.sh` prunes generated trees, `repo-status.sh` reuses captured status/stat output, and `git-push.sh` delegates to the maintained fast push implementation |
 | worktree context | emits `worktree|primary` or `worktree|linked` plus git dir metadata so operators keep checkout roots separate from the common git dir |
 | push | accepts explicit repo paths, uses `GIT_TERMINAL_PROMPT=0`, skips detached HEAD, blocks protected force pushes |
 
@@ -61,5 +62,7 @@ The helper is meant to remove avoidable overhead, not bypass safety. It speeds u
 - large descendant tree scans by pruning common generated folders
 - linked worktree runs by resolving the checkout root without assuming `.git` is a directory
 - multiple-repository status checks by parallelizing read-only work
+- single-repository inspection by reusing one status snapshot for both raw status and grouped file inventory
+- commit-message validation in Bash without spawning `grep`
 
 It does not remove the need to inspect diffs, group logical changes, write correct commit messages, or handle hook failures.

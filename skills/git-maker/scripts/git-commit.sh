@@ -37,7 +37,7 @@ fi
 COMMIT_MSG="$1"
 shift
 
-if ! printf '%s' "$COMMIT_MSG" | grep -q '[^[:space:]]'; then
+if [[ ! "$COMMIT_MSG" =~ [^[:space:]] ]]; then
   echo "Error: Commit message cannot be empty" >&2
   exit 1
 fi
@@ -73,9 +73,7 @@ if [ "$#" -gt 0 ]; then
   fi
 
   git add "$@"
-
   EXTRA_STAGED=()
-
   while IFS= read -r staged_file; do
     [ -z "$staged_file" ] && continue
     if ! matches_requested_target "$staged_file" "${REQUESTED_FILES[@]}"; then
@@ -84,11 +82,11 @@ if [ "$#" -gt 0 ]; then
   done < <(git diff --cached --name-only)
 
   if [ "${#EXTRA_STAGED[@]}" -gt 0 ]; then
-    echo "Error: Additional staged changes exist outside the requested files:" >&2
+    echo "Error: Additional staged changes appeared while staging:" >&2
     printf '  %s\n' "${EXTRA_STAGED[@]}" >&2
-    echo "Tip: Unstage unrelated files or commit them separately before retrying." >&2
     exit 1
   fi
+
 fi
 
 if git diff --cached --quiet; then

@@ -20,11 +20,21 @@ fi
 
 FOUND=0
 while IFS= read -r git_path; do
-  FOUND=1
-  if [ "$(basename "$git_path")" = ".git" ]; then
-    echo "descendant|$(cd "$(dirname "$git_path")" && pwd)"
+  [ -z "$git_path" ] && continue
+  if ROOT="$(git -C "$(dirname "$git_path")" rev-parse --show-toplevel 2>/dev/null)"; then
+    echo "descendant|$ROOT"
+    FOUND=1
   fi
-done < <(find . -mindepth 2 \( -name .git -type d -o -name .git -type f \) | sort)
+done < <(
+  find . \
+    \( -name .git -type d -prune -print \) -o \
+    \( -type d \( \
+      -name node_modules -o -name dist -o -name build -o -name .next -o \
+      -name .turbo -o -name .cache -o -name coverage -o -name vendor \
+    \) -prune \) -o \
+    \( -name .git -type f -print \) 2>/dev/null |
+    sort -u
+)
 
 if [ "$FOUND" -eq 0 ]; then
   echo "Error: No git repository found from $START_DIR" >&2
