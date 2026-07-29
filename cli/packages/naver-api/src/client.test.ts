@@ -27,6 +27,7 @@ describe('NaverApiClient', () => {
     expect(headers.get('X-NCP-APIGW-API-KEY')).toBe(credentials.apiKey);
   });
 
+
   it('uses safe errors for HTTP and network failures', async () => {
     const http = new NaverApiClient({
       credentials,
