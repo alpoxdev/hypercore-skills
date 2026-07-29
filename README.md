@@ -1,8 +1,12 @@
 # Hypercore Agent Skills
 
+<p align="center">
+  <img src="assets/readme/hypercore-agent-skills.webp" alt="Hypercore Agent Skills — Build once. Run anywhere." width="100%">
+</p>
+
 > Claude Code · Codex · Cursor · Antigravity에서 그대로 쓰는 한국어 우선 AI 에이전트 스킬 모음.
 
-Hypercore는 코드베이스 분석부터 릴리스까지의 반복 작업을 한 번에 줄여주는 32개 스킬을 한 패키지로 제공합니다. 각 스킬은 트리거, 워크플로, 검증 게이트가 명시되어 있어 어떤 CLI에서 호출해도 같은 의도로 동작합니다.
+Hypercore는 코드베이스 분석부터 릴리스까지의 반복 작업을 한 번에 줄여주는 33개 스킬을 한 패키지로 제공합니다. 각 스킬은 트리거, 워크플로, 검증 게이트가 명시되어 있어 어떤 CLI에서 호출해도 같은 의도로 동작합니다.
 
 - **드롭인 설치**: Claude Code 마켓플레이스에 한 줄, 다른 CLI에는 `npx skills add` 한 줄.
 - **다중 CLI**: Claude Code, Codex, Cursor, Antigravity에서 동일하게 사용.
@@ -33,7 +37,7 @@ Claude Code 안에서:
 /plugin install hypercore
 ```
 
-설치가 끝나면 Claude Code가 32개 스킬과 메타데이터를 자동으로 인식합니다. 슬래시 명령으로 곧바로 호출할 수 있습니다 — 예: `/git-maker`, `/readme-maker`, `/research`.
+설치가 끝나면 Claude Code가 33개 스킬과 메타데이터를 자동으로 인식합니다. 슬래시 명령으로 곧바로 호출할 수 있습니다 — 예: `/git-maker`, `/readme-maker`, `/research`.
 
 ### Codex 플러그인
 
@@ -166,6 +170,7 @@ cp -R hypercore-skills/skills/git-maker your-project/.claude/skills/
 | 스킬 | 설명 | 호환 |
 |------|------|------|
 | `seo-maker` | SEO / AEO / GEO 통합 분석 및 최적화 리포트 | All |
+| `image-maker` | 관찰된 이미지 기능으로 이미지를 생성하고, 미지원 환경에서는 실행 가능한 프롬프트를 안전하게 저장 | Capability-based |
 
 ### 실행 보조
 
@@ -186,7 +191,7 @@ cp -R hypercore-skills/skills/git-maker your-project/.claude/skills/
 |------|------|------|
 | `color-cli` | `@kood/color-cli` 기반 hex / rgb / oklch 색상 변환 | All |
 
-총 32개 스킬. 새 스킬은 `skills/<이름>/` 디렉터리를 추가하기만 하면 됩니다 — 자세한 형태는 [스킬 만들기](#스킬-만들기) 참고.
+총 33개 스킬. 새 스킬은 `skills/<이름>/` 디렉터리를 추가하기만 하면 됩니다 — 자세한 형태는 [스킬 만들기](#스킬-만들기) 참고.
 
 ## 시나리오 예시
 
@@ -234,7 +239,7 @@ hypercore-skills/
 │       └── color/         # @kood/color-cli — color-cli 스킬이 호출
 ├── instructions/          # 프로젝트 LLM 작업 베이스 (context/harness/sourcing/validation)
 ├── scripts/               # 보조 스크립트
-├── skills/                # 32개 스킬의 단일 원본 (각 폴더에 SKILL.md / SKILL.ko.md)
+├── skills/                # 33개 스킬의 단일 원본 (각 폴더에 SKILL.md / SKILL.ko.md)
 └── plugins/hypercore/     # Codex 플러그인 (`skills`는 ../../skills 심볼릭 링크)
 ```
 
