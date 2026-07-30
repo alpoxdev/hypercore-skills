@@ -37,7 +37,7 @@ Claude Code 안에서:
 /plugin install hypercore
 ```
 
-설치가 끝나면 Claude Code가 33개 스킬과 메타데이터를 자동으로 인식합니다. 슬래시 명령으로 곧바로 호출할 수 있습니다 — 예: `/git-maker`, `/readme-maker`, `/research`.
+설치가 끝나면 Claude Code가 34개 스킬과 메타데이터를 자동으로 인식합니다. 슬래시 명령으로 곧바로 호출할 수 있습니다 — 예: `/git-maker`, `/readme-maker`, `/agentmd-maker`, `/research`.
 
 ### Codex 플러그인
 
@@ -104,12 +104,13 @@ cp -R hypercore-skills/skills/git-maker your-project/.claude/skills/
 ```text
 /git-maker            # 변경 사항을 그룹별로 커밋하고 푸시까지 한 번에
 /readme-maker         # 코드를 읽고 프로젝트의 실제 모양에 맞는 README 생성/리팩터
+/agentmd-maker        # 저장소를 읽고 프로젝트 전용 AGENTS.md 생성/리팩터
 /research "<주제>"    # 출처가 있는 다중 소스 리서치 보고서
 /prd-maker "<아이디어>"  # 다이어그램·플로우·와이어프레임을 포함한 기획 패키지
 /pre-deploy           # 배포 전 lint/타입/빌드 게이트
 ```
 
-자연어로도 트리거됩니다 — 예: "이 프로젝트 README 다시 써줘" → `readme-maker`, "방금 변경 사항 커밋하고 푸시" → `git-maker`.
+자연어로도 트리거됩니다 — 예: "이 프로젝트 README 다시 써줘" → `readme-maker`, "이 저장소에 맞는 AGENTS.md 만들어줘" → `agentmd-maker`, "방금 변경 사항 커밋하고 푸시" → `git-maker`.
 
 ## 스킬 카탈로그
 
@@ -123,6 +124,7 @@ cp -R hypercore-skills/skills/git-maker your-project/.claude/skills/
 | `skill-tester` | 스킬 트리거/동작을 시나리오 기반으로 검증 | All |
 | `autoresearch-skill` | 반복 실행과 이진 eval 기반으로 기존 스킬을 자동 최적화 | All |
 | `readme-maker` | 코드베이스 분석 기반 README 생성 및 리팩터링 | All |
+| `agentmd-maker` | 저장소 근거 기반 `AGENTS.md` 생성·리팩터링 및 선택적 `CLAUDE.md` 조정 | All |
 | `docs-maker` | AI가 읽기 좋은 구조화된 문서/룰 팩 생성 | All |
 | `prd-maker` | 증거 기반 Living PRD + 다이어그램·플로우·와이어프레임 생성 | All |
 | `design-md-maker` | 프로젝트별 `DESIGN.md` 디자인 시스템 문서 생성 및 갱신 | All |
@@ -181,7 +183,7 @@ cp -R hypercore-skills/skills/git-maker your-project/.claude/skills/
 |------|------|------|
 | `color-cli` | `@kood/color-cli` 기반 hex / rgb / oklch 색상 변환 | All |
 
-총 33개 스킬. 새 스킬은 `skills/<이름>/` 디렉터리를 추가하기만 하면 됩니다 — 자세한 형태는 [스킬 만들기](#스킬-만들기) 참고.
+총 29개 스킬. 새 스킬은 `skills/<이름>/` 디렉터리를 추가하기만 하면 됩니다 — 자세한 형태는 [스킬 만들기](#스킬-만들기) 참고.
 
 ## 시나리오 예시
 
