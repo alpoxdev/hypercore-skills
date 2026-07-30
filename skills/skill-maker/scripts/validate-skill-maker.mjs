@@ -5,35 +5,39 @@ import path from "node:path";
 import process from "node:process";
 
 /**
- * @typedef {Object} CliArgs
- * @property {string} root
- * @property {string} evals
- * @property {boolean} json
- * @property {boolean} [help]
+ * @typedef {{
+ *   root: string,
+ *   evals: string,
+ *   json: boolean,
+ *   help?: boolean
+ * }} CliArgs
  *
- * @typedef {Object} ValidationIssue
- * @property {string} code
- * @property {string} message
- * @property {string} [path]
- * @property {string} [detail]
+ * @typedef {{
+ *   code: string,
+ *   message: string,
+ *   path?: string,
+ *   detail?: string
+ * }} ValidationIssue
  */
 /**
  * @typedef {Record<string, unknown>} JsonRecord
  *
- * @typedef {Object} EvalRow
- * @property {unknown} id
- * @property {unknown} category
- * @property {unknown} language
- * @property {unknown} intent
- * @property {unknown} prompt
- * @property {unknown} context
- * @property {unknown} metrics
- * @property {unknown} shouldTrigger
- * @property {unknown} expected
+ * @typedef {{
+ *   id: unknown,
+ *   category: unknown,
+ *   language: unknown,
+ *   intent: unknown,
+ *   prompt: unknown,
+ *   context: unknown,
+ *   metrics: unknown,
+ *   shouldTrigger: unknown,
+ *   expected: unknown
+ * }} EvalRow
  *
- * @typedef {Object} EvalRowError
- * @property {string} message
- * @property {JsonRecord} extra
+ * @typedef {{
+ *   message: string,
+ *   extra: JsonRecord
+ * }} EvalRowError
  */
 const VALIDATION_DATE = process.env.SKILL_MAKER_VALIDATION_DATE || new Date().toISOString().slice(0, 10);
 const REQUIRED_SECTIONS = [
@@ -76,6 +80,7 @@ const STRAY_DOC_NAMES = new Set(["README.md", "CHANGELOG.md", "QUICK_REFERENCE.m
  * Parses the standalone validator command line.
  * @param {string[]} argv
  * @returns {CliArgs}
+ * @throws {Error} When an option is unknown or missing its value.
  */
 function parseArgs(argv) {
   /** @type {CliArgs} */

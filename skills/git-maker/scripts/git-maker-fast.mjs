@@ -7,27 +7,60 @@ import { dirname, resolve } from "node:path";
 const PRUNED_DIRECTORIES = new Set(["node_modules", "dist", "build", ".next", ".turbo", ".cache", "coverage", "vendor"]);
 /**
  * @typedef {{ exitCode: number, stdout: string, stderr: string }} GitResult
- * @returns {{ git: (args: string[], cwd: string, env?: Record<string, string | undefined>, output?: boolean) => Promise<GitResult>, settle: <T>(main: () => Promise<T>) => Promise<T> }}
+ * @returns {{ git: (args: string[], cwd: string, env?: Record<string, string | undefined>, output?: boolean) => Promise<GitResult>, stop: () => void, throwIfStopping: () => void, settle: <T>(main: () => Promise<T>) => Promise<T> }}
  */
 function createGitRunner() {
   const children = new Set();
+  const settlements = new Set();
+  let stopNewWork = false;
   /** @type {NodeJS.Signals | null} */
   let receivedSignal = null;
   /** @param {NodeJS.Signals} signal */
-  const forward = (signal) => { receivedSignal ??= signal; for (const child of children) child.kill(signal); };
+  function killActive(signal) { for (const child of children) child.kill(signal); }
+  /** @param {NodeJS.Signals} signal */
+  function forward(signal) { receivedSignal ??= signal; stopNewWork = true; killActive(signal); }
+  function stop() { stopNewWork = true; killActive("SIGTERM"); }
   process.on("SIGINT", forward); process.on("SIGTERM", forward);
+  function throwIfStopping() { if (stopNewWork) throw new Error("Git runner is stopping"); }
   /** @param {string[]} args @param {string} cwd @param {Record<string, string | undefined>} [env] @param {boolean} [output] @returns {Promise<GitResult>} */
-  async function git(args, cwd, env, output = false) { const child = Bun.spawn(["git", ...args], { cwd, stdout: "pipe", stderr: "pipe", env: env ? { ...process.env, ...env } : undefined }); children.add(child); try { const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()]); if (output) { if (stdout) process.stdout.write(stdout); if (stderr) process.stderr.write(stderr); } return { exitCode, stdout: stdout.trimEnd(), stderr: stderr.trimEnd() }; } finally { children.delete(child); } }
+  async function git(args, cwd, env, output = false) {
+    throwIfStopping();
+    const child = Bun.spawn({ cmd: ["git", ...args], cwd, env: env ? { ...process.env, ...env } : process.env, stdout: "pipe", stderr: "pipe" });
+    children.add(child);
+    const settlement = Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()]);
+    settlements.add(settlement);
+    try {
+      const [exitCode, stdout, stderr] = await settlement;
+      if (output) { if (stdout) process.stdout.write(stdout); if (stderr) process.stderr.write(stderr); }
+      return { exitCode, stdout: stdout.trimEnd(), stderr: stderr.trimEnd() };
+    } finally {
+      settlements.delete(settlement);
+      children.delete(child);
+    }
+  }
   /** @template T @param {() => Promise<T>} main @returns {Promise<T>} */
-  async function settle(main) { try { return await main(); } finally { process.off("SIGINT", forward); process.off("SIGTERM", forward); if (receivedSignal) process.kill(process.pid, receivedSignal); } }
-  return { git, settle };
+  async function settle(main) {
+    try {
+      return await main();
+    } catch (error) {
+      stop();
+      throw error;
+    } finally {
+      await Promise.allSettled([...settlements]);
+      process.off("SIGINT", forward); process.off("SIGTERM", forward);
+      if (receivedSignal) process.kill(process.pid, receivedSignal);
+    }
+  }
+  return { git, stop, throwIfStopping, settle };
 }
 /** @param {string[]} args @param {GitResult} result @returns {Error} */
 function gitError(args, result) { return new Error(result.stderr || `git ${args.join(" ")} failed with exit code ${result.exitCode}`); }
 /** @param {string[]} args @param {string} cwd @param {Record<string, string | undefined>} [env] @param {boolean} [output] @returns {Promise<GitResult>} */
 async function requiredGit(args, cwd, env, output = false) { const result = await runner.git(args, cwd, env, output); if (result.exitCode !== 0) throw gitError(args, result); return result; }
+/** @param {GitResult} result @returns {boolean} */
+function isNotGitRepository(result) { return result.exitCode !== 0 && /not a git repository/i.test(result.stderr); }
 /** @param {string} path @param {boolean} [allowNotRepo] @returns {Promise<string | null>} */
-async function repoRoot(path, allowNotRepo = false) { const result = await runner.git(["rev-parse", "--show-toplevel"], path); if (result.exitCode === 0) return result.stdout; if (allowNotRepo) return null; throw gitError(["rev-parse", "--show-toplevel"], result); }
+async function repoRoot(path, allowNotRepo = false) { const args = ["rev-parse", "--show-toplevel"]; const result = await runner.git(args, path); if (result.exitCode === 0) return result.stdout; if (allowNotRepo && isNotGitRepository(result)) return null; throw gitError(args, result); }
 /** @param {string} directory @param {string[]} paths @returns {void} */
 function collectGitPaths(directory, paths) { for (const entry of readdirSync(directory, { withFileTypes: true })) { const path = `${directory}/${entry.name}`; if (entry.name === ".git" && (entry.isDirectory() || entry.isFile())) { paths.push(path); continue; } if (entry.isDirectory() && !PRUNED_DIRECTORIES.has(entry.name)) collectGitPaths(path, paths); } }
 /** @param {string} startDir @returns {Promise<string[]>} */
@@ -58,7 +91,7 @@ async function statusOneRepo(repo) {
   output.push("files|end"); return `${output.join("\n")}\n`;
 }
 /** @template T, U @param {T[]} items @param {number} limit @param {(item: T) => Promise<U>} work @returns {Promise<U[]>} */
-async function parallelMap(items, limit, work) { const results = new Array(items.length); let cursor = 0; async function worker() { while (true) { const index = cursor++; if (index >= items.length) return; results[index] = await work(items[index]); } } await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker)); return results; }
+async function parallelMap(items, limit, work) { const results = new Array(items.length); let cursor = 0; async function worker() { while (true) { runner.throwIfStopping(); const index = cursor++; if (index >= items.length) return; results[index] = await work(items[index]); } } const workers = Array.from({ length: Math.min(limit, items.length) }, worker); try { await Promise.all(workers); } catch (error) { runner.stop(); await Promise.allSettled(workers); throw error; } return results; }
 /** @param {string} repo @param {boolean} force @returns {Promise<number>} */
 async function pushOneRepo(repo, force) { const root = await repoRoot(repo); if (!root) throw new Error(`[${repo}] not a git work tree`); const branch = (await requiredGit(["branch", "--show-current"], root)).stdout; if (!branch) { console.error(`[${root}] Skipped: detached HEAD`); return 2; } if (force && (branch === "main" || branch === "master")) { console.error(`[${root}] Skipped: cannot force push to protected branch ${branch}`); return 2; } const upstream = (await requiredGit(["for-each-ref", "--format=%(upstream:short)", `refs/heads/${branch}`], root)).stdout; const env = { GIT_TERMINAL_PROMPT: "0" }; if (upstream) { const ahead = (await requiredGit(["rev-list", "--count", "@{upstream}..HEAD"], root)).stdout || "0"; if (Number(ahead) === 0) { console.log(`[${root}] Already up to date on ${branch}`); return 2; } console.log(`[${root}] Pushing ${ahead} commit(s) on ${branch}...`); return (await runner.git(force ? ["push", "--force-with-lease"] : ["push"], root, env, true)).exitCode ?? 1; } console.log(`[${root}] No upstream. Pushing ${branch} to origin...`); return (await runner.git(force ? ["push", "-u", "origin", branch, "--force-with-lease"] : ["push", "-u", "origin", branch], root, env, true)).exitCode ?? 1; }
 /** @param {string[]} args @returns {Promise<number>} */

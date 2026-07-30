@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
 // @ts-check
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { closeSync, existsSync, fchmodSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, extname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
 
 /** @typedef {Record<string, unknown>} JsonObject */
 
@@ -106,8 +107,96 @@ if (existsSync(detailsDir) && statSync(detailsDir).isDirectory()) {
   }
 }
 
+/**
+ * @param {string} path
+ * @returns {{ content: Buffer, mode: number } | null}
+ */
+function snapshotOutput(path) {
+  if (!existsSync(path)) return null;
+  const stats = statSync(path);
+  if (!stats.isFile()) throw new Error(`출력 경로가 일반 파일이 아닙니다: ${path}`);
+  return { content: readFileSync(path), mode: stats.mode & 0o7777 };
+}
+
+/** @param {string} path */
+function temporaryPath(path) {
+  return `${path}.${process.pid}.${randomUUID()}.tmp`;
+}
+
+/**
+ * @param {string} path
+ * @param {string | Buffer} content
+ * @param {number | undefined} mode
+ */
+function writeSyncedTemp(path, content, mode) {
+  const descriptor = openSync(path, "wx", 0o666);
+  try {
+    if (mode !== undefined) fchmodSync(descriptor, mode);
+    writeFileSync(descriptor, content);
+    fsyncSync(descriptor);
+  } catch (error) {
+    closeSync(descriptor);
+    unlinkSync(path);
+    throw error;
+  }
+  closeSync(descriptor);
+}
+
+/** @param {string} path */
+function removeTemp(path) {
+  if (existsSync(path)) unlinkSync(path);
+}
+
+/**
+ * @param {string} path
+ * @param {{ content: Buffer, mode: number } | null} snapshot
+ */
+function restoreOutput(path, snapshot) {
+  if (snapshot === null) {
+    if (existsSync(path)) unlinkSync(path);
+    return;
+  }
+
+  const tempPath = temporaryPath(path);
+  try {
+    writeSyncedTemp(tempPath, snapshot.content, snapshot.mode);
+    renameSync(tempPath, path);
+  } finally {
+    removeTemp(tempPath);
+  }
+}
+
+/**
+ * @param {string | Buffer} dashboard
+ * @param {string} resultsJs
+ */
+function writeOutputPair(dashboard, resultsJs) {
+  const dashboardSnapshot = snapshotOutput(dashboardPath);
+  const resultsSnapshot = snapshotOutput(resultsJsPath);
+  const dashboardTempPath = temporaryPath(dashboardPath);
+  const resultsTempPath = temporaryPath(resultsJsPath);
+
+  try {
+    writeSyncedTemp(dashboardTempPath, dashboard, dashboardSnapshot?.mode);
+    writeSyncedTemp(resultsTempPath, resultsJs, resultsSnapshot?.mode);
+    renameSync(dashboardTempPath, dashboardPath);
+    try {
+      renameSync(resultsTempPath, resultsJsPath);
+    } catch (error) {
+      try {
+        restoreOutput(dashboardPath, dashboardSnapshot);
+      } catch (restoreError) {
+        throw new AggregateError([error, restoreError], "results.js 커밋 실패 후 dashboard.html 복원에 실패했습니다");
+      }
+      throw error;
+    }
+  } finally {
+    removeTemp(dashboardTempPath);
+    removeTemp(resultsTempPath);
+  }
+}
+
 mkdirSync(artifactDir, { recursive: true });
-copyFileSync(templatePath, dashboardPath);
-writeFileSync(resultsJsPath, `window.__AUTORESEARCH_RESULTS__ = ${JSON.stringify(results)};\nwindow.__AUTORESEARCH_DETAILS__ = ${JSON.stringify(details)};\n`, "utf8");
+writeOutputPair(readFileSync(templatePath), `window.__AUTORESEARCH_RESULTS__ = ${JSON.stringify(results)};\nwindow.__AUTORESEARCH_DETAILS__ = ${JSON.stringify(details)};\n`);
 console.log(`렌더 완료: ${dashboardPath}`);
 console.log(`렌더 완료: ${resultsJsPath}`);

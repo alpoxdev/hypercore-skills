@@ -17,13 +17,19 @@ function createGitRunner() {
   const forward = (signal) => { receivedSignal ??= signal; for (const child of children) child.kill(signal); };
   process.on("SIGINT", forward); process.on("SIGTERM", forward);
   /** @param {string[]} args @param {string} cwd @param {Record<string, string | undefined>} [env] @param {boolean} [output] @returns {Promise<GitResult>} */
-  async function git(args, cwd, env, output = false) { const child = Bun.spawn(["git", ...args], { cwd, stdout: "pipe", stderr: "pipe", env: env ? { ...process.env, ...env } : undefined }); children.add(child); try { const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()]); if (output) { if (stdout) process.stdout.write(stdout); if (stderr) process.stderr.write(stderr); } return { exitCode, stdout, stderr }; } finally { children.delete(child); } }
+  async function git(args, cwd, env, output = false) { const child = Bun.spawn({ cmd: ["git", ...args], cwd, env: env ? { ...process.env, ...env } : process.env, stdout: "pipe", stderr: "pipe" }); children.add(child); try { const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()]); if (output) { if (stdout) process.stdout.write(stdout); if (stderr) process.stderr.write(stderr); } return { exitCode, stdout, stderr }; } finally { children.delete(child); } }
   /** @template T @param {() => Promise<T>} main @returns {Promise<T>} */
   async function settle(main) { try { return await main(); } finally { process.off("SIGINT", forward); process.off("SIGTERM", forward); if (receivedSignal) process.kill(process.pid, receivedSignal); } }
   return { git, settle };
 }
+/** @param {string[]} args @param {GitResult} result @returns {Error} */
+function gitError(args, result) { return new Error(result.stderr || `git ${args.join(" ")} failed with exit code ${result.exitCode}`); }
+/** @param {string[]} args @param {string} cwd @returns {Promise<GitResult>} */
+async function requiredGit(args, cwd) { const result = await runner.git(args, cwd); if (result.exitCode !== 0) throw gitError(args, result); return result; }
+/** @param {GitResult} result @returns {boolean} */
+function isNotGitRepository(result) { return result.exitCode !== 0 && /not a git repository/i.test(result.stderr); }
 /** @param {string} path @returns {Promise<string | null>} */
-async function repoRoot(path) { const result = await runner.git(["rev-parse", "--show-toplevel"], path); return result.exitCode === 0 ? result.stdout.trimEnd() : null; }
+async function repoRoot(path) { const args = ["rev-parse", "--show-toplevel"]; const result = await runner.git(args, path); if (result.exitCode === 0) return result.stdout.trimEnd(); if (isNotGitRepository(result)) return null; throw gitError(args, result); }
 /** @param {string} directory @param {string[]} paths @returns {void} */
 function collectGitPaths(directory, paths) { for (const entry of readdirSync(directory, { withFileTypes: true })) { const path = `${directory}/${entry.name}`; if (entry.name === ".git" && (entry.isDirectory() || entry.isFile())) { paths.push(path); continue; } if (entry.isDirectory() && !PRUNED_DIRECTORIES.has(entry.name)) collectGitPaths(path, paths); } }
 /** @param {string} startDir @returns {Promise<string[]>} */
@@ -41,12 +47,21 @@ async function discoverRepos(startDir) {
 function isRepoRoot(root) { return root !== null; }
 /** @param {string} repo @param {boolean} force @returns {Promise<number>} */
 async function pushOneRepo(repo, force) {
-  const root = await repoRoot(repo); if (!root) { console.error(`[${repo}] Failed: not a git work tree`); return 1; }
-  const branch = (await runner.git(["branch", "--show-current"], root)).stdout.trimEnd(); if (!branch) { console.error(`[${root}] Skipped: detached HEAD`); return 2; }
-  if (force && (branch === "main" || branch === "master")) { console.error(`[${root}] Skipped: cannot force push to protected branch ${branch}`); return 2; }
-  const upstream = (await runner.git(["rev-parse", "--abbrev-ref", "@{upstream}"], root)).stdout.trimEnd(); const env = { GIT_TERMINAL_PROMPT: "0" };
-  if (upstream) { const ahead = (await runner.git(["rev-list", "--count", "@{upstream}..HEAD"], root)).stdout.trimEnd() || "0"; if (Number(ahead) === 0) { console.log(`[${root}] Already up to date on ${branch}`); return 2; } console.log(`[${root}] Pushing ${ahead} commit(s) on ${branch}...`); return (await runner.git(force ? ["push", "--force-with-lease"] : ["push"], root, env, true)).exitCode ?? 1; }
-  console.log(`[${root}] No upstream. Pushing ${branch} to origin...`); return (await runner.git(force ? ["push", "-u", "origin", branch, "--force-with-lease"] : ["push", "-u", "origin", branch], root, env, true)).exitCode ?? 1;
+  try {
+    const root = await repoRoot(repo); if (!root) { console.error(`[${repo}] Failed: not a git work tree`); return 1; }
+    const branch = (await requiredGit(["branch", "--show-current"], root)).stdout.trimEnd(); if (!branch) { console.error(`[${root}] Skipped: detached HEAD`); return 2; }
+    if (force && (branch === "main" || branch === "master")) { console.error(`[${root}] Skipped: cannot force push to protected branch ${branch}`); return 2; }
+    const upstream = (await requiredGit(["for-each-ref", "--format=%(upstream:short)", `refs/heads/${branch}`], root)).stdout.trimEnd();
+    const env = { GIT_TERMINAL_PROMPT: "0" };
+    if (upstream) {
+      const ahead = (await requiredGit(["rev-list", "--count", "@{upstream}..HEAD"], root)).stdout.trimEnd();
+      if (Number(ahead) === 0) { console.log(`[${root}] Already up to date on ${branch}`); return 2; }
+      console.log(`[${root}] Pushing ${ahead} commit(s) on ${branch}...`); return (await runner.git(force ? ["push", "--force-with-lease"] : ["push"], root, env, true)).exitCode;
+    }
+    console.log(`[${root}] No upstream. Pushing ${branch} to origin...`); return (await runner.git(force ? ["push", "-u", "origin", branch, "--force-with-lease"] : ["push", "-u", "origin", branch], root, env, true)).exitCode;
+  } catch (error) {
+    console.error(`[${repo}] Failed: ${error instanceof Error ? error.message : error}`); return 1;
+  }
 }
 /** @param {string[]} args @returns {Promise<number>} */
 async function main(args) {

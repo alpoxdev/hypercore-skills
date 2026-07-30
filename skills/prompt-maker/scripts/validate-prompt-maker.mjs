@@ -5,11 +5,12 @@ import path from "node:path";
 import process from "node:process";
 
 /**
- * @typedef {Object} CliArgs
- * @property {string} root
- * @property {string|null} evals
- * @property {boolean} json
- * @property {boolean} help
+ * @typedef {{
+ *   root: string,
+ *   evals: string|null,
+ *   json: boolean,
+ *   help: boolean
+ * }} CliArgs
  *
  * @typedef {Error & { code: string }} CliError
  *
@@ -21,10 +22,11 @@ import process from "node:process";
  *
  * @typedef {Record<string, unknown>} JsonObject
  *
- * @typedef {Object} EvalCase
- * @property {string} id
- * @property {string} category
- * @property {string} language
+ * @typedef {{
+ *   id: string,
+ *   category: string,
+ *   language: string
+ * }} EvalCase
  */
 const DEFAULT_ROOT = "skills/prompt-maker";
 const REQUIRED_MARKERS = [
@@ -90,6 +92,7 @@ const REQUIRED_TEMPLATE_CONCEPTS = [
  * Parses command-line options for the package validator.
  * @param {string[]} argv
  * @returns {CliArgs}
+ * @throws {Error} When an option is unknown or missing its value.
  */
 function parseArgs(argv) {
   /** @type {CliArgs} */
@@ -240,7 +243,7 @@ function emptyResult(root, evals) {
   };
 }
 
-/** @param {string} rootAbs @param {ValidationError[]} errors */
+/** @param {string} rootAbs @param {ValidationError[]} errors @returns {{ exists: boolean, frontmatterName: boolean, markers: Record<string, boolean>, contractLabels: Record<string, boolean>, activationExamples: Record<string, number> }} */
 function validateSkillFile(rootAbs, errors) {
   const skillPath = path.join(rootAbs, "SKILL.md");
   /** @type {{ exists: boolean, frontmatterName: boolean, markers: Record<string, boolean>, contractLabels: Record<string, boolean>, activationExamples: Record<string, number> }} */

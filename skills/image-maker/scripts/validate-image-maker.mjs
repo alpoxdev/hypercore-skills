@@ -6,35 +6,38 @@ import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 
 /**
- * @typedef {Object} ImageMakerInput
- * @property {'generate'|'edit'|'prompt_only'} requested_mode
- * @property {'complete'|'missing'} material_context
- * @property {'none'|'subject'|'reference'|'rendered_text'|'preserve_change'} missing_fact
- * @property {'supplied'|'absent'|'not_applicable'} edit_source
- * @property {'authorized'|'denied'|'unknown'} authorization
- * @property {'explicitly_allowed'|'explicitly_rejected'|'unspecified'} fallback_policy
- * @property {'available'|'unavailable'|'unknown'} image_generation
- * @property {'available'|'unavailable'|'unknown'} image_editing
- * @property {'available'|'unavailable'|'unknown'} retrieve_persist
- * @property {'available'|'unavailable'|'unknown'} inspect
- * @property {'available'|'unavailable'|'unknown'} file_write
- * @property {'required'|'optional'} inspection_requirement
- * @property {string} topic
- * @property {string} compiled_brief
+ * @typedef {{
+ *   requested_mode: 'generate'|'edit'|'prompt_only',
+ *   material_context: 'complete'|'missing',
+ *   missing_fact: 'none'|'subject'|'reference'|'rendered_text'|'preserve_change',
+ *   edit_source: 'supplied'|'absent'|'not_applicable',
+ *   authorization: 'authorized'|'denied'|'unknown',
+ *   fallback_policy: 'explicitly_allowed'|'explicitly_rejected'|'unspecified',
+ *   image_generation: 'available'|'unavailable'|'unknown',
+ *   image_editing: 'available'|'unavailable'|'unknown',
+ *   retrieve_persist: 'available'|'unavailable'|'unknown',
+ *   inspect: 'available'|'unavailable'|'unknown',
+ *   file_write: 'available'|'unavailable'|'unknown',
+ *   inspection_requirement: 'required'|'optional',
+ *   topic: string,
+ *   compiled_brief: string
+ * }} ImageMakerInput
  *
- * @typedef {Object} FileIdentity
- * @property {string} canonical_path
- * @property {number} dev
- * @property {number} ino
- * @property {number} byte_length
- * @property {string} content_digest
+ * @typedef {{
+ *   canonical_path: string,
+ *   dev: number,
+ *   ino: number,
+ *   byte_length: number,
+ *   content_digest: string
+ * }} FileIdentity
  *
- * @typedef {Object} AttemptRecord
- * @property {number} attempt
- * @property {'objective_failure'|'success'} outcome
- * @property {string} objective_evidence
- * @property {string} context_token
- * @property {string} compiled_brief_digest
+ * @typedef {{
+ *   attempt: number,
+ *   outcome: 'objective_failure'|'success',
+ *   objective_evidence: string,
+ *   context_token: string,
+ *   compiled_brief_digest: string
+ * }} AttemptRecord
  */
 /**
  * @typedef {Record<string, unknown>} UnknownRecord
@@ -249,7 +252,7 @@ function media(bytes) { return bytes.subarray(0, 8).equals(Buffer.from([137,80,7
 // Test-only fixture. Node pathname operations are deliberately not a production secure writer.
 /** @param {string} root @param {string} topic @param {string} name @param {Buffer} bytes @returns {FixtureWrite} */
 function fixtureWrite(root, topic, name, bytes) { const dir = join(root, '.hypercore', 'image-maker', topic); mkdirSync(dir, { recursive: true }); let target = join(dir, name), n = 2; while (lstatSync(target, { throwIfNoEntry: false })) { const e = extname(name); target = join(dir, `${name.slice(0, -e.length)}-${n++}${e}`); } const rootBefore = identity(root, Buffer.from('')); const parentBefore = identity(dir, Buffer.from('')); writeFileSync(target, bytes, { flag: 'wx' }); const id = identity(target, bytes); return { target, provenance: { identity: id, secure_write: { capability: 'descriptor_relative_no_follow', adapter: 'test_fixture_descriptor_simulation', identity: id, root_before: rootBefore, root_after: identity(root, Buffer.from('')), parent_before: parentBefore, parent_after: identity(dir, Buffer.from('')), final_before: id, final_after: id } } }; }
-/** @param {string} file @returns {unknown[]} */
+/** @param {string} file @returns {unknown[]} @throws {Error} When a JSONL row is invalid. */
 function parse(file) { return readFileSync(file, 'utf8').split(/\r?\n/).filter(line => line.trim()).map((line, i) => { try { return JSON.parse(line); } catch { throw Error(`E_JSONL_PARSE:${i + 1}`); } }); }
 /** @param {unknown} actual @param {unknown} oracle @returns {boolean} */
 function exact(actual, oracle) {
@@ -350,7 +353,7 @@ export function validateProviderLedger(value) {
   if ([...allIds].some(id => markerCounts.get(id) !== 1 || ids.get(id) !== 1)) return { ok: false, error: 'E_PROVIDER_LEDGER' };
   return { ok: true };
 }
-/** @param {unknown[]} rows */
+/** @param {unknown[]} rows @returns {{ errors: string[], manual: string[] }} */
 function validateRows(rows) {
   /** @type {string[]} */ const errors = [], ids = new Set(), manual = [];
   const automaticKinds = new Set(['classifier','resolver','input','runtime','prompt','prompt_cross_binding','traversal','ancestor_symlink','target_symlink','interposed_swap','collision_suffix','edit_source_digest','provider_ledger']);
@@ -398,7 +401,7 @@ function embeddedTests() {
   if (validateTopic('../x').ok || validateTopic('x\u202e').ok || validateTopic('x\n').ok || !safeTopic.ok || safeTopic.topic !== '...') failures.push('E_SELF_TOPIC');
   return failures;
 }
-/** @param {string[]} argv */
+/** @param {string[]} argv @returns {void} @throws {Error} When required input cannot be loaded or parsed. */
 function main(argv) {
   let root = null, evals = 'skills/image-maker/assets/evals/image-maker-cases.jsonl', self = false, evalsSpecified = false;
   for (let i=0;i<argv.length;i++) {

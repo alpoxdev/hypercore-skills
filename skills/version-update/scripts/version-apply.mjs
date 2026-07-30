@@ -1,41 +1,48 @@
 #!/usr/bin/env bun
 // @ts-check
 /** Apply a semantic version to explicitly supplied or discovered version files. */
-import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { basename, dirname, resolve } from "node:path";
 
 const SEMVER = "(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)";
+const activeChildren = new Set();
+let receivedSignal;
+const signalHandlers = new Map();
+for (const signal of ["SIGINT", "SIGTERM"]) {
+  const handler = () => {
+    receivedSignal ??= signal;
+    for (const child of activeChildren) child.kill(signal);
+  };
+  signalHandlers.set(signal, handler);
+  process.on(signal, handler);
+}
+
+try {
 
 const [newVersion, ...providedFiles] = process.argv.slice(2);
 if (!newVersion) {
   console.error(`Usage: ${process.argv[1]} <new_version> [files...]`);
-  process.exit(1);
+  throw new Error("Invalid arguments");
 }
 if (!new RegExp(`^${SEMVER}$`).test(newVersion)) {
   console.error(`Error: Invalid version format: ${newVersion} (expected x.y.z)`);
-  process.exit(1);
+  throw new Error("Invalid version");
 }
 
 let files = providedFiles;
 if (!files.length) {
   const finder = resolve(dirname(fileURLToPath(import.meta.url)), "version-find.mjs");
-  const activeChildren = new Set();
-  const child = Bun.spawn([process.execPath, finder, "--plain"], { stdout: "pipe", stderr: "pipe" });
+  const child = Bun.spawn({ cmd: [process.execPath, finder, "--plain"], cwd: process.cwd(), env: process.env, stdout: "pipe", stderr: "pipe" });
   activeChildren.add(child);
   const stdout = new Response(child.stdout).text();
   const stderr = new Response(child.stderr).text();
-  for (const signal of ["SIGINT", "SIGTERM"]) {
-    process.on(signal, () => {
-      for (const activeChild of activeChildren) activeChild.kill(signal);
-    });
-  }
   try {
     const [exitCode, output, error] = await Promise.all([child.exited, stdout, stderr]);
     if (exitCode !== 0) {
       if (error) process.stderr.write(error);
       console.error(`Error: Version discovery failed with exit code ${exitCode}`);
-      process.exit(exitCode || 1);
+      throw new Error(`Version discovery failed with exit code ${exitCode}`);
     }
     files = output.split(/\r?\n/).filter(Boolean);
   } finally {
@@ -44,14 +51,23 @@ if (!files.length) {
 }
 if (!files.length) {
   console.error("Error: No version files found");
-  process.exit(1);
+  throw new Error("No version files found");
 }
 
-/** @param {string} file @param {(content: string) => string} update */
-function rewrite(file, update) {
-  const temporary = `${file}.tmp`;
-  writeFileSync(temporary, update(readFileSync(file, "utf8")));
-  renameSync(temporary, file);
+/** @param {string} file */
+function updateFor(file) {
+  switch (basename(file)) {
+    case "package.json": return updatePackage;
+    case "Cargo.toml": return updateCargo;
+    case "pyproject.toml": return updatePyproject;
+    case "setup.py": return (/** @type {string} */ content) => content.replace(/(version[ \t]*=[ \t]*['"])[0-9]+\.[0-9]+\.[0-9]+(['"])/g, `$1${newVersion}$2`);
+    default:
+      if (!file.endsWith(".py")) return null;
+      return (/** @type {string} */ content) => {
+        let result = content.replace(/^([ \t]*__version__[ \t]*=[ \t]*['"])[0-9]+\.[0-9]+\.[0-9]+(['"].*)$/m, `$1${newVersion}$2`);
+        return result.replace(/(\.version\(['"])[0-9]+\.[0-9]+\.[0-9]+(['"]\))/g, `$1${newVersion}$2`);
+      };
+  }
 }
 /** @param {string} content */
 function updatePackage(content) {
@@ -89,25 +105,111 @@ function updatePyproject(content) {
   }).join("");
 }
 
-let updated = 0;
-for (const file of files) {
-  if (!existsSync(file)) {
-    console.error(`[skip] not found: ${file}`);
-    continue;
-  }
+/** @param {string} file @param {string} content */
+function hasRequestedVersion(file, content) {
+  const escaped = newVersion.replace(/\./g, "\\.");
   switch (basename(file)) {
-    case "package.json": rewrite(file, updatePackage); break;
-    case "Cargo.toml": rewrite(file, updateCargo); break;
-    case "pyproject.toml": rewrite(file, updatePyproject); break;
-    case "setup.py": rewrite(file, (content) => content.replace(/(version[ \t]*=[ \t]*['"])[0-9]+\.[0-9]+\.[0-9]+(['"])/g, `$1${newVersion}$2`)); break;
-    default:
-      rewrite(file, (content) => {
-        let result = content;
-        if (file.endsWith(".py")) result = result.replace(/^([ \t]*__version__[ \t]*=[ \t]*['"])[0-9]+\.[0-9]+\.[0-9]+(['"].*)$/m, `$1${newVersion}$2`);
-        return result.replace(/(\.version\(['"])[0-9]+\.[0-9]+\.[0-9]+(['"]\))/g, `$1${newVersion}$2`);
+    case "package.json":
+      return new RegExp(`"version"[ \\t]*:[ \\t]*"${escaped}"`).test(content);
+    case "Cargo.toml":
+      return content.split(/\r?\n/).some((line, index, lines) => {
+        if (!/^[ \t]*version[ \t]*=[ \t]*"/.test(line)) return false;
+        let section = "";
+        for (let cursor = 0; cursor <= index; cursor += 1) {
+          if (/^\[[^\]]+\][ \t]*$/.test(lines[cursor])) section = lines[cursor];
+        }
+        return section === "[package]" && new RegExp(`^[ \\t]*version[ \\t]*=[ \\t]*"${escaped}"`).test(line);
       });
+    case "pyproject.toml": {
+      let section = "";
+      return content.split(/\r?\n/).some((line) => {
+        if (/^\[[^\]]+\][ \t]*$/.test(line)) section = line;
+        return (section === "[project]" || section === "[tool.poetry]")
+          && new RegExp(`^[ \\t]*version[ \\t]*=[ \\t]*["']${escaped}["']`).test(line);
+      });
+    }
+    case "setup.py":
+      return new RegExp(`version[ \\t]*=[ \\t]*['"]${escaped}['"]`).test(content);
+    default:
+      return new RegExp(`(?:__version__[ \\t]*=[ \\t]*['"]${escaped}['"]|\\.version\\(['"]${escaped}['"]\\))`).test(content);
   }
-  console.log(`[updated] ${file}`);
-  updated += 1;
 }
-console.log(`Applied version ${newVersion} to ${updated} file(s).`);
+
+/** @typedef {{ file: string, original: Buffer, updated: string, mode: number, temporary: string }} Plan */
+
+/** @type {Plan[]} */
+const plans = [];
+for (const [index, file] of files.entries()) {
+  if (!existsSync(file)) throw new Error(`Error: Version file not found: ${file}`);
+
+  const update = updateFor(file);
+  if (!update) throw new Error(`Error: Unsupported version file: ${file}`);
+
+  const stat = statSync(file);
+  if (!stat.isFile()) throw new Error(`Error: Version target is not a file: ${file}`);
+
+  const original = readFileSync(file);
+  const content = original.toString("utf8");
+  const updated = update(content);
+  if (updated === content) throw new Error(`Error: No version update applied to ${file}`);
+  if (!hasRequestedVersion(file, updated)) throw new Error(`Error: Version postcondition failed for ${file}`);
+
+  plans.push({
+    file,
+    original,
+    updated,
+    mode: stat.mode & 0o7777,
+    temporary: `${file}.version-apply-${process.pid}-${index}.tmp`,
+  });
+}
+
+/** @param {string} file */
+function removeTemporary(file) {
+  try {
+    unlinkSync(file);
+  } catch (error) {
+    if (/** @type {NodeJS.ErrnoException} */ (error).code !== "ENOENT") throw error;
+  }
+}
+
+/** @type {Plan[]} */
+const replaced = [];
+try {
+  for (const plan of plans) {
+    writeFileSync(plan.temporary, plan.updated, { mode: plan.mode, flag: "wx" });
+    chmodSync(plan.temporary, plan.mode);
+    renameSync(plan.temporary, plan.file);
+    replaced.push(plan);
+  }
+} catch (error) {
+  const rollbackErrors = [];
+  for (const plan of replaced.reverse()) {
+    try {
+      writeFileSync(plan.temporary, plan.original, { mode: plan.mode, flag: "wx" });
+      chmodSync(plan.temporary, plan.mode);
+      renameSync(plan.temporary, plan.file);
+    } catch (rollbackError) {
+      rollbackErrors.push(`${plan.file}: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`);
+    }
+  }
+  for (const plan of plans) {
+    try {
+      removeTemporary(plan.temporary);
+    } catch (cleanupError) {
+      rollbackErrors.push(`${plan.temporary}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`);
+    }
+  }
+  const detail = error instanceof Error ? error.message : String(error);
+  throw new Error(`Error: Version update failed; restored replaced files. ${detail}${rollbackErrors.length ? ` Rollback errors: ${rollbackErrors.join("; ")}` : ""}`);
+}
+
+for (const plan of plans) console.log(`[updated] ${plan.file}`);
+console.log(`Applied version ${newVersion} to ${plans.length} file(s).`);
+} finally {
+  for (const [signal, handler] of signalHandlers) process.off(signal, handler);
+  if (receivedSignal) {
+    for (const child of activeChildren) child.kill(receivedSignal);
+    await Promise.allSettled([...activeChildren].map((child) => child.exited));
+    process.kill(process.pid, receivedSignal);
+  }
+}

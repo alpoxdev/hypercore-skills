@@ -2,13 +2,17 @@
 // @ts-check
 
 /** Validate the approved Bun skill-script inventory and safety boundaries. */
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const manifestPath = join(root, "scripts/fixtures/skill-script-parity/manifest.json");
 const skillsPath = join(root, "skills");
+const expectedForbiddenLiterals = ["git-commit-detect", ".agents/skills/git-commit", ".claude/skills/git-commit", ".codex/skills/git-commit", "installed|", "missing|"];
+const expectedScanTargets = ["skills/version-update", "scripts/fixtures/skill-script-parity/behavior"];
+const expectedEnforcementFiles = ["scripts/fixtures/skill-script-parity/manifest.json", "scripts/validate-skills.mjs", "scripts/tests/skill-scripts.test.mjs"];
 
 /** @param {string} directory @returns {string[]} */
 function filesBelow(directory) {
@@ -35,16 +39,133 @@ function isRecord(value) { return typeof value === "object" && value !== null &&
 /** @param {unknown} value @returns {value is string} */
 function nonEmpty(value) { return typeof value === "string" && value.trim() !== ""; }
 
-/** @param {string} content @param {string} file */
-function validateNamedFunctionDocs(content, file) {
-  const pattern = /\/\*\*((?:(?!\/\*\*)[\s\S])*?)\*\/\s*(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(([^)]*)\)/gu;
-  for (const match of content.matchAll(pattern)) {
-    const [, doc, name, rawParameters] = match;
-    const parameters = rawParameters.split(",").map((value) => value.trim().replace(/^\.\.\./u, "").split("=")[0].trim()).filter((value) => /^[A-Za-z_$][\w$]*$/u.test(value));
-    const documented = doc.split("@").filter((tag) => tag.trimStart().startsWith("param")).map((tag) => tag.trimStart().replace(/^param\b/u, "").trim().split(/\s+/u).filter((part) => part !== "*").at(-1)?.replace(/^\[|\]$/gu, "") ?? "");
-    assert(sameList(parameters, documented), `${file}:${name} JSDoc @param names must exactly match named parameters`);
-    for (const tag of doc.matchAll(/@(returns?|throws?)\b([^\n*]*)/gu)) assert(tag[2].trim() !== "", `${file}:${name} @${tag[1]} must have a description or type`);
+/**
+ * Validates JSDoc contracts for top-level command, parser, decoder, spawn, and main functions.
+ *
+ * @param {string} content
+ * @param {string} file
+ * @returns {void}
+ */
+function declarationName(node) {
+  if ((ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) && node.name && ts.isIdentifier(node.name)) return node.name.text;
+  if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)
+    && node.initializer && (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))) return node.name.text;
+  return undefined;
+}
+/** @param {ts.Node} node @param {ts.SourceFile} source */
+function declarationParameters(node, source) {
+  if (ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) return node.parameters.map((parameter) => parameter.name.getText(source));
+  if (ts.isVariableDeclaration(node) && node.initializer
+    && (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))) {
+    return node.initializer.parameters.map((parameter) => parameter.name.getText(source));
   }
+  return [];
+}
+/** @param {ts.Node} node */
+function declarationBody(node) {
+  if (ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) return node.body;
+  if (ts.isVariableDeclaration(node) && node.initializer
+    && (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))) return node.initializer.body;
+  return undefined;
+}
+/**
+ * Validates JSDoc contracts for top-level command, parser, decoder, spawn, and main declarations.
+ *
+ * @param {string} content
+ * @param {string} file
+ * @returns {void}
+ */
+function validateNamedFunctionDocs(content, file) {
+  const source = ts.createSourceFile(file, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  const contractName = /^(?:main|parse.*|decode.*|validate.*|spawn.*|git|.*Command|.*Parser|.*Decoder)$/iu;
+  const declarations = [];
+  const visit = (node, topLevel) => {
+    if (topLevel || ts.isClassDeclaration(node) || ts.isObjectLiteralExpression(node)) {
+      if (declarationName(node)) declarations.push(node);
+      ts.forEachChild(node, (child) => visit(child, topLevel || ts.isClassDeclaration(node) || ts.isObjectLiteralExpression(node)));
+    }
+  };
+  for (const statement of source.statements) visit(statement, true);
+  for (const declaration of declarations) {
+    const name = declarationName(declaration);
+    if (!name || !contractName.test(name)) continue;
+    const tags = ts.getJSDocTags(declaration);
+    assert(tags.length > 0, `${file}:${name} requires a JSDoc contract`);
+    const paramTags = tags
+      .filter(ts.isJSDocParameterTag)
+      .map((tag) => tag.name.getText(source).replace(/^\[|\]$/gu, ""));
+    const parameters = declarationParameters(declaration, source);
+    assert(sameList(parameters, paramTags), `${file}:${name} JSDoc @param names must exactly match named parameters`);
+    const requiresResultTags = /^(?:main|parse.*|decode.*|spawn.*|git|.*Command|.*Parser|.*Decoder)$/iu.test(name);
+    let returnsValue = false;
+    let throws = false;
+    const body = declarationBody(declaration);
+    const inspect = (node) => {
+      if (node !== body && (ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isArrowFunction(node) || ts.isMethodDeclaration(node))) return;
+      if (ts.isReturnStatement(node) && node.expression) returnsValue = true;
+      if (ts.isThrowStatement(node)) throws = true;
+      ts.forEachChild(node, inspect);
+    };
+    if (body) inspect(body);
+    assert(!requiresResultTags || !returnsValue || tags.some(ts.isJSDocReturnTag), `${file}:${name} requires @returns`);
+    assert(!requiresResultTags || !throws || tags.some(ts.isJSDocThrowsTag), `${file}:${name} requires @throws`);
+  }
+}
+/** @param {ts.TypeNode | undefined} type */
+function hasForbiddenJSDocType(type) {
+  if (!type) return false;
+  if (type.kind === ts.SyntaxKind.AnyKeyword || type.kind === ts.SyntaxKind.ObjectKeyword) return true;
+  if (ts.isTypeReferenceNode(type) && ts.isIdentifier(type.typeName)
+    && /^(?:Object|object|any)$/u.test(type.typeName.text)) return true;
+  return ts.forEachChild(type, hasForbiddenJSDocType) === true;
+}
+/**
+ * Validates negative type, import, and subprocess policies.
+ *
+ * @param {string} content
+ * @param {string} file
+ * @returns {void}
+ */
+function validateStaticPolicy(content, file) {
+  const source = ts.createSourceFile(file, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  const checkedComments = new Set();
+  const checkComments = (ranges) => {
+    for (const range of ranges ?? []) {
+      const key = `${range.pos}:${range.end}`;
+      if (checkedComments.has(key)) continue;
+      checkedComments.add(key);
+      assert(!/@ts-(?:ignore|expect-error|nocheck)\b|eslint-disable(?:-next-line|-line)?\b/u.test(content.slice(range.pos, range.end)), `${file} must not suppress static checks`);
+    }
+  };
+  const visit = (node) => {
+    checkComments(ts.getLeadingCommentRanges(content, node.getFullStart()));
+    checkComments(ts.getTrailingCommentRanges(content, node.end));
+    if (ts.getJSDocTags(node).some((tag) => hasForbiddenJSDocType(tag.typeExpression?.type))
+      || hasForbiddenJSDocType(ts.getJSDocType(node))) {
+      assert(false, `${file} must not use generic Object/object/any JSDoc types`);
+    }
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+      assert(node.moduleSpecifier.text.startsWith("node:"), `${file} imports must use node: built-ins`);
+    }
+    if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+      assert(node.arguments.length === 1 && ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text.startsWith("node:"), `${file} dynamic imports must use node: built-ins`);
+    }
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "require") {
+      assert(node.arguments.length === 1 && ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text.startsWith("node:"), `${file} require imports must use node: built-ins`);
+    }
+    if (ts.isCallExpression(node)
+      && ts.isPropertyAccessExpression(node.expression)
+      && node.expression.expression.getText(source) === "Bun"
+      && node.expression.name.text === "spawn") {
+      assert(node.arguments.length === 1 && ts.isObjectLiteralExpression(node.arguments[0]), `${file} Bun.spawn must use one object argument`);
+      const properties = node.arguments[0].properties;
+      assert([...properties].every((property) => ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property)), `${file} Bun.spawn fields must be explicit`);
+      const names = properties.map((property) => property.name.getText(source).replace(/^["']|["']$/gu, ""));
+      assert(sameList(names, ["cmd", "cwd", "env", "stdout", "stderr"]) && new Set(names).size === names.length, `${file} Bun.spawn fields must be exactly cmd, cwd, env, stdout, stderr`);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
 }
 
 const manifest = /** @type {Record<string, unknown>} */ (JSON.parse(readFileSync(manifestPath, "utf8")));
@@ -52,24 +173,101 @@ assert(Array.isArray(manifest.scripts), "manifest scripts must be an array");
 assert(manifest.scripts.length === 30, "manifest must contain exactly 30 scripts");
 assert(manifest.scripts.every(isRecord), "manifest rows must be objects");
 const requiredRowFields = ["path", "family", "legacyOrigin", "usage", "behavior"];
+const legacyOrigins = new Set(["former-sh", "former-py", "retained-mjs"]);
+const usages = new Set(["apply-version", "build-preview", "calculate-version", "check-deployment", "check-lint", "commit-files", "detect-package-manager", "detect-stack", "discover-version", "inspect-repository", "push-commit", "read-version", "render-dashboard", "render-planning-map", "run-build", "validate-skill", "validate-skill-corpus"]);
+const behaviors = new Set(["deployment-readiness-check", "fast-git-commit", "git-push", "lint-readiness-check", "package-manager-detection", "planning-map-render", "preview-build", "project-build", "render-dashboard", "repository-discovery", "repository-status", "scoped-git-commit", "skill-validation", "skills-corpus-validation", "stack-detection", "version-application", "version-calculation", "version-discovery", "version-reading"]);
+const expectedMetadata = new Map([
+  ["skills/autoresearch-code/scripts/render-dashboard.mjs", ["render-dashboard", "render-dashboard"]],
+  ["skills/autoresearch-skill/scripts/render-dashboard.mjs", ["render-dashboard", "render-dashboard"]],
+  ["skills/git-maker/scripts/git-commit.mjs", ["commit-files", "scoped-git-commit"]],
+  ["skills/git-maker/scripts/git-maker-fast.mjs", ["commit-files", "fast-git-commit"]],
+  ["skills/git-maker/scripts/git-push.mjs", ["push-commit", "git-push"]],
+  ["skills/git-maker/scripts/repo-discover.mjs", ["inspect-repository", "repository-discovery"]],
+  ["skills/git-maker/scripts/repo-status.mjs", ["inspect-repository", "repository-status"]],
+  ["skills/git-worktree/scripts/validate-git-worktree-skill.mjs", ["validate-skill", "skill-validation"]],
+  ["skills/image-maker/scripts/validate-image-maker.mjs", ["validate-skill", "skill-validation"]],
+  ["skills/nextjs-architecture/scripts/validate-nextjs-architecture-skill.mjs", ["validate-skill", "skill-validation"]],
+  ["skills/prd-maker/scripts/build-preview.mjs", ["build-preview", "preview-build"]],
+  ["skills/prd-maker/scripts/render-planning-map.mjs", ["render-planning-map", "planning-map-render"]],
+  ["skills/pre-deploy/scripts/build-run.mjs", ["run-build", "project-build"]],
+  ["skills/pre-deploy/scripts/deploy-check.mjs", ["check-deployment", "deployment-readiness-check"]],
+  ["skills/pre-deploy/scripts/lint-check.mjs", ["check-lint", "lint-readiness-check"]],
+  ["skills/pre-deploy/scripts/pm-detect.mjs", ["detect-package-manager", "package-manager-detection"]],
+  ["skills/pre-deploy/scripts/stack-detect.mjs", ["detect-stack", "stack-detection"]],
+  ["skills/prompt-maker/scripts/validate-prompt-maker.mjs", ["validate-skill", "skill-validation"]],
+  ["skills/seo-maker/scripts/render-dashboard.mjs", ["render-dashboard", "render-dashboard"]],
+  ["skills/skill-maker/scripts/validate-skill-maker.mjs", ["validate-skill", "skill-validation"]],
+  ["skills/skill-tester/scripts/validate-skill.mjs", ["validate-skill", "skill-validation"]],
+  ["skills/skill-tester/scripts/validate-skills-corpus.mjs", ["validate-skill-corpus", "skills-corpus-validation"]],
+  ["skills/version-update/scripts/git-commit.mjs", ["commit-files", "scoped-git-commit"]],
+  ["skills/version-update/scripts/git-push.mjs", ["push-commit", "git-push"]],
+  ["skills/version-update/scripts/stack-detect.mjs", ["detect-stack", "stack-detection"]],
+  ["skills/version-update/scripts/version-apply.mjs", ["apply-version", "version-application"]],
+  ["skills/version-update/scripts/version-bump.mjs", ["calculate-version", "version-calculation"]],
+  ["skills/version-update/scripts/version-current.mjs", ["read-version", "version-reading"]],
+  ["skills/version-update/scripts/version-find.mjs", ["discover-version", "version-discovery"]],
+  ["skills/vite-architecture/scripts/validate-vite-architecture-skill.mjs", ["validate-skill", "skill-validation"]],
+]);
+assert(expectedMetadata.size === 30, "concrete metadata mapping must cover exactly 30 scripts");
+const originCounts = { "former-sh": 0, "former-py": 0, "retained-mjs": 0 };
 for (const [index, row] of manifest.scripts.entries()) {
   for (const field of requiredRowFields) assert(nonEmpty(row[field]), `manifest scripts[${index}].${field} must be a non-empty string`);
+  assert(legacyOrigins.has(row.legacyOrigin), `manifest scripts[${index}].legacyOrigin must be an approved enum value`);
+  assert(usages.has(row.usage), `manifest scripts[${index}].usage must be an approved enum value`);
+  assert(behaviors.has(row.behavior), `manifest scripts[${index}].behavior must be an approved enum value`);
   assert(row.path === `skills/${row.family}/scripts/${String(row.path).split("/").at(-1)}`, `manifest scripts[${index}] path/family must agree`);
+  const expected = expectedMetadata.get(row.path);
+  assert(expected !== undefined && row.usage === expected[0] && row.behavior === expected[1], `manifest scripts[${index}] metadata must match its concrete path mapping`);
+  originCounts[row.legacyOrigin] += 1;
+  assert(isRecord(row.sourcePreimage)
+    && nonEmpty(row.sourcePreimage.path)
+    && /^[a-f0-9]{64}$/u.test(String(row.sourcePreimage.sha256))
+    && (row.sourcePreimage.gitMode === "100755" || row.sourcePreimage.gitMode === "100644"),
+  `manifest scripts[${index}] requires concrete source preimage evidence`);
+  assert(nonEmpty(row.behaviorContractId), `manifest scripts[${index}] requires a behavior contract id`);
 }
+assert(originCounts["former-sh"] === 20 && originCounts["former-py"] === 1 && originCounts["retained-mjs"] === 9, "manifest origin counts must be exactly 20 former-sh, 1 former-py, and 9 retained-mjs");
 const approved = manifest.scripts.map((row) => /** @type {string} */ (row.path));
 assert(new Set(approved).size === approved.length, "manifest script paths must be unique");
 
 const references = manifest.forbiddenDetectorReferences;
-assert(isRecord(references), "manifest forbiddenDetectorReferences must be an object");
-assert(references.detector === "git-commit-detect", "manifest detector name must be exact");
-assert(Array.isArray(references.externalCandidatePaths) && references.externalCandidatePaths.length > 0, "manifest external candidate paths are required");
-for (const candidate of references.externalCandidatePaths) {
-  assert(isRecord(candidate) && nonEmpty(candidate.path) && (candidate.state === "installed" || candidate.state === "missing") && nonEmpty(candidate.handoff), "external candidate paths require path, installed|missing state, and handoff");
+assert(isRecord(references) && Array.isArray(references.records), "manifest forbiddenDetectorReferences.records must be an array");
+assert(references.records.length === 6 && references.records.every(isRecord), "forbidden detector records must contain the exact six policy literals");
+const forbiddenLiterals = references.records.map((record) => record.literal);
+assert(forbiddenLiterals.every(nonEmpty), "every forbidden detector record requires a literal");
+assert(new Set(forbiddenLiterals).size === forbiddenLiterals.length, "forbidden detector literals must be unique");
+assert(sameList(forbiddenLiterals, expectedForbiddenLiterals), "forbidden detector literal set must match the validator-owned contract");
+assert(Array.isArray(references.scanTargets) && sameList(references.scanTargets, expectedScanTargets), "forbidden detector scan targets must be exact");
+assert(Array.isArray(references.enforcementFiles) && sameList(references.enforcementFiles, expectedEnforcementFiles), "forbidden detector enforcement files must be exact");
+for (const record of references.records) {
+  assert(Array.isArray(record.allowedLocations) && record.allowedLocations.length === 1, `forbidden literal ${record.literal} requires one enforcement location`);
+  const location = record.allowedLocations[0];
+  assert(isRecord(location)
+    && location.file === "scripts/fixtures/skill-script-parity/manifest.json"
+    && location.jsonPath === "$.forbiddenDetectorReferences.records[*].literal",
+  `forbidden literal ${record.literal} enforcement location must be exact`);
+  const manifestOccurrences = JSON.stringify(manifest).split(String(record.literal)).length - 1;
+  assert(manifestOccurrences === 1, `forbidden literal ${record.literal} must occur only in its declared manifest data location`);
 }
-assert(Array.isArray(references.allowlist) && sameList(references.allowlist, ["scripts/fixtures/skill-script-parity/manifest.json", "scripts/validate-skills.mjs"]), "detector reference allowlist must be exact");
-assert(isRecord(references.selfAudit) && references.selfAudit.production === "zero" && references.selfAudit.docs === "zero" && references.selfAudit.manifest === "allowlist-only" && references.selfAudit.behavior === "zero", "detector self-audit policy must be exact");
 const correction = manifest.versionUpdateDetectorAbsentCorrection;
-assert(isRecord(correction) && nonEmpty(correction.baseline) && nonEmpty(correction.rollback), "version-update detector-absent correction baseline and rollback are required");
+assert(isRecord(correction) && correction.detectorRestored === false, "detector must never be restored");
+assert(Array.isArray(correction.legacyFiles) && correction.legacyFiles.length === 7, "correction baseline requires exactly seven legacy files");
+for (const row of correction.legacyFiles) {
+  assert(isRecord(row)
+    && nonEmpty(row.legacyPath)
+    && /^[a-f0-9]{64}$/u.test(String(row.sha256))
+    && row.gitMode === "100755"
+    && nonEmpty(row.finalPath),
+  "every correction legacy file requires path, SHA-256, executable mode, and final path");
+}
+assert(isRecord(correction.documents)
+  && Array.isArray(correction.documents.paths)
+  && correction.documents.paths.length === 2
+  && Array.isArray(correction.documents.legacyCommands)
+  && Array.isArray(correction.documents.finalCommands),
+"correction baseline requires paired document paths and exact legacy/final commands");
+assert(isRecord(correction.callerEdge) && nonEmpty(correction.callerEdge.legacy) && nonEmpty(correction.callerEdge.final), "correction baseline requires legacy and final caller edges");
+assert(Array.isArray(correction.restoreOrder) && correction.restoreOrder.length >= 4, "correction baseline requires an executable restoration order");
 
 const scriptFiles = filesBelow(skillsPath).map((file) => relative(root, file));
 const mjsFiles = scriptFiles.filter((file) => file.endsWith(".mjs"));
@@ -77,12 +275,16 @@ const legacyFiles = scriptFiles.filter((file) => /\/scripts\/.*\.(?:sh|py)$/u.te
 assert(legacyFiles.length === 0, `skill script directories must contain no .sh or .py files: ${legacyFiles.join(", ")}`);
 assert(sameList(mjsFiles, approved), "MJS inventory must exactly match the 30-row manifest");
 
-const detectorPattern = /git-commit-detect/iu;
-const auditFiles = [...filesBelow(join(root, "skills")), ...filesBelow(join(root, "instructions")), join(root, "README.md")];
+for (const target of expectedScanTargets) assert(existsSync(join(root, target)), `required forbidden-reference scan target is missing: ${target}`);
+const auditFiles = expectedScanTargets.flatMap((target) => {
+  const absolute = join(root, target);
+  return existsSync(absolute) ? filesBelow(absolute) : [];
+});
 for (const absolute of auditFiles) {
-  if (statSync(absolute).isFile()) assert(!detectorPattern.test(readFileSync(absolute, "utf8")), `forbidden detector reference outside allowlist: ${relative(root, absolute)}`);
+  if (!statSync(absolute).isFile()) continue;
+  const content = readFileSync(absolute, "utf8");
+  for (const literal of expectedForbiddenLiterals) assert(!content.includes(literal), `forbidden detector reference outside enforcement data: ${relative(root, absolute)}: ${literal}`);
 }
-assert(!detectorPattern.test(JSON.stringify(manifest.scripts)) && !detectorPattern.test(JSON.stringify(manifest.scripts.map((row) => row.behavior))), "manifest paths and behavior must contain zero detector references");
 
 for (const file of approved) {
   const absolute = join(root, file);
@@ -99,6 +301,7 @@ for (const file of approved) {
   assert(!/\brequire\s*\(\s*["']\.{1,2}\//u.test(content), `${file} must not require local modules`);
   assert(!/["']node:child_process["']/u.test(content), `${file} must not import shell process helpers`);
   validateNamedFunctionDocs(content, file);
+  validateStaticPolicy(content, file);
 }
 
 console.log(`Validated ${approved.length} Bun MJS skill scripts.`);

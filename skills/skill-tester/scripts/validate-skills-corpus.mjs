@@ -13,7 +13,7 @@ import { dirname, join, normalize, relative, resolve, sep } from 'node:path';
  */
 const DEFAULT_ROOT = 'skills';
 
-/** @param {string[]} argv @returns {Arguments} */
+/** @param {string[]} argv @returns {Arguments} @throws {Error} When an option is unknown or missing its value. */
 function parseArgs(argv) {
   /** @type {Arguments} */
   const args = {
