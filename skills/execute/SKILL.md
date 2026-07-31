@@ -40,7 +40,7 @@ Use a different language only when the user explicitly requests it, an existing 
 - Repository-wide build, CI, or deployment failures. Route to `deploy-fix`.
 - Pre-release validation or build readiness checks. Route to `pre-deploy`.
 - Strategic planning or architecture decisions. Route to a dedicated planning or architecture skill when available; in this repo prefer `prd-maker` for requirements and framework-specific architecture skills for implementation architecture.
-- Code review or quality audit. Route to a dedicated review or QA skill when available; in this repo prefer `qa` for systematic QA work.
+- Client or customer feedback that needs repository-grounded interpretation before implementation. Route to `client-feedback`.
 - Security analysis. Route to a dedicated security skill when available; in this repo use framework-specific security skills such as `tanstack-start-security` when applicable.
 - Explicit workflow invocations such as `$autoresearch-skill`, `$ralph`, or another `$skill` request. Preserve the explicitly requested workflow instead of treating the prompt as a generic execute task.
 

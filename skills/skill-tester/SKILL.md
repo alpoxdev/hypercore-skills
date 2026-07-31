@@ -37,7 +37,7 @@ Use `skill-tester` when the user wants to test, validate, QA, regression-test, o
 
 Use `skill-maker` when the main job is creating or structurally refactoring a skill.
 Use `autoresearch-skill` when the main job is repeated measured optimization across experiments.
-Use `qa` or project-specific QA skills when the target is an application feature rather than a skill.
+Use an application-specific QA workflow when the target is an application feature rather than a skill.
 
 Do not use `skill-tester` when:
 

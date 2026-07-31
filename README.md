@@ -162,7 +162,7 @@ cp -R hypercore-skills/skills/git-maker your-project/.claude/skills/
 | 스킬 | 설명 | 호환 |
 |------|------|------|
 | `research` | 다중 소스, 출처 추적 가능한 마크다운 리서치 보고서 | All |
-| `qa` | 비개발자 이해관계자 요청 분석 및 기술 해석 후 구현 | All |
+| `client-feedback` | 고객사 피드백을 코드 영향·선택지·리스크로 해석하고 확인 후 구현 | All |
 | `bug-fix` | 버그 분석 → 수리 옵션 제시 → 검증된 구현 | All |
 
 ### 콘텐츠 · SEO
