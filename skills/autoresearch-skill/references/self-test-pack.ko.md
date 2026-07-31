@@ -9,7 +9,7 @@
 스킬 대상 오토리서치의 기본 실행 세트로 다음 여섯 프롬프트를 사용한다:
 
 1. ``skills/web-clone/SKILL.md`에 autoresearch 돌려서 점수 오르는 수정만 남겨줘.``
-2. `이 스킬을 binary eval로 벤치마크하고 아티팩트를 .hypercore에 저장해줘.`
+2. `이 스킬을 binary eval로 벤치마크하고 아티팩트를 .hyper에 저장해줘.`
 3. `이 스킬 한 번만 다듬고 리뷰해줘.`
 4. `브라우저 QA용 Codex 스킬 새로 만들어줘.`
 5. `Run autoresearch on this skill and keep only score-improving mutations.`
@@ -38,7 +38,7 @@ Fail: 다음 행동이 모호하거나, 빠져 있거나, 서로 충돌한다
 
 EVAL 3: 아티팩트 생명주기
 Question: 범위 안 프롬프트에 대해 아티팩트 위치, 필수 schema, 업데이트 주기, dashboard rendering이 분명하게 정의되어 있는가?
-Pass: `.hypercore` 위치, 필수 파일, result schema, generated `results.js`, 상태/업데이트 기대치가 명시되어 있다
+Pass: `.hyper` 위치, 필수 파일, result schema, generated `results.js`, 상태/업데이트 기대치가 명시되어 있다
 Fail: 아티팩트 계약이 불완전하거나, 서로 안 맞거나, 빠져 있거나 dashboard를 지원하지 못한다
 
 EVAL 4: 지원 파일 탐색성

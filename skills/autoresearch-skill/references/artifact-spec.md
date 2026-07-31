@@ -5,7 +5,7 @@ Use this reference when creating or reviewing the experiment workspace for an au
 ## Workspace Shape
 
 ```text
-.hypercore/autoresearch-skill/[skill-name]/
+.hyper/autoresearch-skill/[skill-name]/
 |-- dashboard.html
 |-- results.json
 |-- results.js        # optional but recommended fallback for file:// browsers
@@ -23,7 +23,7 @@ Use this reference when creating or reviewing the experiment workspace for an au
 
 Create this directory at the repository root, not inside the skill folder.
 
-In `$autoresearch` runs, this `.hypercore` directory is the domain-specific result log, while the final completion gate is handled by a separate `.omx/specs/autoresearch-[skill-name]/result.json` completion artifact. Record the `.omx/specs/.../result.json` path in `completion_artifact_path`, and record this file's `results.json` in `output_artifact_path`.
+In `$autoresearch` runs, this `.hyper` directory is the domain-specific result log, while the final completion gate is handled by a separate `.omx/specs/autoresearch-[skill-name]/result.json` completion artifact. Record the `.omx/specs/.../result.json` path in `completion_artifact_path`, and record this file's `results.json` in `output_artifact_path`.
 
 The always-required base artifacts are `dashboard.html`, `results.json`, `results.tsv`, `changelog.md`, and `SKILL.md.baseline`. Completed runs also require Korean score movement and handoff content in `results.json.score_explanation` plus `final-report.md`, or in `score-explanation.md` and `final-report.md` loaded through `results.js`. `run-contract.md`, `source-ledger.md`, and `trace-summary.md` become required depending on run conditions.
 
@@ -247,8 +247,8 @@ Recommended browser-safety pattern:
 Recommended render order:
 
 ```bash
-skills/autoresearch-skill/scripts/render-dashboard.mjs .hypercore/autoresearch-skill/my-skill
-open .hypercore/autoresearch-skill/my-skill/dashboard.html
+skills/autoresearch-skill/scripts/render-dashboard.mjs .hyper/autoresearch-skill/my-skill
+open .hyper/autoresearch-skill/my-skill/dashboard.html
 ```
 
 Recommended style:

@@ -159,15 +159,15 @@ In the final report, distinguish "sources reviewed" from "sources actually used 
 
 ## 7. Source ledger and claim-source matrix
 
-For long-running research or standard/deep research, store results under `.hypercore/research/`.
+For long-running research or standard/deep research, store results under `.hyper/research/`.
 
 Recommended locations:
 
 ```text
-.hypercore/research/[date]-[slug].md             # Final report
-.hypercore/research/cache/[slug]/sources.md      # Optional: source notes for long work
-.hypercore/research/cache/[slug]/queries.md      # Optional: query log for long work
-.hypercore/research/cache/[slug]/findings.md     # Optional: interim findings for long work
+.hyper/research/[date]-[slug].md             # Final report
+.hyper/research/cache/[slug]/sources.md      # Optional: source notes for long work
+.hyper/research/cache/[slug]/queries.md      # Optional: query log for long work
+.hyper/research/cache/[slug]/findings.md     # Optional: interim findings for long work
 ```
 
 Minimum source ledger fields:

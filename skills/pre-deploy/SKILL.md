@@ -132,7 +132,7 @@ When uncertain, classify upward. It is better to preserve evidence and ownership
 - **Validate-only**: run detection and `deploy-check.mjs`, report detected stacks, passed/failed/skipped checks, and blockers. No edits.
 - **Fix-now**: for simple/medium reproduced blockers, create TodoWrite items, fix narrowly, re-run targeted checks, then re-run full deploy check.
 - **Parallel remediation**: after failure grouping, use bounded subagents/background agents only for independent diagnosis or disjoint edit lanes. The leader owns integration and final verification. Load `rules/parallel-remediation.md` first.
-- **Tracked remediation**: for complex cases, load `rules/tracked-remediation.md`, then create or resume `.hypercore/pre-deploy/flow.json` with phases `detect`, `baseline`, `triage`, `fix`, `verify`, `report`.
+- **Tracked remediation**: for complex cases, load `rules/tracked-remediation.md`, then create or resume `.hyper/pre-deploy/flow.json` with phases `detect`, `baseline`, `triage`, `fix`, `verify`, `report`.
 - **Handoff**: route platform deployment failures to `deploy-fix`, runtime application bugs to `bug-fix`, and unrelated implementation requests to `execute`.
 
 </execution_modes>

@@ -6,11 +6,11 @@ Use this reference when you are drafting the saved research report.
 
 Save to:
 
-`.hypercore/research/[NN].slug.md`
+`.hyper/research/[NN].slug.md`
 
 Example:
 
-`.hypercore/research/03.websocket-vs-sse.md`
+`.hyper/research/03.websocket-vs-sse.md`
 
 ## Template
 

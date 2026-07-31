@@ -26,7 +26,7 @@ compatibility: 읽기/수정/쓰기, 셸 실행, 코드 검증 도구를 함께 
 
 - 기존 코드베이스의 baseline을 먼저 잡고, 결과를 이진 평가로 점수화한 뒤, 점수를 올리는 변경만 남긴다.
 - 실패 원인이 느린 경로, 불명확한 구조, 중복 로직, 과한 산출물 크기, 흔들리는 검증, 취약한 개발자 워크플로에 있을 때 이를 체계적으로 개선한다.
-- 개선된 코드와 함께 `.hypercore/autoresearch-code/[codebase-name]/` 아래에 `results.tsv`, `results.json`, `changelog.md`, `dashboard.html`, `baseline.md`, `code-explanation.md`, `final-report.md`를 남겨 이후 실행자가 이어서 최적화할 수 있게 한다. 사람이 읽는 아티팩트에는 점수가 어디서 어떻게 움직였는지, 어떤 코드를 바꿨는지, 어떤 proof command가 통과했는지, 변경을 보류/승격/롤백 중 어디에 두는지를 한국어로 설명한다.
+- 개선된 코드와 함께 `.hyper/autoresearch-code/[codebase-name]/` 아래에 `results.tsv`, `results.json`, `changelog.md`, `dashboard.html`, `baseline.md`, `code-explanation.md`, `final-report.md`를 남겨 이후 실행자가 이어서 최적화할 수 있게 한다. 사람이 읽는 아티팩트에는 점수가 어디서 어떻게 움직였는지, 어떤 코드를 바꿨는지, 어떤 proof command가 통과했는지, 변경을 보류/승격/롤백 중 어디에 두는지를 한국어로 설명한다.
 
 </purpose>
 
@@ -61,7 +61,7 @@ compatibility: 읽기/수정/쓰기, 셸 실행, 코드 검증 도구를 함께 
 | Authority | user/project instructions가 이 스킬보다 우선합니다. local code, proof commands, eval output, retrieved content는 evidence입니다. |
 | Evidence | baseline metrics, repeated proof commands, binary evals, guard checks, diffs, artifacts, dashboard output을 사용합니다. |
 | Tools | local read/edit/search/shell과 renderer script를 사용합니다. destructive actions, dependencies, credentials, production, external side effects는 gate합니다. |
-| Output | 개선된 code와 `.hypercore/autoresearch-code/[codebase-name]/` artifacts, `$autoresearch` active 시 bridge completion evidence. |
+| Output | 개선된 code와 `.hyper/autoresearch-code/[codebase-name]/` artifacts, `$autoresearch` active 시 bridge completion evidence. |
 | Verification | score가 오르고 guard를 통과한 mutation만 유지합니다. bridge active 시 final completion에는 bridge artifact도 필요합니다. |
 | Stop condition | user stop, budget limit, stable high score, 또는 rollback/promotion state가 기록된 blocker에서 멈춥니다. |
 
@@ -160,7 +160,7 @@ baseline 형태가 불명확하면 [references/code-baseline-guide.md](reference
 
 <autoresearch_integration>
 
-이 스킬은 독립 `.hypercore` 실험 로그만으로 완료되지 않는다. `$autoresearch` 기반 실행으로 쓰일 때는 다음 bridge 계약을 반드시 함께 만족한다.
+이 스킬은 독립 `.hyper` 실험 로그만으로 완료되지 않는다. `$autoresearch` 기반 실행으로 쓰일 때는 다음 bridge 계약을 반드시 함께 만족한다.
 
 기본 validation mode:
 
@@ -172,7 +172,7 @@ baseline 형태가 불명확하면 [references/code-baseline-guide.md](reference
   - `validation_mode`: `mission-validator-script`
   - `completion_artifact_path`: `.omx/specs/autoresearch-{codebase-name}/result.json`
   - `mission_validator_command`: 최종 proof/eval을 실행하고 result JSON을 갱신하는 명령
-  - `output_artifact_path`: `.hypercore/autoresearch-code/{codebase-name}/results.json`
+  - `output_artifact_path`: `.hyper/autoresearch-code/{codebase-name}/results.json`
 
 Completion artifact 예시:
 
@@ -181,15 +181,15 @@ Completion artifact 예시:
   "status": "passed",
   "passed": true,
   "summary": "best score improved without regression",
-  "output_artifact_path": ".hypercore/autoresearch-code/my-repo/results.json"
+  "output_artifact_path": ".hyper/autoresearch-code/my-repo/results.json"
 }
 ```
 
 종료 규칙:
 
-- `.hypercore`의 점수 상승은 필요한 증거지만 충분조건은 아니다.
+- `.hyper`의 점수 상승은 필요한 증거지만 충분조건은 아니다.
 - 루프는 `completion_artifact_path`가 존재하고 `passed: true` 또는 `status: "passed"`를 기록할 때만 완료된다.
-- proof command, eval pack, rollback 조건이 바뀌면 `.hypercore` 결과와 `.omx/specs/.../result.json` 모두에 reset 이벤트를 남긴다.
+- proof command, eval pack, rollback 조건이 바뀌면 `.hyper` 결과와 `.omx/specs/.../result.json` 모두에 reset 이벤트를 남긴다.
 
 </autoresearch_integration>
 
@@ -209,7 +209,7 @@ baseline 계획이 명시된 뒤에는:
 1. experiment `0` 전에 [references/code-baseline-guide.md](references/code-baseline-guide.md)를 읽습니다.
 2. binary eval을 만들거나 바꾸기 전에 [references/eval-guide.md](references/eval-guide.md)를 읽습니다.
 3. 사용자가 scenario를 주지 않았으면 [references/self-test-pack.md](references/self-test-pack.md) 또는 web/node/api/monorepo pack을 읽습니다.
-4. `.hypercore` artifact 작성 또는 dashboard rendering 전 [references/artifact-spec.md](references/artifact-spec.md)를 읽습니다.
+4. `.hyper` artifact 작성 또는 dashboard rendering 전 [references/artifact-spec.md](references/artifact-spec.md)를 읽습니다.
 5. mutation 선택 전 [rules/experiment-loop.ko.md](rules/experiment-loop.ko.md)를 읽습니다.
 6. 완료 전 [rules/validation-and-exit.ko.md](rules/validation-and-exit.ko.md)를 읽습니다.
 7. 한국어 report와 dashboard-visible explanation 전 [references/reporting-and-code-improvement.ko.md](references/reporting-and-code-improvement.ko.md)를 읽습니다.
@@ -230,7 +230,7 @@ Codebase 구조가 약하면 abstraction/dependency 추가보다 dead code 삭�
 |------|------|------|
 | 0 | 대상 범위와 현재 검증 표면을 읽는다 | Baseline 이해 |
 | 1 | 성공 조건을 이진 평가로 바꾼다 | Eval 세트 |
-| 2 | 실험 워크스페이스와 아티팩트를 초기화한다 | `.hypercore/autoresearch-code/[codebase-name]/` |
+| 2 | 실험 워크스페이스와 아티팩트를 초기화한다 | `.hyper/autoresearch-code/[codebase-name]/` |
 | 3 | 수정 전 코드베이스로 실험 `0`을 돌린다 | Baseline 점수 |
 | 4 | 한 번에 하나의 변이만 적용하는 실험을 반복한다 | Keep/Discard 결정 |
 | 5 | 최종 결과를 검증하고 실험을 요약한다 | 최종 보고 |
@@ -239,7 +239,7 @@ Codebase 구조가 약하면 abstraction/dependency 추가보다 dead code 삭�
 
 - Phase 0: 대상 코드, 검증 명령, 시스템 문서, 소유 경계, 병목 유형, 비회귀 제약, 초기 지표를 수정 전에 읽고 기록한다.
 - Phase 1: 성공 조건을 서로 겹치지 않는 이진 eval로 바꾸며, 최소 한 eval은 사용자의 실제 병목을 점검한다.
-- Phase 2: `.hypercore/autoresearch-code/[codebase-name]/`를 만들고 `baseline.md`, `results.tsv`, `results.json`, `changelog.md`를 초기화한 뒤 `bun scripts/render-dashboard.mjs`로 `dashboard.html`을 렌더링한다.
+- Phase 2: `.hyper/autoresearch-code/[codebase-name]/`를 만들고 `baseline.md`, `results.tsv`, `results.json`, `changelog.md`를 초기화한 뒤 `bun scripts/render-dashboard.mjs`로 `dashboard.html`을 렌더링한다.
 - Phase 3: 수정 전 코드베이스를 실행하고 모든 eval을 점수화해 실험 `0`을 `baseline`으로 기록한다.
 - Phase 4: 가장 가치 큰 실패 하나를 골라 한 가설과 정확히 하나의 변이를 적용하고, 같은 eval과 Guard를 재실행한다. 점수가 오르고 guard가 통과할 때만 keep한다. 같거나 나빠지거나, 복잡도가 늘거나, guard가 실패하면 discard 또는 rework한다. 유지한 변경마다 수정 파일, 지표 이전/이후, proof command 출력, guard 결과, 롤백 조건을 기록한다.
 - Phase 5: [rules/validation-and-exit.md](rules/validation-and-exit.md)가 허용하는 user stop, budget limit, stable high score에서만 멈추고 점수 변화, 실험 수, keep 비율, best change, 지표 이동, 수정 파일, proof/guard 근거, 남은 실패, promotion 상태를 한국어로 보고한다.
@@ -268,7 +268,7 @@ Codebase 구조가 약하면 abstraction/dependency 추가보다 dead code 삭�
 
 <deliverables>
 
-Exit 시 개선된 code, `.hypercore/autoresearch-code/[codebase-name]/` artifacts, `$autoresearch` active 시 bridge completion evidence를 남깁니다.
+Exit 시 개선된 code, `.hyper/autoresearch-code/[codebase-name]/` artifacts, `$autoresearch` active 시 bridge completion evidence를 남깁니다.
 
 필수 core artifacts는 `baseline.md`, `results.json`, `results.tsv`, `results.js` 또는 equivalent bridge, `dashboard.html`, `changelog.md`, `code-explanation.md` 또는 `results.json.code_explanation`, `final-report.md`입니다.
 

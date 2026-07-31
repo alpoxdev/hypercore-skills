@@ -85,4 +85,4 @@ Define -> Test -> Diagnose -> Patch -> Re-run -> Document
 
 - [`prompt-authoring.md`](prompt-authoring.md): the role prompt authoring template
 - Official sources follow the Sources table in [`../CONTEXT_ENGINEERING.md`](../CONTEXT_ENGINEERING.md) (checked 2026-07-29).
-- Local re-verification cache (untracked, covered by `.gitignore`): `.hypercore/research/2026-06-02-official-llm-prompt-instructions-update.md`
+- Local re-verification cache (untracked, covered by `.gitignore`): `.hyper/research/2026-06-02-official-llm-prompt-instructions-update.md`

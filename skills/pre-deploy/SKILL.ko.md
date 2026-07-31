@@ -132,7 +132,7 @@ Detection이 정확하도록 현재 작업 디렉터리를 target root로 설정
 - **Validate-only**: detection과 `deploy-check.mjs`를 실행하고 detected stacks, passed/failed/skipped checks, blockers를 보고합니다. 수정하지 않습니다.
 - **Fix-now**: simple/medium 재현 blocker는 TodoWrite에 등록하고 좁게 수정한 뒤 targeted check와 full deploy check를 재실행합니다.
 - **Parallel remediation**: 실패를 grouping한 뒤 독립 diagnosis 또는 겹치지 않는 edit lane에 한해 bounded subagent/background agent를 사용합니다. leader가 integration과 final verification을 소유합니다. 먼저 `rules/parallel-remediation.ko.md`를 읽습니다.
-- **Tracked remediation**: complex case에서는 `rules/tracked-remediation.ko.md`를 읽은 뒤 `.hypercore/pre-deploy/flow.json`을 만들거나 재개하며 phase는 `detect`, `baseline`, `triage`, `fix`, `verify`, `report`입니다.
+- **Tracked remediation**: complex case에서는 `rules/tracked-remediation.ko.md`를 읽은 뒤 `.hyper/pre-deploy/flow.json`을 만들거나 재개하며 phase는 `detect`, `baseline`, `triage`, `fix`, `verify`, `report`입니다.
 - **Handoff**: platform deployment 실패는 `deploy-fix`, runtime application bug는 `bug-fix`, 무관한 구현 요청은 `execute`로 보냅니다.
 
 </execution_modes>

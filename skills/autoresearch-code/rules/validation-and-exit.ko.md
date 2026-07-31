@@ -57,7 +57,7 @@
 
 예상 위치:
 
-- `.hypercore/autoresearch-code/[codebase-name]/`
+- `.hyper/autoresearch-code/[codebase-name]/`
 
 또한 `results.json`과 `results.tsv`가 같은 점수, 통과율, keep/discard/reset 상태를 설명하는지 확인한다.
 또한 대시보드가 임의로 손수 편집된 것이 아니라 정식 템플릿에서 렌더됐는지 확인한다.
@@ -72,7 +72,7 @@
 - `.omx/state/.../autoresearch-state.json`에 `validation_mode: "mission-validator-script"`가 있다
 - 같은 상태 파일에 `completion_artifact_path`와 `mission_validator_command`가 있다
 - `completion_artifact_path`의 JSON이 존재하고 `passed: true` 또는 `status: "passed"`를 기록한다
-- `output_artifact_path`가 `.hypercore/autoresearch-code/[codebase-name]/results.json`을 가리킨다
+- `output_artifact_path`가 `.hyper/autoresearch-code/[codebase-name]/results.json`을 가리킨다
 
 이 artifact가 없으면 점수가 올랐더라도 `$autoresearch` 완료를 주장하지 않는다.
 
@@ -131,5 +131,5 @@ find skills/autoresearch-code -maxdepth 3 -type f | sort
 wc -l skills/autoresearch-code/SKILL.md
 rg -n "results.tsv|results.json|results.js|dashboard.html|changelog.md|baseline.md|code-explanation.md|final-report.md|run-contract.md|trace-summary.md|source-ledger.md" skills/autoresearch-code/SKILL.md skills/autoresearch-code/references skills/autoresearch-code/rules
 bun --check skills/autoresearch-code/scripts/render-dashboard.mjs
-find .hypercore -maxdepth 3 -type f | sort | rg "autoresearch-code"
+find .hyper -maxdepth 3 -type f | sort | rg "autoresearch-code"
 ```

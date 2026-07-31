@@ -2,7 +2,7 @@
 
 Use this reference when drafting or updating `prd.md`.
 
-Evidence basis: the section set below is grounded in the local research report [`../../../.hypercore/research/002-prd-package-layered-artifacts.md`](../../../.hypercore/research/002-prd-package-layered-artifacts.md), which reviewed 12 PRD sources and compared them with feature-spec, user-flow, and wireframe sources.
+Evidence basis: the section set below is grounded in the local research report [`../../../.hyper/research/002-prd-package-layered-artifacts.md`](../../../.hyper/research/002-prd-package-layered-artifacts.md), which reviewed 12 PRD sources and compared them with feature-spec, user-flow, and wireframe sources.
 
 ## Stable section set
 

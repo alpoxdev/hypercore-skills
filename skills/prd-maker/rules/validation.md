@@ -5,7 +5,7 @@ Use this checklist before declaring the planning package complete.
 ## Required checks
 
 - The request really called for a product planning package, PRD, feature spec, user flow, low-fidelity wireframe, diagram, or preview.
-- The package folder exists under `.hypercore/prd/[slug]/`.
+- The package folder exists under `.hyper/prd/[slug]/`.
 - New packages contain `prd.md`, `feature-spec.md`, `user-flow.md`, `wireframe.md`, `diagram.md`, `diagram.data.json`, `diagram.svg`, `preview.html`, and `sources.md`.
 - The PRD includes goals, scope, non-goals, requirements with IDs, metrics, risks/dependencies, open questions, and change history.
 - The feature spec covers all must-have PRD requirements with functional behavior, acceptance criteria, states, permissions, errors, analytics, and rollout notes when relevant.

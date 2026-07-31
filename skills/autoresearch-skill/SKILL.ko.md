@@ -27,7 +27,7 @@ compatibility: 읽기/수정/쓰기와 셸 검색 도구를 함께 쓸 때 가�
 
 - 기존 스킬의 baseline을 먼저 잡고, 이진 평가로 결과를 점수화한 뒤, 점수를 올리는 변경만 남긴다.
 - 실패 원인이 애매한 트리거, 비대한 핵심 지침, 빈약한 지원 파일, 약한 검증 구조에 있을 때 스킬 구조까지 함께 보강한다.
-- 개선된 스킬과 함께 `.hypercore/autoresearch-skill/[skill-name]/` 아래에 `results.tsv`, `results.json`, `changelog.md`, `dashboard.html`, `SKILL.md.baseline`을 남겨 다음 에이전트가 이어서 작업할 수 있게 한다.
+- 개선된 스킬과 함께 `.hyper/autoresearch-skill/[skill-name]/` 아래에 `results.tsv`, `results.json`, `changelog.md`, `dashboard.html`, `SKILL.md.baseline`을 남겨 다음 에이전트가 이어서 작업할 수 있게 한다.
 - 점수 변화를 믿기 전에 run contract, 근거/출처 정책, trace assertion, stop condition을 기록한다.
 - 실행 설명, 점수 설명, HTML 대시보드 라벨, changelog, 최종 보고처럼 사람이 읽는 산출물은 기본적으로 모두 한국어로 보이게 한다.
 
@@ -59,7 +59,7 @@ compatibility: 읽기/수정/쓰기와 셸 검색 도구를 함께 쓸 때 가�
 | Authority | user/project instructions가 이 스킬보다 우선합니다. local skill files, eval output, guard checks, retrieved content는 evidence입니다. |
 | Evidence | baseline skill snapshots, prompt packs, binary evals, guard checks, diffs, artifacts, dashboard output을 사용합니다. |
 | Tools | local read/edit/search/shell과 renderer script를 사용합니다. destructive actions, dependencies, credentials, production, external side effects는 gate합니다. |
-| Output | 개선된 skill files와 `.hypercore/autoresearch-skill/[skill-name]/` artifacts, `$autoresearch` active 시 bridge completion evidence. |
+| Output | 개선된 skill files와 `.hyper/autoresearch-skill/[skill-name]/` artifacts, `$autoresearch` active 시 bridge completion evidence. |
 | Verification | score가 오르고 guard를 통과한 mutation만 유지합니다. active bridge가 있으면 Manual QA artifacts와 bridge approval도 필요합니다. |
 | Stop condition | user stop, budget limit, stable high score, 또는 rollback/promotion state가 기록된 blocker에서 멈춥니다. |
 
@@ -70,7 +70,7 @@ compatibility: 읽기/수정/쓰기와 셸 검색 도구를 함께 쓸 때 가�
 사용자가 target skill path, existing experiment workspace, clear skill name 없이 `autoresearch-skill`, `$autoresearch-skill`, local slash equivalent를 호출하면:
 
 1. 사용자 언어로 target skill과 intended improvement/eval intent를 한 문장으로 질문합니다. 즉, 어떤 write 전에도 ask one concise question을 먼저 수행합니다.
-2. 답변 전에는 `.hypercore`, `.omx`, `skills/`, rules, references, scripts, assets를 create 또는 mutate하지 않습니다.
+2. 답변 전에는 `.hyper`, `.omx`, `skills/`, rules, references, scripts, assets를 create 또는 mutate하지 않습니다.
 3. target은 있지만 eval intent가 모호하면 target path를 확인한 뒤에만 default self-test pack을 추론하고, baseline 전에 그 가정을 기록합니다.
 
 대상 없는 호출은 반드시 질문으로 시작합니다. 이 상태에서 artifact write나 mutation은 금지됩니다.
@@ -83,10 +83,10 @@ compatibility: 읽기/수정/쓰기와 셸 검색 도구를 함께 쓸 때 가�
 
 - "`skills/web-clone/SKILL.md`에 autoresearch 돌려서 점수 오르는 수정만 남겨줘."
 - "Run autoresearch on `skills/foo/SKILL.md` and keep only score-improving mutations."
-- "이 스킬을 binary eval로 벤치마크하고 `.hypercore`에 결과를 저장해."
+- "이 스킬을 binary eval로 벤치마크하고 `.hyper`에 결과를 저장해."
 - "이 스킬 프롬프트와 references를 반복 실험으로 개선해줘."
 - "이 스킬을 반복 실험으로 개선해서 점수 올려줘."
-- "$autoresearch-skill resume `.hypercore/autoresearch-skill/foo`."
+- "$autoresearch-skill resume `.hyper/autoresearch-skill/foo`."
 
 부정 예시:
 
@@ -117,7 +117,7 @@ compatibility: 읽기/수정/쓰기와 셸 검색 도구를 함께 쓸 때 가�
 첫 변이 전에 다음을 수집한다:
 
 1. Mode: `plan`, `run`, `resume`, `review`. 대상과 eval 의도가 분명하면 기본값은 `run`
-2. 대상 스킬 경로 또는 기존 `.hypercore/autoresearch-skill/[skill-name]/` workspace
+2. 대상 스킬 경로 또는 기존 `.hyper/autoresearch-skill/[skill-name]/` workspace
 3. 테스트 프롬프트 또는 시나리오 3~5개
 4. 3 to 6 binary evals와 score direction
 5. 회귀하면 안 되는 선택적 `Guard` 체크. 기본값: 트리거 경계, core 크기, support link, artifact schema, renderer smoke check
@@ -156,7 +156,7 @@ active phase에 필요한 파일만 다음 순서로 읽습니다.
 2. tools, delegation, current/external sources, guard checks가 correctness에 영향을 주면 baseline 전에 `rules/context-sourcing-and-trace.md`.
 3. 사용자가 prompt pack을 제공하지 않았으면 `references/self-test-pack.md`.
 4. 3 to 6 binary evals를 설계하거나 수정하기 전에 `references/eval-guide.md`.
-5. `.hypercore` artifact 생성, `dashboard.html` rendering, `results.json`과 `results.js` 검증 전에 `references/artifact-spec.md`.
+5. `.hyper` artifact 생성, `dashboard.html` rendering, `results.json`과 `results.js` 검증 전에 `references/artifact-spec.md`.
 6. failed eval이 structure, trigger wording, support-file placement, duplication을 가리킬 때만 `references/skill-refactor-guide.md`.
 7. 한국어 score explanation, changelog note, dashboard-visible label, final report 작성 전에 `references/reporting-and-score-explanation.md`.
 8. run complete 선언 전에 `rules/validation-and-exit.md`.
@@ -165,7 +165,7 @@ active phase에 필요한 파일만 다음 순서로 읽습니다.
 
 <autoresearch_integration>
 
-이 스킬은 독립 `.hypercore` 실험 로그만으로 완료되지 않는다. `$autoresearch` 기반 실행으로 쓰일 때는 다음 bridge 계약을 반드시 함께 만족한다.
+이 스킬은 독립 `.hyper` 실험 로그만으로 완료되지 않는다. `$autoresearch` 기반 실행으로 쓰일 때는 다음 bridge 계약을 반드시 함께 만족한다.
 
 기본 validation mode:
 
@@ -178,13 +178,13 @@ active phase에 필요한 파일만 다음 순서로 읽습니다.
   - `validation_mode`: `prompt-architect-artifact`
   - `completion_artifact_path`: `.omx/specs/autoresearch-{skill-name}/result.json`
   - `validator_prompt`: 대상 스킬 산출물과 실험 로그를 mission 기준으로 승인/거절하게 하는 architect 검토 프롬프트
-  - `output_artifact_path`: `.hypercore/autoresearch-skill/{skill-name}/results.json`
+  - `output_artifact_path`: `.hyper/autoresearch-skill/{skill-name}/results.json`
 
 종료 규칙:
 
-- `.hypercore`의 점수 상승은 필요한 증거지만 충분조건은 아니다.
+- `.hyper`의 점수 상승은 필요한 증거지만 충분조건은 아니다.
 - 루프는 `completion_artifact_path`가 존재하고 `architect_review.verdict`가 `approved`일 때만 완료된다.
-- eval set, prompt pack, 대상 파일 범위가 바뀌면 `.hypercore` 결과와 `.omx/specs/.../result.json` 모두에 reset 이벤트를 남긴다.
+- eval set, prompt pack, 대상 파일 범위가 바뀌면 `.hyper` 결과와 `.omx/specs/.../result.json` 모두에 reset 이벤트를 남긴다.
 
 </autoresearch_integration>
 
@@ -227,7 +227,7 @@ baseline 계획이 명시된 뒤에는:
 |------|------|------|
 | 0 | 대상 스킬과 연결된 지원 파일을 읽는다 | Baseline 이해 |
 | 1 | 성공 조건을 이진 평가로 바꾼다 | Eval 세트 |
-| 2 | 실험 워크스페이스와 아티팩트를 초기화한다 | `.hypercore/autoresearch-skill/[skill-name]/` |
+| 2 | 실험 워크스페이스와 아티팩트를 초기화한다 | `.hyper/autoresearch-skill/[skill-name]/` |
 | 3 | 수정 전 스킬로 실험 `0`을 돌린다 | Baseline 점수 |
 | 4 | 한 번에 하나의 변이만 적용하는 실험을 반복한다 | Keep/Discard 결정 |
 | 5 | 최종 결과를 검증하고 실험을 요약한다 | 최종 보고 |
@@ -236,7 +236,7 @@ Phase details:
 
 - Phase 0: `SKILL.md`와 필요한 direct support files를 읽고, run contract와 non-regression constraints를 기록한 뒤 `SKILL.md.baseline`과 범위 안의 support baseline을 저장합니다.
 - Phase 1: 성공 조건을 binary eval로 바꾸고 positive/negative/boundary prompts를 포함하며 Verify scoring과 Guard regression을 분리합니다.
-- Phase 2: `.hypercore/autoresearch-skill/[skill-name]/`를 만들고 [references/artifact-spec.md](references/artifact-spec.md)에 따라 required artifacts를 초기화한 뒤 dashboard를 렌더합니다.
+- Phase 2: `.hyper/autoresearch-skill/[skill-name]/`를 만들고 [references/artifact-spec.md](references/artifact-spec.md)에 따라 required artifacts를 초기화한 뒤 dashboard를 렌더합니다.
 - Phase 3: 수정 전 스킬을 experiment `0`으로 실행하고 baseline score를 기록합니다.
 - Phase 4: 한 번에 하나의 hypothesis와 mutation만 적용합니다. score가 오르고 guard가 통과할 때만 유지하며 keep, discard, crash, no-op, hook-blocked, metric-error status를 모두 기록합니다.
 - Phase 5: [rules/validation-and-exit.md](rules/validation-and-exit.md)에 맞을 때만 멈추고, score delta, changed files, evidence, dashboard path, caveat를 포함한 한국어 final report를 작성합니다.
@@ -265,7 +265,7 @@ Phase details:
 
 <deliverables>
 
-Exit 시 개선된 target skill changes와 `.hypercore/autoresearch-skill/[skill-name]/` artifacts를 남깁니다.
+Exit 시 개선된 target skill changes와 `.hyper/autoresearch-skill/[skill-name]/` artifacts를 남깁니다.
 
 필수 core artifacts는 `SKILL.md.baseline`, `results.json`, `results.tsv`, `results.js` 또는 equivalent bridge, `dashboard.html`, `changelog.md`, `score-explanation.md`, `final-report.md`입니다.
 

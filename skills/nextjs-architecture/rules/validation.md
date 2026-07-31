@@ -43,10 +43,8 @@ rg -n 'src/modules|src/lib|src/services|src/db|src/server|src/integrations|src/c
 rg -n 'DAL|DTO|server-only service|provider|authorization' skills/nextjs-architecture/rules/services.md skills/nextjs-architecture/rules/services.ko.md
 rg -n 'client orchestration|hooks|server/data layers|Drizzle schema|private env' skills/nextjs-architecture/rules/hooks.md skills/nextjs-architecture/rules/hooks.ko.md
 rg -n 'Drizzle schema|drizzle.config.ts|generate|migrate|prepared statements|validation integrations|RQB' skills/nextjs-architecture/rules/db.md skills/nextjs-architecture/rules/db.ko.md
-rg -n 'Deprecated feature-folder guidance is absent|src/services|src/modules|src/db|direct leaf|current-docs-2026-06-02|Korean parity|mirror' skills/nextjs-architecture/rules/validation.md skills/nextjs-architecture/rules/validation.ko.md
+rg -n 'Deprecated feature-folder guidance is absent|src/services|src/modules|src/db|direct leaf|current-docs-2026-06-02|Korean parity|source-only|no adapter' skills/nextjs-architecture/rules/validation.md skills/nextjs-architecture/rules/validation.ko.md
 node skills/nextjs-architecture/scripts/validate-nextjs-architecture-skill.mjs
-node scripts/validate-codex-plugin.mjs
-test "$(readlink plugins/hypercore/skills)" = "../../skills"
 ```
 
 Must pass:
@@ -66,7 +64,7 @@ Must pass:
 - Cache Components, Server Actions, Route Handlers, Proxy, env, and Server/Client boundary guidance remain current-docs compatible.
 - English and Korean entrypoints have aligned trigger, boundary, workflow, contract, and read order.
 - English and Korean sibling files are structurally and semantically aligned; Korean parity checks include services/hooks/db/Drizzle phrases.
-- `plugins/hypercore/skills` is a symbolic link to the canonical root `skills/` directory.
+- This skill is validated source-only from `skills/nextjs-architecture`; it has no plugin mirror, symlink, or adapter contract.
 
 ## Readback Evidence
 
@@ -77,7 +75,7 @@ Before reporting completion, record:
 - binary observable such as exit code, missing-file count, diff result, or validator JSON
 - captured artifact path
 
-For this skill folder, read back the changed English/Korean sibling files after edits and verify that links, headings, and rule responsibilities match. The plugin path resolves to the same canonical files and requires no mirror sync.
+For this skill folder, read back the changed English/Korean sibling files after edits and verify that links, headings, and rule responsibilities match. Validate the canonical source files only; no plugin mirror, symlink, or adapter requires synchronization.
 
 ## Trigger Tests
 

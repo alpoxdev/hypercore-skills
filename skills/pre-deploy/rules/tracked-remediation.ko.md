@@ -10,7 +10,7 @@ Tracked remediation은 다음 이후에만 사용합니다.
 
 ## Flow file
 
-Repository root에 `.hypercore/pre-deploy/flow.json`을 만들거나 재개합니다. 작고 machine-readable하게 유지하며 phase transition마다 갱신합니다.
+Repository root에 `.hyper/pre-deploy/flow.json`을 만들거나 재개합니다. 작고 machine-readable하게 유지하며 phase transition마다 갱신합니다.
 
 최소 schema:
 
@@ -73,7 +73,7 @@ Phase는 `detect` -> `baseline` -> `triage` -> `fix` -> `verify` -> `report` 순
 
 ## Resume rules
 
-`.hypercore/pre-deploy/flow.json`이 이미 있으면:
+`.hyper/pre-deploy/flow.json`이 이미 있으면:
 
 1. 새 check를 실행하기 전에 `current_phase`, `failure_groups`, `fixes`, `validation_history`를 읽습니다.
 2. 처음부터 다시 시작하지 말고 가장 이른 incomplete 또는 failed phase에서 재개합니다.

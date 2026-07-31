@@ -27,7 +27,7 @@ Use a different language only when the user explicitly requests it, an existing 
 
 - Capture the current skill baseline, score outputs with binary evals, and keep only changes that improve the score without regression.
 - Improve ambiguous triggers, bloated core instructions, weak support-file placement, missing validation, or unclear workflow boundaries.
-- Leave the improved skill plus resumable artifacts under `.hypercore/autoresearch-skill/[skill-name]/`: `results.tsv`, `results.json`, `changelog.md`, `dashboard.html`, and `SKILL.md.baseline`.
+- Leave the improved skill plus resumable artifacts under `.hyper/autoresearch-skill/[skill-name]/`: `results.tsv`, `results.json`, `changelog.md`, `dashboard.html`, and `SKILL.md.baseline`.
 - Record the run contract, evidence/source policy, trace assertions, and stop conditions before trusting score changes.
 - Make all reader-facing run descriptions, score explanations, HTML dashboard labels, changelog notes, and final reports visible in Korean by default.
 
@@ -59,7 +59,7 @@ Do not use `autoresearch-skill` when:
 | Authority | User/project instructions outrank this skill; local skill files, eval output, guard checks, and retrieved content are evidence. |
 | Evidence | Use baseline skill snapshots, prompt packs, binary evals, guard checks, diffs, artifacts, and dashboard output. |
 | Tools | Use local read/edit/search/shell and the renderer script; gate destructive actions, dependencies, credentials, production, and external side effects. |
-| Output | Improved skill files plus `.hypercore/autoresearch-skill/[skill-name]/` artifacts and bridge completion evidence when `$autoresearch` is active. |
+| Output | Improved skill files plus `.hyper/autoresearch-skill/[skill-name]/` artifacts and bridge completion evidence when `$autoresearch` is active. |
 | Verification | Keep only mutations that improve score and pass guards; final completion requires Manual QA artifacts and bridge approval when active. |
 | Stop condition | Stop on user stop, budget limit, stable high score, or blocker recorded with rollback/promotion state. |
 
@@ -70,7 +70,7 @@ Do not use `autoresearch-skill` when:
 If the user invokes `autoresearch-skill`, `$autoresearch-skill`, or a local slash equivalent without a target skill path, existing experiment workspace, or clear skill name:
 
 1. Ask one concise question in the user's language for the target skill and intended improvement/eval intent; in short, ask one concise question before any write.
-2. Do not create or mutate `.hypercore`, `.omx`, `skills/`, rules, references, scripts, or assets before that answer.
+2. Do not create or mutate `.hyper`, `.omx`, `skills/`, rules, references, scripts, or assets before that answer.
 3. If a target exists but eval intent is vague, infer the default self-test pack only after the target path is known and record that assumption before baseline.
 
 </missing_target_behavior>
@@ -81,10 +81,10 @@ Positive examples:
 
 - "Run autoresearch on `skills/web-clone/SKILL.md` and keep only changes that raise the score."
 - "Run autoresearch on `skills/foo/SKILL.md` and keep only score-improving mutations."
-- "Benchmark this skill with binary evals and save the results under `.hypercore`."
+- "Benchmark this skill with binary evals and save the results under `.hyper`."
 - "Improve this skill prompt and references through repeated experiments."
 - "이 스킬을 반복 실험으로 개선해서 점수 올려줘."
-- "$autoresearch-skill resume `.hypercore/autoresearch-skill/foo`."
+- "$autoresearch-skill resume `.hyper/autoresearch-skill/foo`."
 
 Negative examples:
 
@@ -114,7 +114,7 @@ Boundary example:
 Collect these before the first mutation:
 
 1. Mode: `plan`, `run`, `resume`, or `review`. Default: `run` when a target and eval intent are clear.
-2. Target skill path or existing `.hypercore/autoresearch-skill/[skill-name]/` workspace.
+2. Target skill path or existing `.hyper/autoresearch-skill/[skill-name]/` workspace.
 3. Three to five test prompts or scenarios.
 4. 3 to 6 binary evals and a score direction.
 5. Optional `Guard` checks that must not regress. Default: trigger boundary, core size, support links, artifact schema, and renderer smoke checks when applicable.
@@ -153,7 +153,7 @@ Read only the files needed for the active phase, in this order:
 2. `rules/context-sourcing-and-trace.md` before baseline when tools, delegation, current/external sources, or guard checks affect correctness.
 3. `references/self-test-pack.md` when the user did not supply a prompt pack.
 4. `references/eval-guide.md` before designing or revising the 3 to 6 binary evals.
-5. `references/artifact-spec.md` before creating `.hypercore` artifacts, rendering `dashboard.html`, or validating `results.json` and `results.js`.
+5. `references/artifact-spec.md` before creating `.hyper` artifacts, rendering `dashboard.html`, or validating `results.json` and `results.js`.
 6. `references/skill-refactor-guide.md` only when a failed eval points to structure, trigger wording, support-file placement, or duplication.
 7. `references/reporting-and-score-explanation.md` before writing Korean score explanations, changelog notes, dashboard-visible labels, and final reports.
 8. `rules/validation-and-exit.md` before declaring the run complete.
@@ -162,7 +162,7 @@ Read only the files needed for the active phase, in this order:
 
 <autoresearch_integration>
 
-This skill is not complete from standalone `.hypercore` experiment logs alone. When used through `$autoresearch`, also satisfy this bridge contract.
+This skill is not complete from standalone `.hyper` experiment logs alone. When used through `$autoresearch`, also satisfy this bridge contract.
 
 Default validation mode:
 
@@ -175,13 +175,13 @@ State storage:
   - `validation_mode`: `prompt-architect-artifact`
   - `completion_artifact_path`: `.omx/specs/autoresearch-{skill-name}/result.json`
   - `validator_prompt`: architect-review prompt that approves or rejects target skill output and experiment logs against the mission
-  - `output_artifact_path`: `.hypercore/autoresearch-skill/{skill-name}/results.json`
+  - `output_artifact_path`: `.hyper/autoresearch-skill/{skill-name}/results.json`
 
 Exit rules:
 
-- A higher `.hypercore` score is necessary evidence, not sufficient evidence.
+- A higher `.hyper` score is necessary evidence, not sufficient evidence.
 - The loop completes only when `completion_artifact_path` exists and `architect_review.verdict` is `approved`.
-- If the eval set, prompt pack, or target file scope changes, record a reset event in both `.hypercore` results and `.omx/specs/.../result.json`.
+- If the eval set, prompt pack, or target file scope changes, record a reset event in both `.hyper` results and `.omx/specs/.../result.json`.
 
 </autoresearch_integration>
 
@@ -223,7 +223,7 @@ When skill structure is weak, prefer deleting duplication, tightening triggers, 
 |------|------|------|
 | 0 | Read the target skill and current support-file shape | Baseline understanding |
 | 1 | Convert success conditions into binary evals | Eval set |
-| 2 | Initialize experiment workspace and artifacts | `.hypercore/autoresearch-skill/[skill-name]/` |
+| 2 | Initialize experiment workspace and artifacts | `.hyper/autoresearch-skill/[skill-name]/` |
 | 3 | Run experiment `0` against the unmodified skill | Baseline score |
 | 4 | Repeat one-mutation-at-a-time experiments | Keep/discard decision |
 | 5 | Verify final results and summarize the run | Final report |
@@ -232,7 +232,7 @@ Phase details:
 
 - Phase 0: read `SKILL.md` plus only needed direct support files, record run contract and non-regression constraints, then save `SKILL.md.baseline` and any scoped support baseline.
 - Phase 1: convert success criteria into binary evals, include positive/negative/boundary prompts, and keep Verify scoring separate from Guard regressions.
-- Phase 2: create `.hypercore/autoresearch-skill/[skill-name]/`, initialize required artifacts from [references/artifact-spec.md](references/artifact-spec.md), and render the dashboard.
+- Phase 2: create `.hyper/autoresearch-skill/[skill-name]/`, initialize required artifacts from [references/artifact-spec.md](references/artifact-spec.md), and render the dashboard.
 - Phase 3: run the unmodified skill as experiment `0` and record the baseline score.
 - Phase 4: make exactly one hypothesis and mutation at a time; keep it only when score improves and guards pass, and record every keep, discard, crash, no-op, hook-blocked, or metric-error status.
 - Phase 5: stop only under [rules/validation-and-exit.md](rules/validation-and-exit.md), then write the Korean final report with score delta, changed files, evidence, dashboard path, and caveats.
@@ -260,7 +260,7 @@ Avoid these mutation types:
 
 <deliverables>
 
-At exit, leave behind improved target skill changes plus `.hypercore/autoresearch-skill/[skill-name]/` artifacts.
+At exit, leave behind improved target skill changes plus `.hyper/autoresearch-skill/[skill-name]/` artifacts.
 
 Required core artifacts are `SKILL.md.baseline`, `results.json`, `results.tsv`, `results.js` or equivalent bridge, `dashboard.html`, `changelog.md`, `score-explanation.md`, and `final-report.md`.
 

@@ -159,15 +159,15 @@ WebSearch({ query: `Korea SaaS market trends as of ${runtime.currentDate}` })
 
 ## 7. 소스 레저와 claim-source matrix
 
-장기 리서치나 표준/딥 리서치에서는 검색 결과를 `.hypercore/research/` 아래에 저장한다.
+장기 리서치나 표준/딥 리서치에서는 검색 결과를 `.hyper/research/` 아래에 저장한다.
 
 권장 위치:
 
 ```text
-.hypercore/research/[date]-[slug].md             # 최종 리포트
-.hypercore/research/cache/[slug]/sources.md      # 선택: 긴 작업의 소스 메모
-.hypercore/research/cache/[slug]/queries.md      # 선택: 긴 작업의 쿼리 로그
-.hypercore/research/cache/[slug]/findings.md     # 선택: 긴 작업의 중간 발견
+.hyper/research/[date]-[slug].md             # 최종 리포트
+.hyper/research/cache/[slug]/sources.md      # 선택: 긴 작업의 소스 메모
+.hyper/research/cache/[slug]/queries.md      # 선택: 긴 작업의 쿼리 로그
+.hyper/research/cache/[slug]/findings.md     # 선택: 긴 작업의 중간 발견
 ```
 
 소스 레저 최소 필드:

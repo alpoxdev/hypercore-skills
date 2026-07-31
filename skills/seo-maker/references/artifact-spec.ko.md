@@ -5,7 +5,7 @@ SEO 감사 실행의 결과 워크스페이스를 만들거나 검토할 때 이
 ## 워크스페이스 형태
 
 ```text
-.hypercore/seo-maker/[slug]/
+.hyper/seo-maker/[slug]/
 ├── dashboard.html       # 브라우저에서 열 수 있는 대시보드
 ├── results.json         # 구조화된 감사 결과
 ├── results.js           # file:// 브라우저 폴백용
@@ -246,7 +246,7 @@ window.__SEO_RESULTS__ = { /* results.json과 동일한 내용 */ };
 
 ## 생명주기 규칙
 
-1. 감사 시작 시 `.hypercore/seo-maker/[slug]/`를 만든다.
+1. 감사 시작 시 `.hyper/seo-maker/[slug]/`를 만든다.
 2. `results.json`의 `status`를 `running`으로 설정한다.
 3. 각 phase 완료 시 `results.json`에 findings를 추가한다.
 4. 모든 phase 완료 후 `status`를 `complete`로 설정하고 `overall_grade`를 계산한다.
@@ -270,6 +270,6 @@ window.__SEO_RESULTS__ = { /* results.json과 동일한 내용 */ };
 ### 렌더 순서
 
 ```bash
-skills/seo-maker/scripts/render-dashboard.mjs .hypercore/seo-maker/my-site
-open .hypercore/seo-maker/my-site/dashboard.html
+skills/seo-maker/scripts/render-dashboard.mjs .hyper/seo-maker/my-site
+open .hyper/seo-maker/my-site/dashboard.html
 ```

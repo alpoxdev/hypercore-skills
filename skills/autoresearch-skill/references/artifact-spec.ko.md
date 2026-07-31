@@ -5,7 +5,7 @@
 ## 워크스페이스 형태
 
 ```text
-.hypercore/autoresearch-skill/[skill-name]/
+.hyper/autoresearch-skill/[skill-name]/
 |-- dashboard.html
 |-- results.json
 |-- results.js        # file:// 브라우저 폴백용, 선택이지만 권장
@@ -23,7 +23,7 @@
 
 이 디렉터리는 스킬 폴더 안이 아니라 저장소 루트에 만든다.
 
-`$autoresearch` 실행에서는 이 `.hypercore` 디렉터리가 도메인별 결과 로그이고, 최종 완료 gate는 별도 `.omx/specs/autoresearch-[skill-name]/result.json` completion artifact가 담당한다. `completion_artifact_path`에는 이 `.omx/specs/.../result.json` 경로를 기록하고, `output_artifact_path`에는 이 파일의 `results.json`을 기록한다.
+`$autoresearch` 실행에서는 이 `.hyper` 디렉터리가 도메인별 결과 로그이고, 최종 완료 gate는 별도 `.omx/specs/autoresearch-[skill-name]/result.json` completion artifact가 담당한다. `completion_artifact_path`에는 이 `.omx/specs/.../result.json` 경로를 기록하고, `output_artifact_path`에는 이 파일의 `results.json`을 기록한다.
 
 항상 필요한 기본 아티팩트는 `dashboard.html`, `results.json`, `results.tsv`, `changelog.md`, `SKILL.md.baseline`이다. 완료 실행에는 `results.json.score_explanation`과 `final-report.md`, 또는 `results.js`로 로드되는 `score-explanation.md`와 `final-report.md`에 한국어 점수 변화와 인수인계 내용도 필요하다. `run-contract.md`, `source-ledger.md`, `trace-summary.md`는 실행 조건에 따라 필수화된다.
 
@@ -247,8 +247,8 @@ details/
 권장 렌더 순서:
 
 ```bash
-skills/autoresearch-skill/scripts/render-dashboard.mjs .hypercore/autoresearch-skill/my-skill
-open .hypercore/autoresearch-skill/my-skill/dashboard.html
+skills/autoresearch-skill/scripts/render-dashboard.mjs .hyper/autoresearch-skill/my-skill
+open .hyper/autoresearch-skill/my-skill/dashboard.html
 ```
 
 권장 스타일:

@@ -5,7 +5,7 @@ Use this reference when creating or reviewing the experiment workspace for an au
 ## Workspace Shape
 
 ```text
-.hypercore/autoresearch-code/[codebase-name]/
+.hyper/autoresearch-code/[codebase-name]/
 |-- dashboard.html
 |-- results.json
 |-- results.js        # Required file:// browser fallback after rendering
@@ -22,7 +22,7 @@ Use this reference when creating or reviewing the experiment workspace for an au
 
 Create this directory at the repository root, not inside the skill folder.
 
-In `$autoresearch` runs, this `.hypercore` directory is the domain-specific result log, and the final completion gate is handled by a separate `.omx/specs/autoresearch-[codebase-name]/result.json` completion artifact. Record that `.omx/specs/.../result.json` path in `completion_artifact_path`, and record this file's `results.json` in `output_artifact_path`.
+In `$autoresearch` runs, this `.hyper` directory is the domain-specific result log, and the final completion gate is handled by a separate `.omx/specs/autoresearch-[codebase-name]/result.json` completion artifact. Record that `.omx/specs/.../result.json` path in `completion_artifact_path`, and record this file's `results.json` in `output_artifact_path`.
 
 Canonical generated assets:
 

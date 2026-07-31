@@ -29,7 +29,7 @@ targeted reproduction이 있을 때 generic build만 실행하는 것은 충분�
 
 complex flow에서는:
 
-- `.hypercore/bug-fix/flow.json`을 생성하거나 재개한다.
+- `.hyper/bug-fix/flow.json`을 생성하거나 재개한다.
 - `current_phase`를 첫 미완료 phase와 일치시킨다.
 - 쓸 때마다 `updated_at`을 갱신한다.
 - `diagnose`에는 evidence, `options`에는 options, `confirm`에는 selection, `fix`에는 changed files, `verify`에는 commands/results를 기록한다.

@@ -1,6 +1,6 @@
 # Bug Fix Flow Schema
 
-> JSON schema for `.hypercore/bug-fix/flow.json` — used in complex path only.
+> JSON schema for `.hyper/bug-fix/flow.json` — used in complex path only.
 
 ## Schema
 

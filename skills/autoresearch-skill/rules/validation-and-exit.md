@@ -65,7 +65,7 @@ Check that the workspace contains:
 
 Expected location:
 
-- `.hypercore/autoresearch-skill/[skill-name]/`
+- `.hyper/autoresearch-skill/[skill-name]/`
 
 Also check that `results.json` and `results.tsv` describe score, pass rate, and keep/discard status consistently.
 Also check that completed runs expose Korean score movement: baseline, final/best, exact delta, where the score rose, changed files, and why changes were kept.
@@ -82,7 +82,7 @@ When reporting a `$autoresearch`-based run, check that:
 - `.omx/state/.../autoresearch-state.json` has `validation_mode: "prompt-architect-artifact"`
 - The same state has `completion_artifact_path`, `validator_prompt`, and `output_artifact_path`
 - The JSON at `completion_artifact_path` exists and records `architect_review.verdict: "approved"`
-- `output_artifact_path` points to `.hypercore/autoresearch-skill/[skill-name]/results.json`
+- `output_artifact_path` points to `.hyper/autoresearch-skill/[skill-name]/results.json`
 - If `rules/`, `references/`, `scripts/`, or `assets/` were changed, the baseline is not limited to one `SKILL.md.baseline`
 
 If this artifact is missing, do not claim `$autoresearch` completion even if the score improved.
@@ -116,7 +116,7 @@ find skills/autoresearch-skill -maxdepth 3 -type f | sort
 wc -l skills/autoresearch-skill/SKILL.md
 rg -n "results.tsv|results.json|dashboard.html|changelog.md|score-explanation|final-report|SKILL.md.baseline|run-contract|source-ledger|trace-summary" skills/autoresearch-skill/SKILL.md skills/autoresearch-skill/references skills/autoresearch-skill/rules
 find skills/autoresearch-skill -maxdepth 2 \( -name README.md -o -name CHANGELOG.md -o -name QUICK_REFERENCE.md \) -print
-find .hypercore -maxdepth 4 -type f | sort | rg "autoresearch-skill"
-python3 -m json.tool .hypercore/autoresearch-skill/[skill-name]/results.json >/dev/null
-test -f .hypercore/autoresearch-skill/[skill-name]/results.js
+find .hyper -maxdepth 4 -type f | sort | rg "autoresearch-skill"
+python3 -m json.tool .hyper/autoresearch-skill/[skill-name]/results.json >/dev/null
+test -f .hyper/autoresearch-skill/[skill-name]/results.js
 ```

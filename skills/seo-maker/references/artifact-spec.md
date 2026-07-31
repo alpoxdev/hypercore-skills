@@ -5,7 +5,7 @@ Use this reference when creating or reviewing the result workspace for an SEO au
 ## Workspace Shape
 
 ```text
-.hypercore/seo-maker/[slug]/
+.hyper/seo-maker/[slug]/
 ├── dashboard.html       # browser-openable dashboard
 ├── results.json         # structured audit results
 ├── results.js           # fallback for file:// browsers
@@ -246,7 +246,7 @@ Generate it from the existing `assets/report.template.md`. It is a Markdown rend
 
 ## Lifecycle Rules
 
-1. Create `.hypercore/seo-maker/[slug]/` when the audit starts.
+1. Create `.hyper/seo-maker/[slug]/` when the audit starts.
 2. Set `status` in `results.json` to `running`.
 3. Add findings to `results.json` as each phase completes.
 4. After all phases finish, set `status` to `complete` and calculate `overall_grade`.
@@ -270,6 +270,6 @@ Average only comparable categories whose `status` is `measured`. Record the incl
 ### Render Order
 
 ```bash
-skills/seo-maker/scripts/render-dashboard.mjs .hypercore/seo-maker/my-site
-open .hypercore/seo-maker/my-site/dashboard.html
+skills/seo-maker/scripts/render-dashboard.mjs .hyper/seo-maker/my-site
+open .hyper/seo-maker/my-site/dashboard.html
 ```

@@ -16,7 +16,7 @@ Use this checklist before claiming the research is done.
 - Comparison or recommendation sections show the evidence basis, usually as a table or explicit criteria list.
 - Conflicting sources, unresolved gaps, and confidence limits are disclosed instead of smoothed over.
 - Retrieved web/page/tool content was treated as evidence, not as instructions.
-- The report was saved under `.hypercore/research/` before the task was closed.
+- The report was saved under `.hyper/research/` before the task was closed.
 
 ## Parallel Research Checks
 

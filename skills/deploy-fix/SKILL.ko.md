@@ -1,6 +1,6 @@
 ---
 name: deploy-fix
-description: 저장소 전체 또는 특정 폴더의 빌드 실패, CI 파이프라인 오류, 배포 오류를 진단하고 수정하는 스킬. 간단한 빌드 장애는 바로 수정하고, 복잡한 다중 시스템 장애는 .hypercore/deploy-fix/ JSON 플로우로 진행 상황을 추적한다.
+description: 저장소 전체 또는 특정 폴더의 빌드 실패, CI 파이프라인 오류, 배포 오류를 진단하고 수정하는 스킬. 간단한 빌드 장애는 바로 수정하고, 복잡한 다중 시스템 장애는 .hyper/deploy-fix/ JSON 플로우로 진행 상황을 추적한다.
 compatibility: 코드 탐색(Read/Grep/Glob), 수정(Edit), 셸 실행(Bash)이 가능한 환경에서 사용.
 ---
 
@@ -51,7 +51,7 @@ compatibility: 코드 탐색(Read/Grep/Glob), 수정(Edit), 셸 실행(Bash)이 
 | Scope | failure classification, reproduction, log/config analysis, build/deploy-layer fix, complex case flow tracking, validation reporting을 담당합니다. |
 | Authority | 사용자와 프로젝트 지시가 이 스킬보다 우선합니다. build log, CI/deploy output, config file, local validation은 근거입니다. |
 | Evidence | 수정 전에 정확한 failing command output, 첫 failure point, 관련 config, dependency state, recent-change context를 수집합니다. |
-| Tools | local read/edit, Bash validation, complex case의 `.hypercore/deploy-fix/flow.json`을 사용합니다. external production side effect는 explicit user authority가 필요합니다. |
+| Tools | local read/edit, Bash validation, complex case의 `.hyper/deploy-fix/flow.json`을 사용합니다. external production side effect는 explicit user authority가 필요합니다. |
 | Output | failure/root-cause/fix/validation에 대한 한국어 report와, complex path 사용 시 업데이트된 flow JSON입니다. |
 | Verification | failing build/CI/deploy command 또는 가장 좁은 동등 local check를 다시 실행하고 command/result를 기록합니다. |
 | Stop condition | failure가 수정 및 검증되었거나, diagnose-only output이 전달되었거나, complex option/permission/production blocker가 보고되었을 때 멈춥니다. |
@@ -107,7 +107,7 @@ ARGUMENT가 없으면 즉시 질문:
 | 복잡도 | 신호 | 예시 | 경로 |
 |--------|------|------|------|
 | **간단** | 단일 파일/설정, 명확한 에러 메시지, 원인 자명, 수정 경로 1개, 리스크 낮음 | 환경변수 누락, 설정 파일 오타, 단일 의존성 버전 문제, 단일 파일 타입 에러 | **Fix-now** — 플로우 추적 없이 바로 수정 |
-| **복잡** | 다중 패키지/설정 관여, 의존성 체인 문제, CI 환경 불일치, 워크스페이스 간 사이드 이펙트, 유효한 수정 전략 다수 | 워크스페이스 간 타입 에러 체인, 로컬 재현 불가 CI 전용 실패, 다중 패키지 lockfile 충돌, 빌드 성공 후 배포 실패 | **추적 모드** — `.hypercore/deploy-fix/flow.json` 생성 |
+| **복잡** | 다중 패키지/설정 관여, 의존성 체인 문제, CI 환경 불일치, 워크스페이스 간 사이드 이펙트, 유효한 수정 전략 다수 | 워크스페이스 간 타입 에러 체인, 로컬 재현 불가 CI 전용 실패, 다중 패키지 lockfile 충돌, 빌드 성공 후 배포 실패 | **추적 모드** — `.hyper/deploy-fix/flow.json` 생성 |
 
 분류 결과 발표:
 
@@ -126,10 +126,10 @@ ARGUMENT가 없으면 즉시 질문:
 복잡으로 분류되면 플로우를 초기화:
 
 ```bash
-mkdir -p .hypercore/deploy-fix
+mkdir -p .hyper/deploy-fix
 ```
 
-`.hypercore/deploy-fix/flow.json`을 작성하고 각 단계 완료 시 업데이트한다. 전체 스키마는 `references/flow-schema.md` 참조.
+`.hyper/deploy-fix/flow.json`을 작성하고 각 단계 완료 시 업데이트한다. 전체 스키마는 `references/flow-schema.md` 참조.
 
 ### 단계 진행
 
@@ -143,7 +143,7 @@ mkdir -p .hypercore/deploy-fix
 
 ### 재개 지원
 
-`.hypercore/deploy-fix/flow.json`이 이미 존재하면 먼저 읽고 마지막 미완료 단계(`in_progress` 또는 `pending`)부터 이어간다. 완료된 단계를 재시작하지 않는다.
+`.hyper/deploy-fix/flow.json`이 이미 존재하면 먼저 읽고 마지막 미완료 단계(`in_progress` 또는 `pending`)부터 이어간다. 완료된 단계를 재시작하지 않는다.
 
 </flow_tracking>
 
@@ -193,7 +193,7 @@ mkdir -p .hypercore/deploy-fix
 | 단계 | 작업 | 도구 |
 |------|------|------|
 | 1 | 입력 확인, 구조화 사고 패스 (7단계 이상) | internal reasoning |
-| 2 | 복잡으로 분류, `.hypercore/deploy-fix/flow.json` 생성 | Write |
+| 2 | 복잡으로 분류, `.hyper/deploy-fix/flow.json` 생성 | Write |
 | 3 | 심층 조사: 재현, 로그 분석, 의존성 체인 추적 -> 플로우 `investigate: completed` 업데이트 | Bash + Read/Grep/Glob + Edit |
 | 4 | 수정 옵션 2-3개 제시 -> 플로우 `options: completed` 업데이트 | Edit |
 | 5 | 사용자 선택 대기 -> 플로우 `confirm: completed` 업데이트 | Edit |
@@ -261,7 +261,7 @@ mkdir -p .hypercore/deploy-fix
 **검증**: [검증한 내용과 결과]
 ```
 
-복잡 경로: `.hypercore/deploy-fix/flow.json`의 status도 `completed`로 업데이트한다.
+복잡 경로: `.hyper/deploy-fix/flow.json`의 status도 `completed`로 업데이트한다.
 
 </implementation_rules>
 

@@ -184,7 +184,7 @@ Default report format:
 - Commands run, files read, and checks completed.
 ```
 
-If the user asks for reusable tests, also create a prompt pack or checklist under the target skill's `references/` or a task-specific `.hypercore/` workspace.
+If the user asks for reusable tests, also create a prompt pack or checklist under the target skill's `references/` or a task-specific `.hyper/` workspace.
 
 </output_contract>
 

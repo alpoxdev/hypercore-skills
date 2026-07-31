@@ -105,7 +105,7 @@ Component definition의 모든 token reference를 확인합니다.
 - 모든 material markdown file에는 `.ko.md` sibling이 있습니다.
 - `SKILL.md`는 deep reference chain 없이 support file을 직접 link합니다.
 - documented purpose 없이 `assets/`, `scripts/`, `agents/` directory를 추가하지 않았습니다.
-- 이 repo가 plugin mirror를 배포하면 plugin mirror files가 root skill files와 일치합니다.
+- canonical source files만 검증하며 이 skill에는 plugin mirror, symlink, adapter contract가 없습니다.
 
 ## 9. Completion Summary
 

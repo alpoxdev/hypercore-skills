@@ -57,7 +57,7 @@ Write reports in Korean by default. Every report states its terminal, exact obse
 
 ## Safe output and source handling
 
-All writes are beneath `.hypercore/image-maker/<topic>/`. Normalize topic to NFC and trim it. Reject with `E_TOPIC_UNSAFE` rather than rewriting it when it is empty, `.` or `..`, contains a separator or control character, or is not exactly one path component. Korean topics remain their exact normalized component.
+All writes are beneath `.hyper/image-maker/<topic>/`. Normalize topic to NFC and trim it. Reject with `E_TOPIC_UNSAFE` rather than rewriting it when it is empty, `.` or `..`, contains a separator or control character, or is not exactly one path component. Korean topics remain their exact normalized component.
 
 Race-safe creation requires an observed descriptor-relative secure-write capability: resolve and open each directory relative to trusted descriptors without following links, create the final file exclusively relative to the verified parent, and verify the opened descriptor is a non-empty regular file before retaining its relative path and digest. `lstat`, `realpath`, pathname containment, or exclusive pathname creation alone do not establish this guarantee. When that capability is unavailable or unknown, block; the package cannot guarantee descriptor safety by itself. On ordinary `EEXIST`, retry with `-2`, `-3`, and later suffixes before the extension (for example, `image-2.png`), never after it.
 

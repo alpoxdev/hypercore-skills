@@ -6,11 +6,11 @@
 
 다음 위치에 저장합니다.
 
-`.hypercore/research/[NN].slug.md`
+`.hyper/research/[NN].slug.md`
 
 예시:
 
-`.hypercore/research/03.websocket-vs-sse.md`
+`.hyper/research/03.websocket-vs-sse.md`
 
 ## 템플릿
 

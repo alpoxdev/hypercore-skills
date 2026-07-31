@@ -2,7 +2,7 @@
 
 `prd.md`를 작성하거나 갱신할 때 이 reference를 사용합니다.
 
-근거 기반: 아래 섹션 집합은 PRD 출처 12개를 검토하고 기능명세서, 유저플로우, 와이어프레임 출처와 비교한 로컬 조사 보고서 [`../../../.hypercore/research/002-prd-package-layered-artifacts.md`](../../../.hypercore/research/002-prd-package-layered-artifacts.md)에 기반합니다.
+근거 기반: 아래 섹션 집합은 PRD 출처 12개를 검토하고 기능명세서, 유저플로우, 와이어프레임 출처와 비교한 로컬 조사 보고서 [`../../../.hyper/research/002-prd-package-layered-artifacts.md`](../../../.hyper/research/002-prd-package-layered-artifacts.md)에 기반합니다.
 
 ## 안정적인 기본 섹션 집합
 

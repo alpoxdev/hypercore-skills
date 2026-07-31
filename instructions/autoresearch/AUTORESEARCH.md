@@ -147,4 +147,4 @@ Read [`references/safety-and-observability.md`](references/safety-and-observabil
 - [`../validation/index.md`](../validation/index.md)
 - [`../sourcing/reliable-search.md`](../sourcing/reliable-search.md)
 
-Local re-verification cache (untracked): `.hypercore/research/2026-06-02-autoresearch-instructions.md`, `.hypercore/research/2026-07-29-instructions-base-source-refresh.md`. `.hypercore/` is covered by `.gitignore` and does not exist in another clone. This document's evidence is the URLs in "Summary of official and upstream evidence" above; the cache paths do not substitute for them.
+Local re-verification cache (untracked): `.hyper/research/2026-06-02-autoresearch-instructions.md`, `.hyper/research/2026-07-29-instructions-base-source-refresh.md`. `.hyper/` is covered by `.gitignore` and does not exist in another clone. This document's evidence is the URLs in "Summary of official and upstream evidence" above; the cache paths do not substitute for them.

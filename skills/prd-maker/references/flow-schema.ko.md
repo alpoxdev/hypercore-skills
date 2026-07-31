@@ -1,6 +1,6 @@
 # 기획 패키지 Flow Schema
 
-> 복잡 기획 패키지에서만 사용하는 `.hypercore/prd/[slug]/flow.json`용 JSON schema.
+> 복잡 기획 패키지에서만 사용하는 `.hyper/prd/[slug]/flow.json`용 JSON schema.
 
 ## Schema
 

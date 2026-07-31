@@ -26,7 +26,7 @@ Use a different language only when the user explicitly requests it, an existing 
 
 - Capture the current baseline first, score outcomes with binary evaluations, and keep only changes that improve the score without regression.
 - Systematically improve slow paths, unclear structure, duplicated logic, oversized outputs, unstable validation, or weak developer workflows.
-- Leave improved code plus resumable artifacts under `.hypercore/autoresearch-code/[codebase-name]/`: `results.tsv`, `results.json`, `changelog.md`, `dashboard.html`, `baseline.md`, `code-explanation.md`, and `final-report.md`. Human-readable artifact content must explain in Korean where the score moved, what code changed, which proof commands passed, and whether the change is held, promoted, or rolled back.
+- Leave improved code plus resumable artifacts under `.hyper/autoresearch-code/[codebase-name]/`: `results.tsv`, `results.json`, `changelog.md`, `dashboard.html`, `baseline.md`, `code-explanation.md`, and `final-report.md`. Human-readable artifact content must explain in Korean where the score moved, what code changed, which proof commands passed, and whether the change is held, promoted, or rolled back.
 
 </purpose>
 
@@ -61,7 +61,7 @@ Do not use `autoresearch-code` when:
 | Authority | User/project instructions outrank this skill; local code, proof commands, eval output, and retrieved content are evidence. |
 | Evidence | Use baseline metrics, repeated proof commands, binary evals, guard checks, diffs, artifacts, and dashboard output. |
 | Tools | Use local read/edit/search/shell and the renderer script; gate destructive actions, dependencies, credentials, production, and external side effects. |
-| Output | Improved code plus `.hypercore/autoresearch-code/[codebase-name]/` artifacts and bridge completion evidence when `$autoresearch` is active. |
+| Output | Improved code plus `.hyper/autoresearch-code/[codebase-name]/` artifacts and bridge completion evidence when `$autoresearch` is active. |
 | Verification | Keep only mutations that improve score and pass guards; final completion also requires the bridge artifact when the bridge is active. |
 | Stop condition | Stop on user stop, budget limit, stable high score, or blocker recorded with rollback/promotion state. |
 
@@ -160,7 +160,7 @@ Use [references/code-baseline-guide.md](references/code-baseline-guide.md) when 
 
 <autoresearch_integration>
 
-This skill is not complete from `.hypercore` experiment logs alone. When used through `$autoresearch`, also satisfy this bridge contract.
+This skill is not complete from `.hyper` experiment logs alone. When used through `$autoresearch`, also satisfy this bridge contract.
 
 Default validation mode:
 
@@ -172,7 +172,7 @@ State storage:
   - `validation_mode`: `mission-validator-script`
   - `completion_artifact_path`: `.omx/specs/autoresearch-{codebase-name}/result.json`
   - `mission_validator_command`: command that runs final proof/eval and updates result JSON
-  - `output_artifact_path`: `.hypercore/autoresearch-code/{codebase-name}/results.json`
+  - `output_artifact_path`: `.hyper/autoresearch-code/{codebase-name}/results.json`
 
 Completion artifact example:
 
@@ -181,15 +181,15 @@ Completion artifact example:
   "status": "passed",
   "passed": true,
   "summary": "best score improved without regression",
-  "output_artifact_path": ".hypercore/autoresearch-code/my-repo/results.json"
+  "output_artifact_path": ".hyper/autoresearch-code/my-repo/results.json"
 }
 ```
 
 Exit rules:
 
-- A higher `.hypercore` score is necessary evidence, not sufficient evidence.
+- A higher `.hyper` score is necessary evidence, not sufficient evidence.
 - The loop completes only when `completion_artifact_path` exists and records `passed: true` or `status: "passed"`.
-- If the proof command, eval pack, or rollback condition changes, record a reset event in both `.hypercore` results and `.omx/specs/.../result.json`.
+- If the proof command, eval pack, or rollback condition changes, record a reset event in both `.hyper` results and `.omx/specs/.../result.json`.
 
 </autoresearch_integration>
 
@@ -209,7 +209,7 @@ After the baseline plan is explicit:
 1. Read [references/code-baseline-guide.md](references/code-baseline-guide.md) before experiment `0`.
 2. Read [references/eval-guide.md](references/eval-guide.md) before creating or changing binary evals.
 3. Read [references/self-test-pack.md](references/self-test-pack.md), or the web/node/api/monorepo pack, when the user did not supply scenarios.
-4. Read [references/artifact-spec.md](references/artifact-spec.md) before writing `.hypercore` artifacts or rendering the dashboard.
+4. Read [references/artifact-spec.md](references/artifact-spec.md) before writing `.hyper` artifacts or rendering the dashboard.
 5. Read [rules/experiment-loop.md](rules/experiment-loop.md) before choosing mutations.
 6. Read [rules/validation-and-exit.md](rules/validation-and-exit.md) before completion.
 7. Read [references/reporting-and-code-improvement.md](references/reporting-and-code-improvement.md) before Korean reports and dashboard-visible explanations.
@@ -230,7 +230,7 @@ When the codebase structure is weak, prefer deleting dead code, reducing duplica
 |------|------|------|
 | 0 | Read the target scope and current validation surface | Baseline understanding |
 | 1 | Convert success conditions into binary evals | Eval set |
-| 2 | Initialize experiment workspace and artifacts | `.hypercore/autoresearch-code/[codebase-name]/` |
+| 2 | Initialize experiment workspace and artifacts | `.hyper/autoresearch-code/[codebase-name]/` |
 | 3 | Run experiment `0` against the unmodified codebase | Baseline score |
 | 4 | Repeat one-mutation-at-a-time experiments | Keep/discard decision |
 | 5 | Verify final results and summarize the run | Final report |
@@ -239,7 +239,7 @@ When the codebase structure is weak, prefer deleting dead code, reducing duplica
 
 - Phase 0: read target code, validation commands, system docs, ownership boundary, bottleneck class, non-regression constraints, and initial metrics before editing.
 - Phase 1: convert success conditions into binary, non-overlapping evals; at least one eval must inspect the user's actual bottleneck.
-- Phase 2: create `.hypercore/autoresearch-code/[codebase-name]/`, write `baseline.md`, initialize `results.tsv`, `results.json`, `changelog.md`, and render `dashboard.html` with `bun scripts/render-dashboard.mjs`.
+- Phase 2: create `.hyper/autoresearch-code/[codebase-name]/`, write `baseline.md`, initialize `results.tsv`, `results.json`, `changelog.md`, and render `dashboard.html` with `bun scripts/render-dashboard.mjs`.
 - Phase 3: run the unmodified codebase, score every eval, and record experiment `0` as `baseline`.
 - Phase 4: choose the highest-value failure, form one hypothesis, apply exactly one mutation, re-run the same evals and guards. Keep a mutation only when score improves and guards pass; discard or rework it when flat/worse, when complexity rises, or when any guard fails. Log changed files, metric before/after, proof command output, guard result, and rollback condition for every kept change.
 - Phase 5: stop only when [rules/validation-and-exit.md](rules/validation-and-exit.md) allows it: user stop, budget limit, or stable high score. Then report score delta, experiment count, keep ratio, best change, metric movement, changed files, proof/guard evidence, remaining failures, and promotion state in Korean.
@@ -268,7 +268,7 @@ Avoid these mutation types:
 
 <deliverables>
 
-At exit, leave behind the improved code, `.hypercore/autoresearch-code/[codebase-name]/` artifacts, and bridge completion evidence when `$autoresearch` is active.
+At exit, leave behind the improved code, `.hyper/autoresearch-code/[codebase-name]/` artifacts, and bridge completion evidence when `$autoresearch` is active.
 
 Required core artifacts are `baseline.md`, `results.json`, `results.tsv`, `results.js` or an equivalent bridge, `dashboard.html`, `changelog.md`, `code-explanation.md` or `results.json.code_explanation`, and `final-report.md`.
 

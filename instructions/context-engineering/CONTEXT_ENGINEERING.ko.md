@@ -116,4 +116,4 @@ XML 태그는 Claude 계열에서 특히 유용하지만, 핵심은 XML 자체�
 
 **미확인**: 이전 판이 근거로 들었던 Cursor “Memories” 기능은 2026-07-29 기준 현행 Rules 문서에서 확인되지 않았다. 별도 문서에 존재할 수 있으므로 “없음”이 아니라 **미확인**으로 남긴다. 이 문서는 Memories를 근거로 어떤 주장도 하지 않는다.
 
-로컬 재검증 캐시(미추적): `.hypercore/research/2026-06-02-official-llm-prompt-instructions-update.md`, `.hypercore/research/2026-07-29-instructions-base-source-refresh.md`. `.hypercore/`는 `.gitignore` 대상이라 다른 clone에는 없다. 위 URL이 근거이며 캐시 경로가 이를 대체하지 않는다.
+로컬 재검증 캐시(미추적): `.hyper/research/2026-06-02-official-llm-prompt-instructions-update.md`, `.hyper/research/2026-07-29-instructions-base-source-refresh.md`. `.hyper/`는 `.gitignore` 대상이라 다른 clone에는 없다. 위 URL이 근거이며 캐시 경로가 이를 대체하지 않는다.

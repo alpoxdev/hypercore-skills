@@ -1,6 +1,6 @@
 # 버그 수정 Flow Schema
 
-> 복잡 경로에서만 사용하는 `.hypercore/bug-fix/flow.json`용 JSON schema.
+> 복잡 경로에서만 사용하는 `.hyper/bug-fix/flow.json`용 JSON schema.
 
 ## Schema
 

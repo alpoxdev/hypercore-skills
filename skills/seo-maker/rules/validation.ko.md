@@ -17,7 +17,7 @@
 
 - [ ] Target page(s)를 완전히 스캔함
 - [ ] 최소 하나의 category(Technical, On-Page, Content)를 분석함
-- [ ] `report.md`가 `.hypercore/seo-maker/[slug]/`에 저장됨
+- [ ] `report.md`가 `.hyper/seo-maker/[slug]/`에 저장됨
 
 ### Complex audit
 
@@ -31,7 +31,7 @@
 - [ ] AEO: visible Q&A/answer blocks, Featured Snippet readiness, FAQPage/QAPage eligibility caveats 확인
 - [ ] GEO: GEO CORE, citation readiness, entity authority, topic-appropriate freshness, optional llms.txt, query fan-out/citation probe status 확인
 - [ ] `sources.md`가 사용한 evidence와 references를 기록함
-- [ ] `report.md`가 `.hypercore/seo-maker/[slug]/`에 저장됨
+- [ ] `report.md`가 `.hyper/seo-maker/[slug]/`에 저장됨
 - [ ] 요청된 모든 URL/file을 inventory했거나 제외/접근 불가 target을 나열함
 - [ ] 해당 없는 dimension은 `not-applicable`, 측정하지 못한 dimension은 `unknown`으로 표시하고 조용히 scoring하지 않음
 

@@ -2,7 +2,7 @@
 
 Use this reference when drafting `feature-spec.md`, `user-flow.md`, `wireframe.md`, `diagram.md`, or `preview.html`.
 
-Evidence basis: the artifact chain in this reference is grounded in the local research report [`../../../.hypercore/research/002-prd-package-layered-artifacts.md`](../../../.hypercore/research/002-prd-package-layered-artifacts.md), which reviewed 10+ sources each for PRDs, feature specifications, user flows, and wireframes.
+Evidence basis: the artifact chain in this reference is grounded in the local research report [`../../../.hyper/research/002-prd-package-layered-artifacts.md`](../../../.hyper/research/002-prd-package-layered-artifacts.md), which reviewed 10+ sources each for PRDs, feature specifications, user flows, and wireframes.
 
 ## Package principle
 

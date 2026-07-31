@@ -115,4 +115,4 @@ Write a role prompt in the following order. Follow [`references/prompt-authoring
 
 **Unconfirmed**: the Cursor "Memories" feature cited by an earlier revision was not found in the current Rules documentation as of 2026-07-29. It may live in a separate document, so this is recorded as **unconfirmed** rather than absent. This document makes no claim resting on Memories.
 
-Local re-verification cache (untracked): `.hypercore/research/2026-06-02-official-llm-prompt-instructions-update.md`, `.hypercore/research/2026-07-29-instructions-base-source-refresh.md`. `.hypercore/` is covered by `.gitignore` and does not exist in another clone. The URLs above are the evidence; the cache paths do not substitute for them.
+Local re-verification cache (untracked): `.hyper/research/2026-06-02-official-llm-prompt-instructions-update.md`, `.hyper/research/2026-07-29-instructions-base-source-refresh.md`. `.hyper/` is covered by `.gitignore` and does not exist in another clone. The URLs above are the evidence; the cache paths do not substitute for them.

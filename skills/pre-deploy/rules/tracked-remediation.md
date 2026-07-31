@@ -10,7 +10,7 @@ Use tracked remediation only after:
 
 ## Flow file
 
-Create or resume `.hypercore/pre-deploy/flow.json` at the repository root. Keep it small, machine-readable, and updated after every phase transition.
+Create or resume `.hyper/pre-deploy/flow.json` at the repository root. Keep it small, machine-readable, and updated after every phase transition.
 
 Minimum schema:
 
@@ -73,7 +73,7 @@ Move phases in order: `detect` -> `baseline` -> `triage` -> `fix` -> `verify` ->
 
 ## Resume rules
 
-When `.hypercore/pre-deploy/flow.json` already exists:
+When `.hyper/pre-deploy/flow.json` already exists:
 
 1. Read `current_phase`, `failure_groups`, `fixes`, and `validation_history` before running new checks.
 2. Resume from the earliest incomplete or failed phase instead of restarting from scratch.

@@ -1,7 +1,7 @@
 ---
 name: bug-fix
 description: 증상, 에러, 실패 테스트, 회귀, 재현 가능한 오동작이 있는 구체적인 버그를 진단하고 수정할 때 사용하는 스킬. 광범위한 빌드/CI 복구, 보안 검토, 신규 기능, 추측성 정리에는 사용하지 않는다.
-compatibility: 코드 탐색, 수정, 검증 명령을 실행할 수 있는 환경에서 사용하며, 복잡한 조사는 `.hypercore/bug-fix/flow.json`을 작성할 수 있다.
+compatibility: 코드 탐색, 수정, 검증 명령을 실행할 수 있는 환경에서 사용하며, 복잡한 조사는 `.hyper/bug-fix/flow.json`을 작성할 수 있다.
 ---
 
 # Bug Fix Skill
@@ -23,7 +23,7 @@ compatibility: 코드 탐색, 수정, 검증 명령을 실행할 수 있는 환�
 - 구체적인 버그 리포트를 근거 기반 진단, 범위 제한 수정, 검증된 결과로 전환한다.
 - 수정 전에 버그 복잡도를 분류해 간단한 버그는 바로 수정하고, 복잡한 버그는 명시적인 단계로 추적한다.
 - 원인 근거, 영향 경계, targeted validation을 요구해 추측성 수정을 방지한다.
-- 복잡한 버그는 `references/flow-schema.md`를 사용해 `.hypercore/bug-fix/flow.json`에 조사 상태를 보존한다.
+- 복잡한 버그는 `references/flow-schema.md`를 사용해 `.hyper/bug-fix/flow.json`에 조사 상태를 보존한다.
 
 </purpose>
 
@@ -48,7 +48,7 @@ compatibility: 코드 탐색, 수정, 검증 명령을 실행할 수 있는 환�
 |---|---|
 | Intent | 특정 버그의 실패 경계를 증명하고, 가장 작은 안전한 수정을 적용한 뒤 변경된 동작을 검증한다. |
 | Trigger | 구체적인 증상, 에러, 실패 테스트, 회귀, 깨진 통합 경로, 재현 가능한 예상-vs-실제 불일치. |
-| Scope | 진단, 버그 해결에 직접 필요한 코드/설정 수정, targeted test/build, 복잡한 경우 `.hypercore/bug-fix/flow.json` 추적을 소유한다. |
+| Scope | 진단, 버그 해결에 직접 필요한 코드/설정 수정, targeted test/build, 복잡한 경우 `.hyper/bug-fix/flow.json` 추적을 소유한다. |
 | Authority | 사용자 지시와 저장소 로컬 규칙이 이 스킬보다 우선한다. 기존 코드/테스트와 재현 가능한 근거가 추측보다 우선한다. 안전 게이트나 무관한 변경을 우회하지 않는다. |
 | Evidence | 에러 문구, 재현 단계, 실패 테스트, 로그, 관련 소스 읽기, 최근 로컬 diff, 검증 출력을 사용한다. 불확실한 가정은 명시한다. |
 | Tools | 저장소 탐색, 수정, 검증 명령을 사용한다. 파괴적 작업, credential 접근, 네트워크 호출, production side effect, 무관한 정리는 gate한다. |
@@ -99,7 +99,7 @@ compatibility: 코드 탐색, 수정, 검증 명령을 실행할 수 있는 환�
 조건에 맞을 때만 지원 파일을 읽는다.
 
 1. 버그를 분류하거나 diagnose-only/fix-now/option-first/handoff를 선택하거나 사용자 확인 필요 여부를 판단하기 전 `rules/diagnosis-and-routing.md`를 읽는다.
-2. `.hypercore/bug-fix/flow.json`이 필요한 복잡한 버그이거나 기존 tracked flow를 재개할 때만 `references/flow-schema.md`를 읽는다.
+2. `.hyper/bug-fix/flow.json`이 필요한 복잡한 버그이거나 기존 tracked flow를 재개할 때만 `references/flow-schema.md`를 읽는다.
 3. 완료 선언, blocked 상태 보고, 검증 근거 충분성 판단 전 `rules/validation-and-reporting.md`를 읽는다.
 4. 사용자-facing 보고나 handoff note에는 필요 시 한국어 mirror(`*.ko.md`)를 사용한다. machine-readable flow field는 영어로 유지한다.
 
@@ -109,7 +109,7 @@ compatibility: 코드 탐색, 수정, 검증 명령을 실행할 수 있는 환�
 
 | Phase | Simple / Fix-now path | Complex / Option-first path |
 |---|---|---|
-| 1. Intake | 프롬프트 또는 로컬 근거에서 증상과 기대 동작을 확인한다. | 동일하게 확인한 뒤 기존 `.hypercore/bug-fix/flow.json` 여부를 확인한다. |
+| 1. Intake | 프롬프트 또는 로컬 근거에서 증상과 기대 동작을 확인한다. | 동일하게 확인한 뒤 기존 `.hyper/bug-fix/flow.json` 여부를 확인한다. |
 | 2. Classify | 한 줄 근거와 함께 `Complexity: simple`을 발표한다. | `Complexity: complex`를 발표하고 flow tracking을 초기화/갱신한다. |
 | 3. Diagnose | 실패 경계를 재현하거나 좁히고 root cause를 확인한다. | 재현, 가설 비교, 근거 수집을 수행하고 `diagnose`를 갱신한다. |
 | 4. Choose path | 사용자가 수정을 요청했고 low-risk fix가 하나로 분명하면 fix path를 발표한다. | 장점, 단점, 리스크, 파일, 추천을 포함한 수정 옵션 2-3개를 제시하고 선택을 기다린다. |
@@ -123,7 +123,7 @@ compatibility: 코드 탐색, 수정, 검증 명령을 실행할 수 있는 환�
 
 - **Diagnose-only**: 사용자가 분석만 요청했을 때 사용한다. 실패를 재현하거나 경계를 좁히고 원인/옵션을 설명한 뒤 수정 전에 멈춘다.
 - **Fix-now**: 사용자가 수정을 요청했고, 원인 근거가 있으며, 가장 안전한 low-risk 경로가 하나로 분명하고, 검증을 실행할 수 있는 간단한 버그에 사용한다.
-- **Option-first**: 원인 후보가 여럿이거나, 교차 영향이 있거나, tradeoff가 위험하거나, 유효한 수정 전략이 둘 이상인 복잡한 버그에 사용한다. `.hypercore/bug-fix/flow.json`으로 추적하고 사용자 선택을 기다린다.
+- **Option-first**: 원인 후보가 여럿이거나, 교차 영향이 있거나, tradeoff가 위험하거나, 유효한 수정 전략이 둘 이상인 복잡한 버그에 사용한다. `.hyper/bug-fix/flow.json`으로 추적하고 사용자 선택을 기다린다.
 - **Handoff**: 핵심 문제가 bug-fix 범위 밖이면 사용한다. 수집한 근거와 추천 next skill/workflow를 포함한다.
 
 </execution_modes>
@@ -179,7 +179,7 @@ compatibility: 코드 탐색, 수정, 검증 명령을 실행할 수 있는 환�
 - [ ] mode를 선택했다: diagnose-only, fix-now, option-first, handoff.
 - [ ] 한 줄 근거와 함께 complexity를 발표했다.
 - [ ] 수정 전 root-cause evidence를 수집했다.
-- [ ] complex path는 `references/flow-schema.md`에 따라 `.hypercore/bug-fix/flow.json`을 생성/재개/갱신했다.
+- [ ] complex path는 `references/flow-schema.md`에 따라 `.hyper/bug-fix/flow.json`을 생성/재개/갱신했다.
 - [ ] complex path는 옵션을 제시하고 구현 전 사용자 선택을 기록했다.
 - [ ] 변경 파일은 bug boundary로 제한했다.
 - [ ] 변경 경로에 대한 targeted validation과 적용 가능한 broader typecheck/test/build를 실행했다.

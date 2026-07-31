@@ -23,7 +23,7 @@
 명확한 도메인 팩이 없을 때만 아래 프롬프트를 사용한다:
 
 1. `이 저장소에 autoresearch 돌려서 점수 오르는 최적화만 남겨줘.`
-2. `이 코드베이스를 binary eval로 벤치마크하고 아티팩트를 .hypercore에 저장해줘.`
+2. `이 코드베이스를 binary eval로 벤치마크하고 아티팩트를 .hyper에 저장해줘.`
 3. `이 코드베이스의 가장 큰 병목을 찾아서 측정 가능한 반복 실험으로 개선해줘.`
 4. `이 버그 하나만 고치고 끝내.`
 5. `Run autoresearch on this repo and keep only score-improving optimizations.`
@@ -55,7 +55,7 @@ Fail: baseline 계약이 불완전하거나, 서로 안 맞거나, 빠져 있다
 
 EVAL 4: 아티팩트 생명주기
 Question: 아티팩트 위치와 업데이트 주기가 분명하게 정의되어 있는가?
-Pass: `.hypercore` 위치, 필수 파일, 상태/업데이트 기대치가 명시되어 있다
+Pass: `.hyper` 위치, 필수 파일, 상태/업데이트 기대치가 명시되어 있다
 Fail: 아티팩트 계약이 불완전하거나, 서로 안 맞거나, 빠져 있다
 
 EVAL 5: 변이 규율

@@ -1,6 +1,6 @@
 # Planning Package Flow Schema
 
-> JSON schema for `.hypercore/prd/[slug]/flow.json` — used for complex planning packages only.
+> JSON schema for `.hyper/prd/[slug]/flow.json` — used for complex planning packages only.
 
 ## Schema
 

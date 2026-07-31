@@ -104,7 +104,7 @@
 - 서로 충돌하는 공식 문서는 날짜와 적용 모델/제품을 비교한다.
 
 ## Output
-`.hypercore/research/[date]-[slug].md`에 source ledger, claim-source matrix, caveat를 포함한다.
+`.hyper/research/[date]-[slug].md`에 source ledger, claim-source matrix, caveat를 포함한다.
 
 ## Verification
 - 6개 이상 reviewed source, 4개 이상 cited source.
@@ -183,4 +183,4 @@ Draft → Smoke eval → Failure diagnosis → Small patch → Re-run → Versio
 - Mistral Prompting: https://docs.mistral.ai/models/best-practices/prompt-engineering
 - Microsoft Azure OpenAI Prompt engineering techniques: https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/prompt-engineering
 
-로컬 재검증 캐시(미추적): `.hypercore/research/2026-06-02-official-llm-prompt-instructions-update.md`, `.hypercore/research/2026-07-29-instructions-base-source-refresh.md`. `.hypercore/`는 `.gitignore` 대상이므로 다른 clone에서는 존재하지 않는다. 위 URL이 이 문서의 근거이며, 캐시 경로는 보조 자료일 뿐 근거를 대체하지 않는다.
+로컬 재검증 캐시(미추적): `.hyper/research/2026-06-02-official-llm-prompt-instructions-update.md`, `.hyper/research/2026-07-29-instructions-base-source-refresh.md`. `.hyper/`는 `.gitignore` 대상이므로 다른 clone에서는 존재하지 않는다. 위 URL이 이 문서의 근거이며, 캐시 경로는 보조 자료일 뿐 근거를 대체하지 않는다.

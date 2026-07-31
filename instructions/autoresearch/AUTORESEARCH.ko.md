@@ -146,4 +146,4 @@ Autoresearch loop는 자동으로 command를 실행하고 파일을 바꿀 수 �
 - [`../harness-engineering/HARNESS_ENGINEERING.ko.md`](../harness-engineering/HARNESS_ENGINEERING.ko.md)
 - [`../validation/index.ko.md`](../validation/index.ko.md)
 - [`../sourcing/reliable-search.ko.md`](../sourcing/reliable-search.ko.md)
-로컬 재검증 캐시(미추적): `.hypercore/research/2026-06-02-autoresearch-instructions.md`, `.hypercore/research/2026-07-29-instructions-base-source-refresh.md`. `.hypercore/`는 `.gitignore` 대상이라 다른 clone에는 없다. 이 문서의 근거는 위 “공식/원본 근거 요약”의 URL이며 캐시 경로가 근거를 대체하지 않는다.
+로컬 재검증 캐시(미추적): `.hyper/research/2026-06-02-autoresearch-instructions.md`, `.hyper/research/2026-07-29-instructions-base-source-refresh.md`. `.hyper/`는 `.gitignore` 대상이라 다른 clone에는 없다. 이 문서의 근거는 위 “공식/원본 근거 요약”의 URL이며 캐시 경로가 근거를 대체하지 않는다.

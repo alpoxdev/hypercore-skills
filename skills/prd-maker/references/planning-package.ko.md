@@ -2,7 +2,7 @@
 
 `feature-spec.md`, `user-flow.md`, `wireframe.md`, `diagram.md`, `preview.html`을 작성할 때 이 레퍼런스를 사용합니다.
 
-근거 기반: 이 레퍼런스의 산출물 체인은 PRD, 기능명세서, 유저플로우, 와이어프레임 각각 10개 이상의 출처를 검토한 로컬 조사 보고서 [`../../../.hypercore/research/002-prd-package-layered-artifacts.md`](../../../.hypercore/research/002-prd-package-layered-artifacts.md)에 기반합니다.
+근거 기반: 이 레퍼런스의 산출물 체인은 PRD, 기능명세서, 유저플로우, 와이어프레임 각각 10개 이상의 출처를 검토한 로컬 조사 보고서 [`../../../.hyper/research/002-prd-package-layered-artifacts.md`](../../../.hyper/research/002-prd-package-layered-artifacts.md)에 기반합니다.
 
 ## 패키지 원칙
 

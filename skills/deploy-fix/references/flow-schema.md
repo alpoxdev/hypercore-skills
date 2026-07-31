@@ -1,6 +1,6 @@
 # Deploy Fix Flow Schema
 
-> JSON schema for `.hypercore/deploy-fix/flow.json` -- used in complex path only.
+> JSON schema for `.hyper/deploy-fix/flow.json` -- used in complex path only.
 
 ## Schema
 

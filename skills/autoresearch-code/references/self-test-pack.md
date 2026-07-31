@@ -23,7 +23,7 @@ Pack selection order:
 Use the prompts below only when there is no clear domain pack:
 
 1. `Run autoresearch on this repository and keep only optimizations that improve the score.`
-2. `Benchmark this codebase with binary evals and store the artifacts in .hypercore.`
+2. `Benchmark this codebase with binary evals and store the artifacts in .hyper.`
 3. `Find the biggest bottleneck in this codebase and improve it through measurable iterative experiments.`
 4. `Fix only this one bug and then stop.`
 5. `Run autoresearch on this repo and keep only score-improving optimizations.`
@@ -55,7 +55,7 @@ Fail: The baseline contract is incomplete, inconsistent, or missing
 
 EVAL 4: Artifact lifecycle
 Question: Are artifact locations and update cadence clearly defined?
-Pass: The `.hypercore` location, required files, and status/update expectations are explicit
+Pass: The `.hyper` location, required files, and status/update expectations are explicit
 Fail: The artifact contract is incomplete, inconsistent, or missing
 
 EVAL 5: Mutation discipline

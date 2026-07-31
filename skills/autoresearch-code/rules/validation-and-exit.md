@@ -57,7 +57,7 @@ Confirm that the workspace contains:
 
 Expected location:
 
-- `.hypercore/autoresearch-code/[codebase-name]/`
+- `.hyper/autoresearch-code/[codebase-name]/`
 
 Also confirm that `results.json` and `results.tsv` describe the same score, pass rate, and keep/discard/reset status.
 Also confirm that the dashboard was rendered from the canonical template rather than hand-edited arbitrarily.
@@ -72,7 +72,7 @@ When reporting a `$autoresearch`-based run, confirm that:
 - `.omx/state/.../autoresearch-state.json` has `validation_mode: "mission-validator-script"`
 - the same state has `completion_artifact_path` and `mission_validator_command`
 - the JSON at `completion_artifact_path` exists and records `passed: true` or `status: "passed"`
-- `output_artifact_path` points to `.hypercore/autoresearch-code/[codebase-name]/results.json`
+- `output_artifact_path` points to `.hyper/autoresearch-code/[codebase-name]/results.json`
 
 If this artifact is missing, do not claim `$autoresearch` completion even if the score improved.
 
@@ -131,5 +131,5 @@ find skills/autoresearch-code -maxdepth 3 -type f | sort
 wc -l skills/autoresearch-code/SKILL.md
 rg -n "results.tsv|results.json|results.js|dashboard.html|changelog.md|baseline.md|code-explanation.md|final-report.md|run-contract.md|trace-summary.md|source-ledger.md" skills/autoresearch-code/SKILL.md skills/autoresearch-code/references skills/autoresearch-code/rules
 bun --check skills/autoresearch-code/scripts/render-dashboard.mjs
-find .hypercore -maxdepth 3 -type f | sort | rg "autoresearch-code"
+find .hyper -maxdepth 3 -type f | sort | rg "autoresearch-code"
 ```

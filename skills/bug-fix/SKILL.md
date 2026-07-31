@@ -1,7 +1,7 @@
 ---
 name: bug-fix
 description: "Use this skill when the user asks to diagnose and fix a concrete bug with a symptom, error, failing test, regression, or reproducible wrong behavior. Do not use for broad build/CI repair, security review, new features, or speculative cleanup."
-compatibility: Use in environments with code exploration, editing, and validation commands; complex investigations may write `.hypercore/bug-fix/flow.json`.
+compatibility: Use in environments with code exploration, editing, and validation commands; complex investigations may write `.hyper/bug-fix/flow.json`.
 ---
 
 # Bug Fix Skill
@@ -23,7 +23,7 @@ Use a different language only when the user explicitly requests it, an existing 
 - Turn a concrete bug report into an evidence-backed diagnosis, scoped repair, and verified outcome.
 - Classify the bug before editing so simple bugs can be fixed directly and complex bugs are tracked through explicit phases.
 - Prevent speculative changes by requiring root-cause evidence, impact boundaries, and targeted validation.
-- Preserve investigation state for complex bugs with `.hypercore/bug-fix/flow.json` using `references/flow-schema.md`.
+- Preserve investigation state for complex bugs with `.hyper/bug-fix/flow.json` using `references/flow-schema.md`.
 
 </purpose>
 
@@ -48,7 +48,7 @@ If the request starts as a concrete bug but expands into repo-wide build failure
 |---|---|
 | Intent | Fix a specific bug by proving the failing boundary, applying the smallest safe repair, and validating the changed behavior. |
 | Trigger | Concrete symptom, error, failing test, regression, broken integration path, or reproducible expected-vs-actual mismatch. |
-| Scope | Own diagnosis, direct code/config edits needed for the bug, targeted tests/builds, and optional `.hypercore/bug-fix/flow.json` tracking for complex cases. |
+| Scope | Own diagnosis, direct code/config edits needed for the bug, targeted tests/builds, and optional `.hyper/bug-fix/flow.json` tracking for complex cases. |
 | Authority | User instructions and repo-local rules outrank this skill. Existing code/tests and reproducible evidence outrank guesses. Do not override safety gates or unrelated changes. |
 | Evidence | Use error text, reproduction steps, failing tests, logs, relevant source reads, recent local diffs, and validation output. Record uncertain assumptions explicitly. |
 | Tools | Use repository inspection, edits, and validation commands. Gate destructive actions, credential access, network calls, production side effects, and unrelated cleanup. |
@@ -99,7 +99,7 @@ If partial information is provided, proceed with reasonable local investigation 
 Read support files only when their condition applies:
 
 1. Read `rules/diagnosis-and-routing.md` before classifying a bug, choosing diagnose-only/fix-now/option-first/handoff, or deciding whether user confirmation is required.
-2. Read `references/flow-schema.md` only for complex bugs that need `.hypercore/bug-fix/flow.json`, or when resuming an existing tracked flow.
+2. Read `references/flow-schema.md` only for complex bugs that need `.hyper/bug-fix/flow.json`, or when resuming an existing tracked flow.
 3. Read `rules/validation-and-reporting.md` before declaring completion, reporting blocked state, or deciding which validation evidence is sufficient.
 4. Use Korean mirrors (`*.ko.md`) for user-facing reports or handoff notes when helpful; keep machine-readable flow fields in English.
 
@@ -109,7 +109,7 @@ Read support files only when their condition applies:
 
 | Phase | Simple / Fix-now path | Complex / Option-first path |
 |---|---|---|
-| 1. Intake | Confirm symptom and expected behavior from the prompt or local evidence. | Same, then check for existing `.hypercore/bug-fix/flow.json`. |
+| 1. Intake | Confirm symptom and expected behavior from the prompt or local evidence. | Same, then check for existing `.hyper/bug-fix/flow.json`. |
 | 2. Classify | Announce `Complexity: simple` with one-line evidence. | Announce `Complexity: complex` and initialize/update flow tracking. |
 | 3. Diagnose | Reproduce or narrow the failing boundary; identify root cause. | Reproduce, compare hypotheses, collect evidence, update `diagnose`. |
 | 4. Choose path | If one low-risk fix is clear and user asked to fix, announce the fix path. | Present 2-3 repair options with pros, cons, risk, files, and recommendation; wait for selection. |
@@ -123,7 +123,7 @@ Read support files only when their condition applies:
 
 - **Diagnose-only**: Use when the user asks for analysis only. Reproduce or narrow the failure, explain root cause and options, and stop before edits.
 - **Fix-now**: Use for simple bugs where the user requested a fix, the root cause is evidenced, one low-risk path is clearly safest, and validation can be run.
-- **Option-first**: Use for complex bugs with multiple plausible causes, cross-cutting effects, risky tradeoffs, or more than one valid repair strategy. Track via `.hypercore/bug-fix/flow.json` and wait for user selection.
+- **Option-first**: Use for complex bugs with multiple plausible causes, cross-cutting effects, risky tradeoffs, or more than one valid repair strategy. Track via `.hyper/bug-fix/flow.json` and wait for user selection.
 - **Handoff**: Use when the primary issue is outside the bug-fix scope. Include collected evidence and the recommended next skill/workflow.
 
 </execution_modes>
@@ -179,7 +179,7 @@ Before completion, satisfy this checklist:
 - [ ] Mode selected: diagnose-only, fix-now, option-first, or handoff.
 - [ ] Complexity announced with one-line evidence.
 - [ ] Root-cause evidence collected before edits.
-- [ ] Complex path has `.hypercore/bug-fix/flow.json` created/resumed and updated using `references/flow-schema.md`.
+- [ ] Complex path has `.hyper/bug-fix/flow.json` created/resumed and updated using `references/flow-schema.md`.
 - [ ] Complex path presented options and recorded user selection before implementation.
 - [ ] Changed files are limited to the bug boundary.
 - [ ] Targeted validation ran for the changed path, plus broader typecheck/test/build when applicable.

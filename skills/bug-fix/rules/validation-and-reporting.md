@@ -29,7 +29,7 @@ Never delete or weaken tests, suppress type errors, hide diagnostics, or mark a 
 
 For complex flows:
 
-- create or resume `.hypercore/bug-fix/flow.json`
+- create or resume `.hyper/bug-fix/flow.json`
 - keep `current_phase` aligned with the first incomplete phase
 - update `updated_at` on every write
 - record evidence in `diagnose`, options in `options`, selection in `confirm`, changed files in `fix`, and commands/results in `verify`

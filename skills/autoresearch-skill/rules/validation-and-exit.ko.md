@@ -65,7 +65,7 @@
 
 예상 위치:
 
-- `.hypercore/autoresearch-skill/[skill-name]/`
+- `.hyper/autoresearch-skill/[skill-name]/`
 
 또한 `results.json`과 `results.tsv`가 점수, 통과율, keep/discard 상태를 동일하게 설명하는지 확인한다.
 또한 완료 실행은 기준 점수, 최종/최고 점수, 정확한 delta, 점수가 오른 영역, 변경 파일, 각 변경을 유지한 이유를 한국어로 드러내는지 확인한다.
@@ -82,7 +82,7 @@
 - `.omx/state/.../autoresearch-state.json`에 `validation_mode: "prompt-architect-artifact"`가 있다
 - 같은 state에 `completion_artifact_path`, `validator_prompt`, `output_artifact_path`가 있다
 - `completion_artifact_path`의 JSON이 존재하고 `architect_review.verdict: "approved"`를 기록한다
-- `output_artifact_path`가 `.hypercore/autoresearch-skill/[skill-name]/results.json`을 가리킨다
+- `output_artifact_path`가 `.hyper/autoresearch-skill/[skill-name]/results.json`을 가리킨다
 - `rules/`, `references/`, `scripts/`, `assets/`를 수정했다면 baseline이 `SKILL.md.baseline` 하나에 그치지 않는다
 
 이 artifact가 없으면 점수가 올랐더라도 `$autoresearch` 완료로 주장하지 않는다.
@@ -116,7 +116,7 @@ find skills/autoresearch-skill -maxdepth 3 -type f | sort
 wc -l skills/autoresearch-skill/SKILL.md
 rg -n "results.tsv|results.json|dashboard.html|changelog.md|score-explanation|final-report|SKILL.md.baseline|run-contract|source-ledger|trace-summary" skills/autoresearch-skill/SKILL.md skills/autoresearch-skill/references skills/autoresearch-skill/rules
 find skills/autoresearch-skill -maxdepth 2 \( -name README.md -o -name CHANGELOG.md -o -name QUICK_REFERENCE.md \) -print
-find .hypercore -maxdepth 4 -type f | sort | rg "autoresearch-skill"
-python3 -m json.tool .hypercore/autoresearch-skill/[skill-name]/results.json >/dev/null
-test -f .hypercore/autoresearch-skill/[skill-name]/results.js
+find .hyper -maxdepth 4 -type f | sort | rg "autoresearch-skill"
+python3 -m json.tool .hyper/autoresearch-skill/[skill-name]/results.json >/dev/null
+test -f .hyper/autoresearch-skill/[skill-name]/results.js
 ```

@@ -19,14 +19,14 @@ If not inside a Git repository, stop the operation and report that a repository 
 Default root:
 
 ```text
-<repo-root>/.hypercore/git-worktree/<folder_name>
+<repo-root>/.hyper/git-worktree/<folder_name>
 ```
 
 Direct argument fast path:
 
 - If the invocation is `git-worktree <ARGUMENT>`, treat `<ARGUMENT>` as the create target and do not ask what worktree to create.
 - Interpret the argument as a branch/task label unless it clearly denotes a PR, issue, ref, or explicit path.
-- Preserve the branch/ref text for Git operations; sanitize only the folder label for `.hypercore/git-worktree/<folder_name>`.
+- Preserve the branch/ref text for Git operations; sanitize only the folder label for `.hyper/git-worktree/<folder_name>`.
 - Continue to ask only for unsafe, reserved, conflicting, or unmappable arguments.
 
 Interaction language:
@@ -58,7 +58,7 @@ Because this project’s requested convention nests worktrees under the reposito
 ```bash
 exclude_file="$(git rev-parse --git-path info/exclude)"
 mkdir -p "$(dirname "$exclude_file")"
-grep -qxF ".hypercore/git-worktree/" "$exclude_file" 2>/dev/null || printf '\n.hypercore/git-worktree/\n' >> "$exclude_file"
+grep -qxF ".hyper/git-worktree/" "$exclude_file" 2>/dev/null || printf '\n.hyper/git-worktree/\n' >> "$exclude_file"
 ```
 
 Prefer local excludes over editing `.gitignore` unless the user asks to commit the convention.
@@ -249,7 +249,7 @@ When a worktree’s task is complete:
 
 ## 9. Common hazards
 
-- Nested worktrees under `.hypercore/git-worktree/` must be ignored locally or the main worktree becomes noisy.
+- Nested worktrees under `.hyper/git-worktree/` must be ignored locally or the main worktree becomes noisy.
 - Same branch cannot normally be checked out in two worktrees at once.
 - Linked worktrees share Git object storage and config but have independent working files.
 - Per-worktree dependency folders, ports, databases, and generated artifacts may still collide; use separate env files or ports when needed.

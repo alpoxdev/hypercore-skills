@@ -60,8 +60,8 @@ const mustContain = {
   'references/official/current-docs-2026-06-02.md': ['checked_at: 2026-06-02', '/vercel/next.js', 'Next.js 16', 'cacheComponents', 'use cache: remote', 'Server Actions', 'Route Handlers', 'proxy.ts', 'NEXT_PUBLIC_', 'not official Next.js requirement'],
   'references/official/drizzle-docs.md': ['Official Drizzle Docs Summary', 'Drizzle schema', 'drizzle.config.ts', 'out', 'drizzle-kit generate', 'drizzle-kit migrate', 'push', 'pull', 'prepared statement', 'RQB', 'validation integrations'],
   'references/official/drizzle-docs.ko.md': ['Official Drizzle Docs Summary', 'Drizzle schema', 'drizzle.config.ts', 'out', 'drizzle-kit generate', 'drizzle-kit migrate', 'push', 'pull', 'prepared statement', 'RQB', 'validation integrations'],
-  'rules/validation.md': ['Skill Anatomy Validation', 'current-docs-2026-06-02', 'src/services', 'src/modules', 'src/db', 'direct leaf', 'Deprecated feature-folder guidance is absent', 'Korean parity', 'mirror'],
-  'rules/validation.ko.md': ['Skill Anatomy Validation', 'current-docs-2026-06-02', 'src/services', 'src/modules', 'src/db', 'direct leaf', 'Deprecated feature-folder guidance is absent', 'Korean parity', 'mirror'],
+  'rules/validation.md': ['Skill Anatomy Validation', 'current-docs-2026-06-02', 'src/services', 'src/modules', 'src/db', 'direct leaf', 'Deprecated feature-folder guidance is absent', 'Korean parity', 'source-only', 'no adapter'],
+  'rules/validation.ko.md': ['Skill Anatomy Validation', 'current-docs-2026-06-02', 'src/services', 'src/modules', 'src/db', 'direct leaf', 'Deprecated feature-folder guidance is absent', 'Korean parity', 'source-only', 'no adapter'],
 };
 
 const errors = [];

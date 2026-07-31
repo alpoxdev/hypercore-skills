@@ -321,7 +321,7 @@
     function applyData(data, details) {
       if (!data) throw new Error("results 데이터가 없습니다");
       const codebaseName = data.codebase_name || data.skill_name || "unknown-codebase";
-      document.getElementById("subtitle").textContent = `${codebaseName} 워크스페이스: .hypercore/autoresearch-code/${codebaseName}/`;
+      document.getElementById("subtitle").textContent = `${codebaseName} 워크스페이스: .hyper/autoresearch-code/${codebaseName}/`;
       document.getElementById("status-pill").textContent = data.status === "running" ? `실험 ${data.current_experiment} 실행 중` : data.status === "complete" ? "완료" : "대기 중";
       document.getElementById("baseline-score").textContent = toPercent(data.baseline_score);
       const latest = (data.experiments || []).length ? data.experiments[data.experiments.length - 1].pass_rate : null;

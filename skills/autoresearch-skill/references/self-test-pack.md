@@ -9,7 +9,7 @@ This pack is intentionally conservative. Its purpose is to verify the skill's re
 Use the following six prompts as the default execution set for skill-targeted autoresearch:
 
 1. ``Run autoresearch on `skills/web-clone/SKILL.md` and keep only changes that improve the score.``
-2. `Benchmark this skill with binary evals and save artifacts under .hypercore.`
+2. `Benchmark this skill with binary evals and save artifacts under .hyper.`
 3. `Tidy up this skill once and review it.`
 4. `Create a new Codex skill for browser QA.`
 5. `Run autoresearch on this skill and keep only score-improving mutations.`
@@ -38,7 +38,7 @@ Fail: The next action is ambiguous, missing, or contradictory
 
 EVAL 3: Artifact lifecycle
 Question: For in-scope prompts, are artifact locations, required schemas, update cadence, and dashboard rendering clearly defined?
-Pass: The `.hypercore` location, required files, result schemas, generated `results.js`, and status/update expectations are specified
+Pass: The `.hyper` location, required files, result schemas, generated `results.js`, and status/update expectations are specified
 Fail: The artifact contract is incomplete, inconsistent, missing, or cannot support the dashboard
 
 EVAL 4: Support-file discoverability

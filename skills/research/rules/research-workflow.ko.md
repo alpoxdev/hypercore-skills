@@ -57,11 +57,11 @@
 
 다음 위치에 저장합니다.
 
-`.hypercore/research/[NN].slug.md`
+`.hyper/research/[NN].slug.md`
 
 파일명 규칙:
 
-- `NN`은 `.hypercore/research/`의 다음 0채움 순번
+- `NN`은 `.hyper/research/`의 다음 0채움 순번
 - `slug`는 주제를 짧게 요약한 ASCII 문자열
 - 읽기 쉽고 안정적인 이름 유지
 

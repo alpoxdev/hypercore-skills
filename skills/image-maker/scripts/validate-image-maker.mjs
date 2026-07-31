@@ -214,7 +214,7 @@ export function terminalAfterPromptEvidence(input, runtime) {
  * @returns {{ ok: true, path: string } | { ok: false, error: string }}
  */
 export function validateContainedPath(root, topic, target) {
-  try { const t = validateTopic(topic); if (!t.ok) return t; const lexicalRoot = resolve(root); const canonicalRoot = realpathSync(lexicalRoot); const parent = join(canonicalRoot, '.hypercore', 'image-maker', t.topic); const resolvedTarget = resolve(target); const path = resolvedTarget === canonicalRoot || resolvedTarget.startsWith(canonicalRoot + sep) ? resolvedTarget : resolve(canonicalRoot, relative(lexicalRoot, resolvedTarget)); if (!(path === parent || path.startsWith(parent + sep))) return { ok: false, error: 'E_PATH_ESCAPE' };
+  try { const t = validateTopic(topic); if (!t.ok) return t; const lexicalRoot = resolve(root); const canonicalRoot = realpathSync(lexicalRoot); const parent = join(canonicalRoot, '.hyper', 'image-maker', t.topic); const resolvedTarget = resolve(target); const path = resolvedTarget === canonicalRoot || resolvedTarget.startsWith(canonicalRoot + sep) ? resolvedTarget : resolve(canonicalRoot, relative(lexicalRoot, resolvedTarget)); if (!(path === parent || path.startsWith(parent + sep))) return { ok: false, error: 'E_PATH_ESCAPE' };
     for (let p = canonicalRoot; p !== dirname(path);) { const part = relative(p, dirname(path)).split(sep)[0]; if (!part) break; p = join(p, part); const stat = lstatSync(p, { throwIfNoEntry: false }); if (stat?.isSymbolicLink()) return { ok: false, error: 'E_SYMLINK_ANCESTOR' }; }
     const stat = lstatSync(path, { throwIfNoEntry: false }); return stat?.isSymbolicLink() ? { ok: false, error: 'E_TARGET_SYMLINK' } : { ok: true, path };
   } catch { return { ok: false, error: 'E_PATH' }; }
@@ -251,7 +251,7 @@ export function validatePromptEvidence(root, topic, target, provenance) { try { 
 function media(bytes) { return bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) ? 'png' : bytes.subarray(0, 3).equals(Buffer.from([255,216,255])) ? 'jpeg' : bytes.subarray(0, 4).equals(Buffer.from('RIFF')) && bytes.subarray(8, 12).equals(Buffer.from('WEBP')) ? 'webp' : null; }
 // Test-only fixture. Node pathname operations are deliberately not a production secure writer.
 /** @param {string} root @param {string} topic @param {string} name @param {Buffer} bytes @returns {FixtureWrite} */
-function fixtureWrite(root, topic, name, bytes) { const dir = join(root, '.hypercore', 'image-maker', topic); mkdirSync(dir, { recursive: true }); let target = join(dir, name), n = 2; while (lstatSync(target, { throwIfNoEntry: false })) { const e = extname(name); target = join(dir, `${name.slice(0, -e.length)}-${n++}${e}`); } const rootBefore = identity(root, Buffer.from('')); const parentBefore = identity(dir, Buffer.from('')); writeFileSync(target, bytes, { flag: 'wx' }); const id = identity(target, bytes); return { target, provenance: { identity: id, secure_write: { capability: 'descriptor_relative_no_follow', adapter: 'test_fixture_descriptor_simulation', identity: id, root_before: rootBefore, root_after: identity(root, Buffer.from('')), parent_before: parentBefore, parent_after: identity(dir, Buffer.from('')), final_before: id, final_after: id } } }; }
+function fixtureWrite(root, topic, name, bytes) { const dir = join(root, '.hyper', 'image-maker', topic); mkdirSync(dir, { recursive: true }); let target = join(dir, name), n = 2; while (lstatSync(target, { throwIfNoEntry: false })) { const e = extname(name); target = join(dir, `${name.slice(0, -e.length)}-${n++}${e}`); } const rootBefore = identity(root, Buffer.from('')); const parentBefore = identity(dir, Buffer.from('')); writeFileSync(target, bytes, { flag: 'wx' }); const id = identity(target, bytes); return { target, provenance: { identity: id, secure_write: { capability: 'descriptor_relative_no_follow', adapter: 'test_fixture_descriptor_simulation', identity: id, root_before: rootBefore, root_after: identity(root, Buffer.from('')), parent_before: parentBefore, parent_after: identity(dir, Buffer.from('')), final_before: id, final_after: id } } }; }
 /** @param {string} file @returns {unknown[]} @throws {Error} When a JSONL row is invalid. */
 function parse(file) { return readFileSync(file, 'utf8').split(/\r?\n/).filter(line => line.trim()).map((line, i) => { try { return JSON.parse(line); } catch { throw Error(`E_JSONL_PARSE:${i + 1}`); } }); }
 /** @param {unknown} actual @param {unknown} oracle @returns {boolean} */
@@ -290,8 +290,8 @@ export function runFixtureCase(row) {
   const input = checked.context;
   const root = mkdtempSync(join(tmpdir(), 'image-maker-'));
   try {
-    mkdirSync(join(root, '.hypercore', 'image-maker', input.topic), { recursive: true });
-    const dir = join(root, '.hypercore', 'image-maker', input.topic);
+    mkdirSync(join(root, '.hyper', 'image-maker', input.topic), { recursive: true });
+    const dir = join(root, '.hyper', 'image-maker', input.topic);
     if (row.case_kind === 'traversal') return validateContainedPath(root, input.topic, join(dir, '..', '..', '..', 'x'));
     if (row.case_kind === 'ancestor_symlink') { rmSync(dir, { recursive: true }); symlinkSync(tmpdir(), dir); return validateContainedPath(root, input.topic, join(dir, 'x.png')); }
     if (row.case_kind === 'target_symlink') { symlinkSync('/tmp', join(dir, 'x.png')); return validateContainedPath(root, input.topic, join(dir, 'x.png')); }

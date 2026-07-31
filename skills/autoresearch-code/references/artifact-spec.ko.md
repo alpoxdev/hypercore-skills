@@ -5,7 +5,7 @@
 ## 워크스페이스 형태
 
 ```text
-.hypercore/autoresearch-code/[codebase-name]/
+.hyper/autoresearch-code/[codebase-name]/
 |-- dashboard.html
 |-- results.json
 |-- results.js        # 렌더 후 file:// 브라우저 폴백으로 필수
@@ -22,7 +22,7 @@
 
 이 디렉터리는 스킬 폴더 안이 아니라 저장소 루트에 만든다.
 
-`$autoresearch` 실행에서는 이 `.hypercore` 디렉터리가 도메인별 결과 로그이고, 최종 완료 gate는 별도 `.omx/specs/autoresearch-[codebase-name]/result.json` completion artifact가 담당한다. `completion_artifact_path`에는 이 `.omx/specs/.../result.json` 경로를 기록하고, `output_artifact_path`에는 이 파일의 `results.json`을 기록한다.
+`$autoresearch` 실행에서는 이 `.hyper` 디렉터리가 도메인별 결과 로그이고, 최종 완료 gate는 별도 `.omx/specs/autoresearch-[codebase-name]/result.json` completion artifact가 담당한다. `completion_artifact_path`에는 이 `.omx/specs/.../result.json` 경로를 기록하고, `output_artifact_path`에는 이 파일의 `results.json`을 기록한다.
 
 정식 생성 자산:
 

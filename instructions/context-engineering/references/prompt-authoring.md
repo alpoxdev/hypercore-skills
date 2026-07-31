@@ -104,7 +104,7 @@ As an official-documentation-first researcher, compile volatile technical claims
 - When official documents conflict, compare dates and the applicable model or product.
 
 ## Output
-Write to `.hypercore/research/[date]-[slug].md` including a source ledger, claim-source matrix, and caveats.
+Write to `.hyper/research/[date]-[slug].md` including a source ledger, claim-source matrix, and caveats.
 
 ## Verification
 - At least 6 reviewed sources and 4 cited sources.
@@ -183,4 +183,4 @@ Draft -> Smoke eval -> Failure diagnosis -> Small patch -> Re-run -> Version not
 - Mistral Prompting: https://docs.mistral.ai/models/best-practices/prompt-engineering
 - Microsoft Azure OpenAI Prompt engineering techniques: https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/prompt-engineering
 
-Local re-verification cache (untracked): `.hypercore/research/2026-06-02-official-llm-prompt-instructions-update.md`, `.hypercore/research/2026-07-29-instructions-base-source-refresh.md`. `.hypercore/` is covered by `.gitignore` and does not exist in another clone. The URLs above are this document's evidence; the cache paths are supplementary and do not substitute for them.
+Local re-verification cache (untracked): `.hyper/research/2026-06-02-official-llm-prompt-instructions-update.md`, `.hyper/research/2026-07-29-instructions-base-source-refresh.md`. `.hyper/` is covered by `.gitignore` and does not exist in another clone. The URLs above are this document's evidence; the cache paths are supplementary and do not substitute for them.

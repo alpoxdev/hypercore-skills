@@ -57,11 +57,11 @@ For default, deep, broad, comparative, or explicitly parallel research, read `ru
 
 Save the report under:
 
-`.hypercore/research/[NN].slug.md`
+`.hyper/research/[NN].slug.md`
 
 Naming rules:
 
-- `NN` is the next zero-padded sequence number in `.hypercore/research/`
+- `NN` is the next zero-padded sequence number in `.hyper/research/`
 - `slug` is a short ASCII summary of the topic
 - keep the filename stable and readable
 

@@ -1,6 +1,6 @@
 ---
 name: seo-maker
-description: "[Hyper] Create integrated SEO, AEO, GEO, and LLMO audits and optimization reports. Use for on-page, technical, content, Core Web Vitals, answer-engine, generative-engine, AI search visibility, metadata, citation readiness, or score-improvement loops saved under `.hypercore/seo-maker/[slug]/`."
+description: "[Hyper] Create integrated SEO, AEO, GEO, and LLMO audits and optimization reports. Use for on-page, technical, content, Core Web Vitals, answer-engine, generative-engine, AI search visibility, metadata, citation readiness, or score-improvement loops saved under `.hyper/seo-maker/[slug]/`."
 compatibility: Works best with live web access, browser inspection, local source search, Lighthouse or Core Web Vitals data when available, and read/write access for report artifacts.
 ---
 
@@ -28,7 +28,7 @@ Use a different language only when the user explicitly requests it, an existing 
 - Evaluate AEO readiness for featured snippets, voice search, and direct-answer surfaces.
 - Evaluate GEO readiness for citation likelihood in generative AI responses.
 - Evaluate LLMO readiness for AI crawler access, freshness, and model-readable context.
-- Save prioritized recommendations and evidence under `.hypercore/seo-maker/[slug]/`.
+- Save prioritized recommendations and evidence under `.hyper/seo-maker/[slug]/`.
 - Update existing reports so SEO improvement history remains traceable.
 - If the user asks for highest score, max score, maximum score, perfect score, or continuous improvement, run an audit to fix/recommendation to re-audit loop and keep the best result.
 
@@ -146,12 +146,12 @@ When live browsing, Search Console, field data, AI probes, or a named tool is un
 
 <artifact_contract>
 
-Create or update `.hypercore/seo-maker/[slug]/`.
+Create or update `.hyper/seo-maker/[slug]/`.
 
 Expected files:
 
 ```text
-.hypercore/seo-maker/[slug]/
+.hyper/seo-maker/[slug]/
 ├── dashboard.html      # Browser-readable dashboard
 ├── results.json        # Structured audit results
 ├── results.js          # File URL fallback for browser rendering
@@ -203,7 +203,7 @@ Read in this order:
 | 3 | Audit technical SEO, platform policy, AEO, GEO, LLMO, Core Web Vitals, and structured data | Structured findings |
 | 4 | Separate official requirements from field/tool/lab/synthetic/heuristic findings | Evidence-graded findings |
 | 5 | Prioritize issues by impact, confidence, effort, and source tier | Recommendation set |
-| 6 | Write artifacts and dashboard | `.hypercore/seo-maker/[slug]/` |
+| 6 | Write artifacts and dashboard | `.hyper/seo-maker/[slug]/` |
 | 7 | If optimize mode, apply or recommend fixes and re-audit | Best verified result |
 | 8 | Summarize score, wins, confidence limits, risks, and next actions | Final report |
 
@@ -270,7 +270,7 @@ Do not fake a perfect score. If external evidence is unavailable, report the unk
 
 <validation>
 
-At completion, `.hypercore/seo-maker/[slug]/` should contain:
+At completion, `.hyper/seo-maker/[slug]/` should contain:
 
 - `results.json` with structured audit results and status `complete` for complex or optimize mode.
 - `dashboard.html` rendered from the latest results when dashboard output is expected.

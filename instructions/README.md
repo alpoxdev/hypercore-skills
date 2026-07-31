@@ -31,7 +31,7 @@ bash scripts/check-sources.sh --self-test # prove the checks actually catch fail
 
 - Last full sweep: **2026-07-29** / next re-verification: **2026-10-29**.
 - Vendor documentation moves on a quarterly rhythm, so keep the re-verification cadence. arXiv and standards documents decay differently, so a URL check is enough for those.
-- `.hypercore/` is covered by `.gitignore`. Research reports under it are a **local re-verification cache** and do not exist in another clone. Shareable evidence is always the URL inside the document.
+- `.hyper/` is covered by `.gitignore`. Research reports under it are a **local re-verification cache** and do not exist in another clone. Shareable evidence is always the URL inside the document.
 
 ## Authoring principles
 

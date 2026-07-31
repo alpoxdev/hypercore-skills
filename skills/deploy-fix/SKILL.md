@@ -1,6 +1,6 @@
 ---
 name: deploy-fix
-description: "[Hyper] Diagnose and fix build failures, CI pipeline errors, and deployment errors across the entire repository or a specific folder. Routes simple build breaks directly; tracks complex multi-system failures via .hypercore/deploy-fix/ JSON flow."
+description: "[Hyper] Diagnose and fix build failures, CI pipeline errors, and deployment errors across the entire repository or a specific folder. Routes simple build breaks directly; tracks complex multi-system failures via .hyper/deploy-fix/ JSON flow."
 compatibility: Use in environments with code exploration (Read/Grep/Glob), editing (Edit), and shell execution (Bash).
 ---
 
@@ -51,7 +51,7 @@ Use a different language only when the user explicitly requests it, an existing 
 | Scope | Own failure classification, reproduction, log/config analysis, build/deploy-layer fixes, flow tracking for complex cases, and validation reporting. |
 | Authority | User and project instructions outrank this skill; build logs, CI/deploy output, config files, and local validation are evidence. |
 | Evidence | Collect exact failing command output, first failure point, relevant config, dependency state, and recent-change context before editing. |
-| Tools | Use local reads, edits, Bash validation, and `.hypercore/deploy-fix/flow.json` for complex cases; external production side effects require explicit user authority. |
+| Tools | Use local reads, edits, Bash validation, and `.hyper/deploy-fix/flow.json` for complex cases; external production side effects require explicit user authority. |
 | Output | Korean failure/root-cause/fix/validation report, plus updated flow JSON when the complex path is used. |
 | Verification | Re-run the failing build/CI/deploy command or the narrowest equivalent local check, then record commands and results. |
 | Stop condition | Stop when the failure is fixed and verified, diagnose-only output is delivered, or a complex option/permission/production blocker is reported. |
@@ -107,7 +107,7 @@ Classify immediately after the structured reasoning pass:
 | Complexity | Signals | Examples | Path |
 |------------|---------|----------|------|
 | **Simple** | Single file/config, clear error message, obvious root cause, one fix path, low risk | Missing env var, single typo in config, one outdated dependency, clear type error in one file | **Fix-now** -- proceed directly without flow tracking |
-| **Complex** | Multiple packages/configs involved, dependency chain issues, CI environment mismatch, fix has side effects across workspaces, multiple valid fix strategies | Cross-workspace type error chain, CI-only failure with no local repro, lockfile conflicts across multiple packages, build succeeds but deploy fails | **Tracked** -- create `.hypercore/deploy-fix/flow.json` |
+| **Complex** | Multiple packages/configs involved, dependency chain issues, CI environment mismatch, fix has side effects across workspaces, multiple valid fix strategies | Cross-workspace type error chain, CI-only failure with no local repro, lockfile conflicts across multiple packages, build succeeds but deploy fails | **Tracked** -- create `.hyper/deploy-fix/flow.json` |
 
 Announce the classification:
 
@@ -126,10 +126,10 @@ When uncertain, classify as complex. It is cheaper to track than to lose investi
 When classified as complex, initialize the flow:
 
 ```bash
-mkdir -p .hypercore/deploy-fix
+mkdir -p .hyper/deploy-fix
 ```
 
-Write `.hypercore/deploy-fix/flow.json` and update it as each phase progresses. See `references/flow-schema.md` for the full schema.
+Write `.hyper/deploy-fix/flow.json` and update it as each phase progresses. See `references/flow-schema.md` for the full schema.
 
 ### Phase progression
 
@@ -143,7 +143,7 @@ Write `.hypercore/deploy-fix/flow.json` and update it as each phase progresses. 
 
 ### Resume support
 
-If `.hypercore/deploy-fix/flow.json` already exists, read it first and continue from the last incomplete phase (`in_progress` or `pending`). Do not restart completed phases.
+If `.hyper/deploy-fix/flow.json` already exists, read it first and continue from the last incomplete phase (`in_progress` or `pending`). Do not restart completed phases.
 
 </flow_tracking>
 
@@ -193,7 +193,7 @@ Check these areas in order of likelihood:
 | Step | Task | Tool |
 |------|------|------|
 | 1 | Validate input, structured reasoning pass (7+ steps) | internal reasoning |
-| 2 | Classify as complex, create `.hypercore/deploy-fix/flow.json` | Write |
+| 2 | Classify as complex, create `.hyper/deploy-fix/flow.json` | Write |
 | 3 | Deep investigation: reproduce, analyze logs, trace dependency chain -> update flow `investigate: completed` | Bash + Read/Grep/Glob + Edit |
 | 4 | Present 2-3 fix options -> update flow `options: completed` | Edit |
 | 5 | Wait for user selection -> update flow `confirm: completed` | Edit |
@@ -261,7 +261,7 @@ After execution, report:
 **Validation**: [what was verified and result]
 ```
 
-For complex path: also update `.hypercore/deploy-fix/flow.json` status to `completed`.
+For complex path: also update `.hyper/deploy-fix/flow.json` status to `completed`.
 
 </implementation_rules>
 

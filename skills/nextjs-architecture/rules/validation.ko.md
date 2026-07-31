@@ -34,10 +34,8 @@ rg -n 'src/modules|src/lib|src/services|src/db|src/server|src/integrations|src/c
 rg -n 'DAL|DTO|server-only service|provider|authorization' skills/nextjs-architecture/rules/services.md skills/nextjs-architecture/rules/services.ko.md
 rg -n 'client orchestration|hooks|server/data layers|Drizzle schema|private env' skills/nextjs-architecture/rules/hooks.md skills/nextjs-architecture/rules/hooks.ko.md
 rg -n 'Drizzle schema|drizzle.config.ts|generate|migrate|prepared statements|validation integrations|RQB' skills/nextjs-architecture/rules/db.md skills/nextjs-architecture/rules/db.ko.md
-rg -n 'Deprecated feature-folder guidance is absent|src/services|src/modules|src/db|direct leaf|current-docs-2026-06-02|Korean parity|mirror' skills/nextjs-architecture/rules/validation.md skills/nextjs-architecture/rules/validation.ko.md
+rg -n 'Deprecated feature-folder guidance is absent|src/services|src/modules|src/db|direct leaf|current-docs-2026-06-02|Korean parity|source-only|no adapter' skills/nextjs-architecture/rules/validation.md skills/nextjs-architecture/rules/validation.ko.md
 node skills/nextjs-architecture/scripts/validate-nextjs-architecture-skill.mjs
-node scripts/validate-codex-plugin.mjs
-test "$(readlink plugins/hypercore/skills)" = "../../skills"
 ```
 
 Must pass:
@@ -57,7 +55,7 @@ Must pass:
 - Cache Components, Server Actions, Route Handlers, Proxy, env, Server/Client boundary guidance가 current-docs compatible함.
 - English/Korean entrypoint의 trigger, boundary, workflow, contract, read order가 일치함.
 - English/Korean sibling files는 structurally and semantically aligned됨. Korean parity checks는 services/hooks/db/Drizzle phrases를 포함함.
-- `plugins/hypercore/skills`는 canonical root `skills/` 디렉터리를 가리키는 symbolic link임.
+- 이 skill은 `skills/nextjs-architecture`에서 source-only로 검증하며 plugin mirror, symlink, adapter contract가 없습니다.
 
 ## Readback Evidence
 
@@ -68,4 +66,4 @@ completion을 보고하기 전에 다음을 기록합니다:
 - exit code, missing-file count, diff result, validator JSON 같은 binary observable
 - captured artifact path
 
-이 skill folder 변경에서는 edit 후 changed English/Korean sibling files를 read back하고 links, headings, rule responsibilities가 맞는지 확인합니다. plugin path는 동일한 canonical files로 resolve되므로 별도 mirror sync가 필요하지 않습니다.
+이 skill folder 변경에서는 edit 후 changed English/Korean sibling files를 read back하고 links, headings, rule responsibilities가 맞는지 확인합니다. canonical source files만 검증하며 plugin mirror, symlink, adapter 동기화는 필요하지 않습니다.

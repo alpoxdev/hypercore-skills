@@ -6,7 +6,7 @@
 
 ## 1. Run Contract
 
-baseline 전에 아래 계약을 기록한다. 짧게라도 `.hypercore/autoresearch-skill/[skill-name]/run-contract.md` 또는 `results.json.run_contract`에 남긴다.
+baseline 전에 아래 계약을 기록한다. 짧게라도 `.hyper/autoresearch-skill/[skill-name]/run-contract.md` 또는 `results.json.run_contract`에 남긴다.
 
 | Field | 기록할 내용 | 실패 신호 |
 |---|---|---|
@@ -63,7 +63,7 @@ baseline 전에 아래 계약을 기록한다. 짧게라도 `.hypercore/autorese
 - source ledger의 핵심 근거 또는 적용 버전
 - delegation/write ownership 방식
 
-Reset 이벤트는 `.hypercore` 로그와 `$autoresearch` completion artifact 양쪽에 남긴다.
+Reset 이벤트는 `.hyper` 로그와 `$autoresearch` completion artifact 양쪽에 남긴다.
 
 ## 5. Lightweight Completion Evidence
 

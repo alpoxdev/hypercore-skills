@@ -6,7 +6,7 @@ Use this rule file whenever the skill creates or updates package files.
 
 Store each planning package here:
 
-`.hypercore/prd/[slug]/`
+`.hyper/prd/[slug]/`
 
 Default files for a new package, ordered by the planning chain:
 

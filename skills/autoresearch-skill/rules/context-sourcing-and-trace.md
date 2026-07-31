@@ -6,7 +6,7 @@ Read this rule whenever the target skill is affected by external docs, provider/
 
 ## 1. Run Contract
 
-Record the contract below before baseline. Leave it, even briefly, in `.hypercore/autoresearch-skill/[skill-name]/run-contract.md` or `results.json.run_contract`.
+Record the contract below before baseline. Leave it, even briefly, in `.hyper/autoresearch-skill/[skill-name]/run-contract.md` or `results.json.run_contract`.
 
 | Field | What to record | Failure signal |
 |---|---|---|
@@ -63,7 +63,7 @@ When any of the following changes, record a reset event instead of mixing scores
 - Core evidence or applied version in the source ledger
 - Delegation/write ownership method
 
-Leave reset events in both the `.hypercore` log and the `$autoresearch` completion artifact.
+Leave reset events in both the `.hyper` log and the `$autoresearch` completion artifact.
 
 ## 5. Lightweight Completion Evidence
 

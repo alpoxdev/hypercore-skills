@@ -19,14 +19,14 @@ Git repository 내부가 아니면 operation을 중단하고 repository path가 
 기본 root:
 
 ```text
-<repo-root>/.hypercore/git-worktree/<folder_name>
+<repo-root>/.hyper/git-worktree/<folder_name>
 ```
 
 Direct argument fast path:
 
 - invocation이 `git-worktree <ARGUMENT>`이면 `<ARGUMENT>`를 create target으로 취급하고 어떤 worktree를 만들지 묻지 않는다.
 - PR, issue, ref, explicit path를 명확히 나타내지 않는 한 argument를 branch/task label로 해석한다.
-- Git operation에는 branch/ref text를 보존하고 `.hypercore/git-worktree/<folder_name>`의 folder label만 sanitize한다.
+- Git operation에는 branch/ref text를 보존하고 `.hyper/git-worktree/<folder_name>`의 folder label만 sanitize한다.
 - unsafe, reserved, conflicting, unmappable argument에 대해서만 계속 질문한다.
 
 Interaction language:
@@ -58,7 +58,7 @@ Naming rules:
 ```bash
 exclude_file="$(git rev-parse --git-path info/exclude)"
 mkdir -p "$(dirname "$exclude_file")"
-grep -qxF ".hypercore/git-worktree/" "$exclude_file" 2>/dev/null || printf '\n.hypercore/git-worktree/\n' >> "$exclude_file"
+grep -qxF ".hyper/git-worktree/" "$exclude_file" 2>/dev/null || printf '\n.hyper/git-worktree/\n' >> "$exclude_file"
 ```
 
 사용자가 convention을 commit하라고 요청하지 않는 한 `.gitignore` 편집보다 local exclude를 선호한다.
@@ -249,7 +249,7 @@ Worktree의 task가 완료되면:
 
 ## 9. 일반적인 hazard
 
-- `.hypercore/git-worktree/` 아래 nested worktree는 local에서 ignored되어야 한다. 그렇지 않으면 main worktree가 noisy해진다.
+- `.hyper/git-worktree/` 아래 nested worktree는 local에서 ignored되어야 한다. 그렇지 않으면 main worktree가 noisy해진다.
 - 같은 branch는 보통 동시에 두 worktree에서 checked out될 수 없다.
 - Linked worktree는 Git object storage와 config를 공유하지만 working file은 독립적이다.
 - Per-worktree dependency folder, port, database, generated artifact는 여전히 충돌할 수 있다. 필요하면 별도 env file 또는 port를 사용한다.

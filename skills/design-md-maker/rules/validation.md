@@ -105,7 +105,7 @@ When this skill is created or changed, confirm:
 - Every material markdown file has a `.ko.md` sibling.
 - `SKILL.md` links directly to support files with no deep reference chain.
 - No `assets/`, `scripts/`, or `agents/` directory is added without documented purpose.
-- Plugin mirror files match root skill files when this repo publishes plugin mirrors.
+- Validate canonical source files only; this skill has no plugin mirror, symlink, or adapter contract.
 
 ## 9. Completion Summary
 

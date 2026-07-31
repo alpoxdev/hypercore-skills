@@ -1,6 +1,6 @@
 ---
 name: seo-maker
-description: SEO/AEO/GEO 통합 분석 및 최적화 리포트를 생성한다. 전통 SEO(온페이지, 기술, 콘텐츠, Core Web Vitals)에 더해 AEO(Answer Engine Optimization), GEO(Generative Engine Optimization), LLMO(LLM Optimization)까지 점검하고 개선안을 `.hypercore/seo-maker/[slug]/`에 저장한다. "SEO 분석", "AEO 최적화", "GEO 점검", "AI 검색 최적화", "검색엔진 최적화", "메타태그 점검", "SEO 감사", "AI 인용 최적화", "최고 점수까지 반복", "SEO 점수 만점까지 수정" 요청 시 사용.
+description: SEO/AEO/GEO 통합 분석 및 최적화 리포트를 생성한다. 전통 SEO(온페이지, 기술, 콘텐츠, Core Web Vitals)에 더해 AEO(Answer Engine Optimization), GEO(Generative Engine Optimization), LLMO(LLM Optimization)까지 점검하고 개선안을 `.hyper/seo-maker/[slug]/`에 저장한다. "SEO 분석", "AEO 최적화", "GEO 점검", "AI 검색 최적화", "검색엔진 최적화", "메타태그 점검", "SEO 감사", "AI 인용 최적화", "최고 점수까지 반복", "SEO 점수 만점까지 수정" 요청 시 사용.
 compatibility: 로컬 파일 검색/수정 도구와 경쟁사/SERP/AI 인용 분석용 라이브 웹 검색을 함께 쓸 때 가장 잘 동작한다.
 ---
 
@@ -27,7 +27,7 @@ compatibility: 로컬 파일 검색/수정 도구와 경쟁사/SERP/AI 인용 �
 - 온페이지 SEO, 기술 SEO, 콘텐츠 SEO, Core Web Vitals를 종합 점검한다.
 - AEO(Answer Engine Optimization) — Featured Snippet, 음성 검색, AI 직접 답변 선택 최적화를 점검한다.
 - GEO(Generative Engine Optimization) — AI 생성 응답에서의 인용 가능성을 점검한다.
-- 우선순위가 매겨진 개선안 리포트를 `.hypercore/seo-maker/[slug]/`에 저장한다.
+- 우선순위가 매겨진 개선안 리포트를 `.hyper/seo-maker/[slug]/`에 저장한다.
 - 기존 리포트를 업데이트하여 SEO 개선 이력을 추적한다.
 - 사용자가 최고 점수/만점/무한 반복을 요청하면 유한한 예산과 중단 게이트가 있는 최적화 과정으로 audit → fix recommendation/application → re-audit를 수행하고, 비교 가능한 최고 검증 결과만 유지한다. 순위, AI 기능 포함, 인용을 보장하지 않는다.
 
@@ -175,7 +175,7 @@ Complexity: [simple/complex] — [한 줄 이유]
 기본 출력 형태:
 
 ```text
-.hypercore/seo-maker/[slug]/
+.hyper/seo-maker/[slug]/
 ├── dashboard.html      # 브라우저에서 열 수 있는 대시보드
 ├── results.json        # 구조화된 감사 결과 (JSON)
 ├── results.js          # file:// 브라우저 폴백용
@@ -245,7 +245,7 @@ complex로 분류되면 `flow.json`을 쓰고 각 단계가 진행될 때마다 
 |-------|------|--------|
 | 0 | SEO 산출물 여부 확인, `create`/`update`/`optimize` 선택, simple 분류 | Mode + complexity |
 | 1 | 대상 파일에서 SEO 요소 스캔 | Raw findings |
-| 2 | `.hypercore/seo-maker/[slug]/` 생성 또는 탐색 | Storage target |
+| 2 | `.hyper/seo-maker/[slug]/` 생성 또는 탐색 | Storage target |
 | 3 | 결과와 권장 조치가 담긴 `report.md` 작성 | SEO report |
 | 4 | 완결성 검증 | Finalized report |
 
@@ -254,7 +254,7 @@ complex로 분류되면 `flow.json`을 쓰고 각 단계가 진행될 때마다 
 | Phase | Task | Output |
 |-------|------|--------|
 | 0 | SEO 산출물 여부 확인, `create`/`update`/`optimize` 선택, complex 분류 | Mode + complexity |
-| 1 | `.hypercore/seo-maker/[slug]/` 생성 또는 탐색, `flow.json`에 `scope: in_progress` 기록 | Storage + flow |
+| 1 | `.hyper/seo-maker/[slug]/` 생성 또는 탐색, `flow.json`에 `scope: in_progress` 기록 | Storage + flow |
 | 2 | 감사 범위 정의 → `scope: completed` 업데이트 | Scope definition |
 | 3 | Measurement setup → `measurement: completed` | Evidence channels + confidence limits |
 | 4 | 기술 SEO 분석 → `technical: completed` | Technical findings |
@@ -283,7 +283,7 @@ complex로 분류되면 `flow.json`을 쓰고 각 단계가 진행될 때마다 
 <required>
 
 - 작업 시작 전에 complexity(simple/complex)를 분류한다.
-- 모든 report는 `.hypercore/seo-maker/[slug]/` 아래에 저장한다.
+- 모든 report는 `.hyper/seo-maker/[slug]/` 아래에 저장한다.
 - slug는 가능하면 ASCII kebab-case를 사용한다.
 - 모든 finding에는 severity(`critical`/`warning`/`info`)와 구체적 fix recommendation이 있어야 한다.
 - 모든 non-obvious finding에는 `evidence_grade`, `confidence`, `measurement_method`, `source_tier`를 포함하며, evidence class는 `official`/`live`/`field`/`tool`/`lab`/`synthetic`/`heuristic` 중 하나다.
@@ -300,7 +300,7 @@ complex로 분류되면 `flow.json`을 쓰고 각 단계가 진행될 때마다 
 
 <validation>
 
-실행이 끝나면 다음이 `.hypercore/seo-maker/[slug]/`에 남아 있어야 한다:
+실행이 끝나면 다음이 `.hyper/seo-maker/[slug]/`에 남아 있어야 한다:
 
 - `results.json` — 구조화된 감사 결과 (`status: complete`)
 - `dashboard.html` — 브라우저 대시보드 (`render-dashboard.mjs`로 생성)

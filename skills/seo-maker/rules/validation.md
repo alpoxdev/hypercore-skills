@@ -17,7 +17,7 @@
 
 - [ ] Target page(s) fully scanned
 - [ ] At least one category (Technical, On-Page, or Content) analyzed
-- [ ] `report.md` saved to `.hypercore/seo-maker/[slug]/`
+- [ ] `report.md` saved to `.hyper/seo-maker/[slug]/`
 
 ### Complex audit
 
@@ -31,7 +31,7 @@
 - [ ] AEO: visible Q&A/answer blocks, Featured Snippet readiness, and FAQPage/QAPage eligibility caveats checked
 - [ ] GEO: GEO CORE, citation readiness, entity authority, topic-appropriate freshness, optional llms.txt, query fan-out/citation probe status checked
 - [ ] `sources.md` captures evidence and references used
-- [ ] `report.md` saved to `.hypercore/seo-maker/[slug]/`
+- [ ] `report.md` saved to `.hyper/seo-maker/[slug]/`
 - [ ] Every requested URL/file was inventoried, or exclusions and inaccessible targets are listed
 - [ ] Non-applicable dimensions are marked `not-applicable`; unmeasured dimensions are `unknown`, never silently scored
 

@@ -9,7 +9,7 @@
 다음 위치 중 하나를 선호한다:
 
 - 팩이 스킬과 함께 이동해야 할 때는 `skills/<target-skill>/references/skill-test-pack.md`.
-- 팩이 실행별 근거일 때는 `.hypercore/skill-tester/<target-skill>/prompt-pack.md`.
+- 팩이 실행별 근거일 때는 `.hyper/skill-tester/<target-skill>/prompt-pack.md`.
 
 저장소에 더 강한 관례가 이미 있지 않다면, 프롬프트 팩을 대상 스킬의 `SKILL.md`에서 한 디렉터리보다 더 깊이 묻지 않는다.
 

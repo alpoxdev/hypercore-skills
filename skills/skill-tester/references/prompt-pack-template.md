@@ -9,7 +9,7 @@ Use this reference when the user asks to create a reusable prompt pack, regressi
 Prefer one of these locations:
 
 - `skills/<target-skill>/references/skill-test-pack.md` when the pack should travel with the skill.
-- `.hypercore/skill-tester/<target-skill>/prompt-pack.md` when the pack is run-specific evidence.
+- `.hyper/skill-tester/<target-skill>/prompt-pack.md` when the pack is run-specific evidence.
 
 Do not bury prompt packs deeper than one directory from the target skill's `SKILL.md` unless the repository already has a stronger convention.
 

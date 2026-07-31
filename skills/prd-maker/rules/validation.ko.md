@@ -5,7 +5,7 @@
 ## 필수 확인
 
 - 요청이 실제로 제품 기획 패키지, PRD, 기능명세서, 유저플로우, 저충실도 와이어프레임, 다이어그램, 미리보기를 요구했습니다.
-- 패키지 폴더가 `.hypercore/prd/[slug]/` 아래에 있습니다.
+- 패키지 폴더가 `.hyper/prd/[slug]/` 아래에 있습니다.
 - 새 패키지는 `prd.md`, `feature-spec.md`, `user-flow.md`, `wireframe.md`, `diagram.md`, `diagram.data.json`, `diagram.svg`, `preview.html`, `sources.md`를 포함합니다.
 - PRD에는 목표, 범위, 비목표, ID가 있는 요구사항, 메트릭, 리스크/의존성, 오픈 질문, 변경 이력이 있습니다.
 - 기능명세서는 모든 must-have PRD 요구사항을 기능 동작, 수락 기준, 상태, 권한, 오류, 분석, 필요 시 출시 메모로 다룹니다.
