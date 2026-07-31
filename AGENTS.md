@@ -16,7 +16,7 @@
 - `instructions/`: context, harness, sourcing, validation, skill authoring의 공통 지침. Markdown은 영어/한국어 쌍으로 관리한다.
 - `scripts/`: Bun 기반 스킬 검증기, source checker, 테스트와 fixture.
 - `cli/`: pnpm workspace 기반 `@kood/*` CLI 패키지.
-- `.claude-plugin/`, `.agents/plugins/`, `plugins/hypercore/`: Claude Code와 Codex 플러그인 매니페스트 및 연결부.
+- 배포 경계는 저장소 루트 `skills/`와 Vercel `npx skills` 원격 source 규약이다. Claude/Codex plugin manifest나 mirror adapter는 제공하지 않는다.
 - `README.md`: 설치, 스킬 카탈로그, 프로젝트 구조, 개발 흐름의 사용자 문서.
 
 `skills/`, `instructions/`, `scripts/`, `README.md`를 우선 근거로 삼고, 실행 가능한 설정과 테스트가 오래된 설명 문서와 충돌하면 현재 설정·테스트를 기준으로 판단한다.
@@ -28,8 +28,9 @@
 - 스킬의 trigger, workflow, output, validation이 바뀌면 관련 eval fixture와 regression case도 확인한다.
 - 새 스킬을 추가하거나 이름·카탈로그 노출을 바꾸면 `README.md`의 스킬 수, 빠른 사용 예시, 카탈로그를 함께 확인한다.
 - `AGENTS.md`는 현재 version-controlled 파일이다. `CLAUDE.md`는 `.gitignore` 대상인 로컬 adapter이므로 두 파일의 추적 상태를 동일하다고 가정하지 않는다.
-- 생성물, vendor code, lockfile, manifest, plugin metadata는 현재 요청이 직접 요구할 때만 수정한다.
+- 생성물, vendor code, lockfile, manifest는 현재 요청이 직접 요구할 때만 수정한다.
 - `npx skills add`의 기본 설치 범위는 프로젝트 로컬이다. `-g` 또는 `--global`이 있을 때만 전역 설치로 판단하며, 전역 설치 상태를 이 저장소의 근거로 사용하지 않는다.
+- 설치·갱신·삭제 검증은 remote source와 project/global lock provenance를 기준으로 한다. Codex의 project/global canonical 위치는 `.agents/skills`이며 `$CODEX_HOME/skills`를 primary 설치 경로로 가정하지 않는다.
 
 ## 검증 명령
 

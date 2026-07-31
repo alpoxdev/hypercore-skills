@@ -8,7 +8,7 @@
 
 Hypercore는 코드베이스 분석부터 릴리스까지의 반복 작업을 한 번에 줄여주는 30개 스킬을 한 패키지로 제공합니다. 각 스킬은 트리거, 워크플로, 검증 게이트가 명시되어 있어 어떤 CLI에서 호출해도 같은 의도로 동작합니다.
 
-- **드롭인 설치**: Claude Code 마켓플레이스에 한 줄, 다른 CLI에는 `npx skills add` 한 줄.
+- **표준 설치**: 모든 지원 런타임에서 `npx skills` 하나로 설치하고 관리.
 - **다중 CLI**: Claude Code, Codex, Cursor, Antigravity에서 동일하게 사용.
 - **한국어 우선**: 모든 스킬에 한국어 사양이 정렬되어 있으며 영어 원본도 함께 유지.
 - **검증 가능한 결과물**: 각 스킬은 evidence/validation/stop-condition 계약을 따라 결과를 남깁니다.
@@ -17,75 +17,63 @@ Hypercore는 코드베이스 분석부터 릴리스까지의 반복 작업을 �
 
 ## 호환성
 
-| 런타임 | 설치 경로 | 비고 |
+Hypercore는 [Vercel Skills CLI](https://github.com/vercel-labs/skills)의 원격 소스 규약만 지원합니다. Claude Code, Codex, Cursor 등 런타임 선택은 `npx skills`의 `--agent` 옵션으로 처리하며 별도 plugin/marketplace adapter는 제공하지 않습니다.
+
+| 런타임 | 설치 예시 | 비고 |
 |---|---|---|
-| Claude Code | `/plugin marketplace add` + `/plugin install` | 1순위 호환 — 모든 스킬 사용 가능 |
-| Codex CLI | `codex plugin marketplace add` + `codex plugin add` | 플러그인 설치 지원 — 실행 호환은 스킬별 `compatibility` 참고 |
-| Cursor | `npx skills add ... -a cursor` | 동일 |
-| Antigravity 등 기타 | `npx skills add ...` (`-a` 생략 시 기본 대상에 포함) | `npx skills` 가 지원하는 에이전트 |
+| Claude Code | `npx skills@1.5.21 add alpoxdev/hypercore-skills -a claude-code` | 프로젝트 설치가 기본 |
+| Codex CLI | `npx skills@1.5.21 add alpoxdev/hypercore-skills -a codex` | project/global 모두 `.agents/skills` canonical 경로 사용 |
+| Cursor | `npx skills@1.5.21 add alpoxdev/hypercore-skills -a cursor` | `npx skills` 표준 대상 |
+| 기타 | `npx skills@1.5.21 add alpoxdev/hypercore-skills` | CLI가 지원하는 agent에 한함 |
 
-스킬별 호환은 아래 [스킬 카탈로그](#스킬-카탈로그) 표의 **호환** 컬럼 또는 각 `SKILL.md`의 `compatibility` 필드에서 확인합니다.
+스킬별 실행 호환은 아래 [스킬 카탈로그](#스킬-카탈로그)의 **호환** 컬럼 또는 각 `SKILL.md`의 `compatibility` 필드에서 확인합니다.
 
-## 설치
+## 설치 및 수명주기
 
-### Claude Code 마켓플레이스 (권장)
-
-Claude Code 안에서:
+모든 스킬을 현재 프로젝트에 설치:
 
 ```bash
-/plugin marketplace add https://github.com/alpoxdev/hypercore-skills
-/plugin install hypercore
+npx skills@1.5.21 add alpoxdev/hypercore-skills --skill '*' -y
 ```
 
-설치가 끝나면 Claude Code가 30개 스킬과 메타데이터를 자동으로 인식합니다. 슬래시 명령으로 곧바로 호출할 수 있습니다 — 예: `/git-maker`, `/readme-maker`, `/agentmd-maker`, `/research`.
-
-### Codex 플러그인
-
-Codex CLI에서:
+특정 agent 또는 스킬만 설치:
 
 ```bash
-codex plugin marketplace add https://github.com/alpoxdev/hypercore-skills
-codex plugin add hypercore@hypercore
+npx skills@1.5.21 add alpoxdev/hypercore-skills -a claude-code --skill git-maker -y
+npx skills@1.5.21 add alpoxdev/hypercore-skills -a codex --skill readme-maker -y
 ```
 
-로컬 클론에서 검증하거나 설치할 때는 저장소 루트를 마켓플레이스로 추가합니다:
+`-g`/`--global`을 추가할 때만 사용자 전역에 설치됩니다. `--copy`는 설치 시 독립 복사본을 만들며, 생략 시 CLI가 대상 조합에 따라 canonical copy 또는 symlink를 선택합니다.
+
+설치 후에는 같은 CLI로 전체 수명주기를 관리합니다:
 
 ```bash
-codex plugin marketplace add /path/to/hypercore-skills
-codex plugin add hypercore@hypercore
+npx skills@1.5.21 list
+npx skills@1.5.21 update
+npx skills@1.5.21 remove git-maker
+npx skills@1.5.21 use alpoxdev/hypercore-skills --skill git-maker
+npx skills@1.5.21 find hypercore --owner alpoxdev
+npx skills@1.5.21 init my-skill
 ```
 
-이 방식은 `.agents/plugins/marketplace.json`이 `plugins/hypercore` 소스를 가리키고, Codex 플러그인의 `skills`가 저장소 루트 `skills/`를 상대 심볼릭 링크로 참조하는 구조입니다. Claude Code 플러그인도 루트 `skills/`를 직접 참조하므로 스킬 원본은 한 곳에서만 관리됩니다.
+`update`와 `remove`는 원격 source 정보가 기록된 lock에 의존합니다. 로컬 경로 복사나 기존 plugin 설치에는 이 provenance가 없으므로, 아래처럼 원격 source로 다시 설치해야 합니다.
 
-### npx skills add (Cursor / Antigravity 등, 또는 레거시 Codex 설치)
+### 기존 plugin 또는 lock 없는 설치 마이그레이션
 
-기본 대상(지원되는 모든 에이전트)에 한 번에 설치:
+1. 기존 스킬을 백업하고 사용 중인 runtime의 plugin/marketplace 설치를 제거합니다.
+2. 실제 원격 source를 지정해 원하는 scope와 agent로 다시 설치합니다.
+3. `npx skills@1.5.21 list --json`과 project `skills-lock.json` 또는 global `.skill-lock.json`에서 source가 `alpoxdev/hypercore-skills`인지 확인합니다.
+4. 이후 `update`와 `remove`를 실행합니다.
 
 ```bash
-npx skills add alpoxdev/hypercore-skills --skill '*' -g -y
+npx skills@1.5.21 add alpoxdev/hypercore-skills -a codex --skill '*' -y
+npx skills@1.5.21 list --json
+npx skills@1.5.21 update
 ```
 
-특정 에이전트만 설치:
+Codex는 universal agent이므로 project에서는 `<cwd>/.agents/skills`, global에서는 `$HOME/.agents/skills`가 canonical 설치 경로입니다. `$CODEX_HOME/skills`는 primary 설치/list 경로가 아닙니다. Claude+Codex를 함께 설치할 때 Codex는 canonical 경로를 사용하고 Claude 경로에는 CLI가 symlink를 만들 수 있습니다.
 
-```bash
-npx skills add alpoxdev/hypercore-skills --skill '*' -a codex -g -y
-npx skills add alpoxdev/hypercore-skills --skill '*' -a cursor -g -y
-```
-
-특정 스킬만 골라서 설치:
-
-```bash
-npx skills add alpoxdev/hypercore-skills --skill git-maker --skill readme-maker -g -y
-```
-
-옵션 요약:
-
-- `--skill '*'` — 모든 스킬 설치. `--skill <이름>`을 반복하면 골라서 설치.
-- `-g`, `--global` — 사용자 전역 위치에 설치. 생략하면 현재 프로젝트(`.claude/skills/` 등)에만 설치.
-- `-a <agent>` — 특정 에이전트만 대상으로. 생략하면 기본 대상 모두.
-- `-y` — 확인 프롬프트 건너뜀.
-
-> `npx skills add`의 기본 설치 범위는 **프로젝트 로컬**입니다. 시스템 전역에 등록하려면 `-g`를 명시하세요.
+`skills@1.5.21` lock은 원래 선택한 agent 집합이나 `--copy` mode를 저장하지 않습니다. 따라서 `update`는 agent/mode 보존을 보장하지 않으며, 특정 topology가 필요하면 같은 remote source를 원하는 옵션으로 다시 `add`하세요. 부분 `remove` 뒤 provenance 보존도 보장하지 않습니다. 일부 agent만 제거해 남은 파일이 있더라도 계속 update 관리하려면 remote source로 다시 설치해야 합니다.
 
 ### 소스에서 직접 사용
 
@@ -224,16 +212,13 @@ lint, typecheck, build, test 같은 프로젝트 게이트를 재현하고, 실�
 
 ```text
 hypercore-skills/
-├── .claude-plugin/        # Claude Code 마켓플레이스 매니페스트 (plugin.json, marketplace.json)
-├── .agents/plugins/       # Codex 플러그인 마켓플레이스 매니페스트
 ├── agents/                # 사용자 정의 에이전트 자리 (현재 비어 있음)
 ├── cli/                   # @kood/* 도구 모노레포 (pnpm workspace)
 │   └── packages/
 │       └── color/         # @kood/color-cli — color-cli 스킬이 호출
 ├── instructions/          # 프로젝트 LLM 작업 베이스 (context/harness/sourcing/validation)
-├── scripts/               # 보조 스크립트
-├── skills/                # 30개 스킬의 단일 원본 (각 폴더에 SKILL.md / SKILL.ko.md)
-└── plugins/hypercore/     # Codex 플러그인 (`skills`는 ../../skills 심볼릭 링크)
+├── scripts/               # source/lifecycle 검증 및 보조 스크립트
+└── skills/                # 30개 스킬의 단일 원본 (각 폴더에 SKILL.md / SKILL.ko.md)
 ```
 
 스킬 한 개의 표준 구조:
@@ -255,7 +240,7 @@ skills/<name>/
 1. `/skill-maker "<설명>"` — 빈 폴더부터 lean한 `SKILL.md`까지 한 번에.
 2. `/autoresearch-skill <skill-path>` — 만들어진 스킬을 반복 실험으로 점수가 올라가지 않을 때까지 자동 최적화.
 3. 영어 정본(`SKILL.md`) 옆에 한국어 번역(`SKILL.ko.md`)을 함께 유지하세요.
-4. PR로 올리면 자동으로 마켓플레이스 카탈로그에 합류합니다.
+4. PR이 반영되면 `npx skills@1.5.21 add alpoxdev/hypercore-skills --list`로 저장소의 `skills/` 원격 source에서 발견되는지 확인합니다.
 
 세부 설계 가이드는 [`skills/skill-maker/SKILL.md`](skills/skill-maker/SKILL.md)와 [`instructions/`](instructions/)를 참고하세요.
 
@@ -288,7 +273,7 @@ pnpm -C cli format      # Prettier
 
 새 스킬을 추가했을 때:
 
-1. 마켓플레이스 카탈로그에 영향이 있다면 [README의 스킬 표](#스킬-카탈로그)와 매니페스트 키워드를 갱신.
+1. [README의 스킬 표](#스킬-카탈로그)와 `npx skills@1.5.21 add alpoxdev/hypercore-skills --list` 결과를 갱신·확인.
 2. `skill-tester`로 트리거/동작을 검증.
 3. `autoresearch-skill`로 점수 plateau까지 다듬는 것을 권장.
 
@@ -304,10 +289,10 @@ PR 환영합니다. 작업 흐름:
 
 ## 라이선스
 
-[MIT](LICENSE) © alpoxdev. `.claude-plugin/plugin.json`에도 선언되어 있습니다.
+[MIT](LICENSE) © alpoxdev.
 
 ## 감사
 
 - [Vercel Skills](https://github.com/vercel-labs/skills) — 패키지 구조와 `npx skills add` 워크플로의 기반.
-- Claude Code · Codex · Cursor · Antigravity 팀의 스킬/플러그인 표면.
+- Claude Code · Codex · Cursor · Antigravity 팀의 agent skill 생태계.
 - 모든 컨트리뷰터 — 자세한 목록은 [GitHub Contributors](https://github.com/alpoxdev/hypercore-skills/graphs/contributors).
