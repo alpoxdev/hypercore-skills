@@ -37,7 +37,7 @@ Never place credentials in command arguments. `config set` reads each value from
 naver-api config set --stdin < credentials.yaml
 ```
 
-Do not commit `credentials.yaml`, shell history containing its contents, or any redirected command output. `config path` prints the exact local config location (`~/.hypercore/naver-api/config.yml`). The parent and credential directory must be non-symlink protected directories. `config show` only displays masked values. Credential values and upstream response bodies are never included in errors. `config validate` checks only the local configuration shape and does not make a network request.
+Do not commit `credentials.yaml`, shell history containing its contents, or any redirected command output. `config path` prints the exact local config location (`~/.hyper/naver-api/config.yml`). The parent and credential directory must be non-symlink protected directories. `config show` only displays masked values. Credential values and upstream response bodies are never included in errors. `config validate` checks only the local configuration shape and does not make a network request.
 
 ## API HUB registry policy
 

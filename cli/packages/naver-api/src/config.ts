@@ -17,7 +17,7 @@ export interface NaverApiConfigStoreOptions {
 
 const DIRECTORY_MODE = 0o700;
 const FILE_MODE = 0o600;
-const CONFIG_DIRECTORY = '.hypercore/naver-api';
+const CONFIG_DIRECTORY = '.hyper/naver-api';
 const CONFIG_FILENAME = 'config.yml';
 
 function hasMode(stat: { mode: number }, expected: number): boolean {

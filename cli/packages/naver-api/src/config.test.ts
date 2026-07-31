@@ -73,18 +73,18 @@ describe('NaverApiConfigStore', () => {
     await expect(store.load()).rejects.toBeInstanceOf(NaverApiConfigError);
     await expect(store.delete()).rejects.toBeInstanceOf(NaverApiConfigError);
   });
-  it('rejects a symlinked .hypercore parent without creating or repairing it', async () => {
+  it('rejects a symlinked .hyper parent without creating or repairing it', async () => {
     const directory = await home();
     const target = join(directory, 'target');
     await mkdir(target);
-    await symlink(target, join(directory, '.hypercore'));
+    await symlink(target, join(directory, '.hyper'));
     const store = new NaverApiConfigStore({ homeDirectory: directory });
 
     await expect(store.load()).rejects.toBeInstanceOf(NaverApiConfigError);
     await expect(store.save({ apiKeyId: 'test', apiKey: 'test' })).rejects.toBeInstanceOf(
       NaverApiConfigError,
     );
-    expect((await lstat(join(directory, '.hypercore'))).isSymbolicLink()).toBe(true);
+    expect((await lstat(join(directory, '.hyper'))).isSymbolicLink()).toBe(true);
   });
 
   it('deletes absent configuration idempotently', async () => {
