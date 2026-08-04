@@ -3,6 +3,17 @@
 > Protect typed clients and tests from route-shape regressions
 
 ---
+## Stable Hono 4.13 Baseline
+
+Hono RPC requires TypeScript `strict` on both server and client. Producer and consumer Hono versions must match; version skew can cause excessively deep type instantiation. Large contracts may also degrade editor performance.
+
+- Export `AppType` from the final chained route value, not a later mutated app or partial child.
+- Compile and consume declarations or use project references across package boundaries; do not deep-import server implementation.
+- Use `ApplyGlobalResponse` for shared global error response typing.
+- Use `parseResponse()`, `InferRequestType`, and `InferResponseType` where they make client contracts observable.
+- Remember that `hc` does not URL-encode path parameter values automatically; encode values or use an explicitly tested regexp route when slashes are allowed.
+- Use `app.request()` for behavior, `testClient()` for server-side typed ergonomics, and a real `hc` boundary test only when client serialization/base URL behavior matters.
+- Pass runtime bindings as the third argument to `app.request()` and test adapter-specific behavior separately.
 
 ## Core Rule
 

@@ -4,6 +4,15 @@
 
 ---
 
+## Stable Hono 4.13 기준
+
+`createFactory<Env>()`, `factory.createApp()`, `factory.createHandlers()`, `createMiddleware()`는 공식 type-preserving helper입니다. 모든 파일에서 binding/variable을 반복하지 말고 호환되는 `Env` surface마다 factory 하나를 사용합니다.
+
+- `createHandlers()`는 handler tuple을 반환하므로 route call에 spread합니다.
+- Handler가 `c.req.valid()`를 읽으면 validator middleware와 handler를 같은 typed chain에 둡니다.
+- 모든 terminal branch에서 `Response`를 반환하고 RPC client가 status union을 필요로 하면 literal status argument를 사용합니다.
+- Service에는 transport-neutral primitive를 전달하며 domain/repository layer로 `Context`를 넘기지 않습니다.
+- Route input/output/variable inference를 지우는 넓은 `Context` annotation을 handler에 붙이지 않습니다.
 ## 핵심 규칙
 
 - 작은 라우트는 inline handler 허용

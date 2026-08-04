@@ -3,6 +3,16 @@
 > Treat generated API documentation as a typed contract boundary
 
 ---
+## Stable Package Baseline
+
+As verified on 2026-08-04: `@hono/zod-openapi` 1.5.1 requires Hono `>=4.10.0` and Zod 4; `@hono/swagger-ui` 0.6.1 requires Hono `>=4`; third-party `hono-openapi` 1.3.1 requires Hono `^4.11.2` and Standard Schema ecosystem peers. Lockfile and peer compatibility must be checked before choosing a path.
+
+- Prefer `@hono/zod-openapi` for a Zod 4 route-first API.
+- Preserve an established `hono-openapi` surface rather than migrating generators incidentally; it is third-party, not an official HonoJS package.
+- Do not combine undocumented plain `Hono` children and expect `OpenAPIHono` to discover their metadata.
+- Schema every actual success and error status. Keep central error envelopes synchronized with runtime and RPC global response types.
+- Generate the document in a deterministic check, validate references and unique `operationId` values, and diff the artifact when it is committed.
+- Gate spec/UI exposure separately. A hidden UI does not make a public JSON spec private, and Swagger UI does not generate the spec.
 
 ## Core Rule
 

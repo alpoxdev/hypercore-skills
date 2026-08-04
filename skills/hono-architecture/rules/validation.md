@@ -3,6 +3,17 @@
 > Request validation rules for Hono
 
 ---
+## Stable Package Baseline
+
+As verified on 2026-08-04: `@hono/zod-validator` 0.9.0 supports Hono `>=4.11.2` and Zod `^3.25.0 || ^4.0.0`; `@hono/standard-validator` 0.3.0 supports Hono `>=4.11.2` and Standard Schema `^1.0.0`. Inspect the installed lockfile before using APIs or syntax.
+
+- Validate every externally controlled `param`, `query`, `header`, `cookie`, `json`, or `form` value that influences behavior.
+- Consume validator output only through `c.req.valid(target)`; do not parse the same body again.
+- Header schema keys must be lowercase.
+- JSON validation requires an appropriate `Content-Type`; test missing/wrong content types and malformed bodies.
+- Define hook/error behavior once per API surface so validation errors share a stable, non-sensitive envelope.
+- Keep coercion and defaults intentional. Query/path inputs start as strings and must not acquire surprising domain semantics.
+- Do not add or swap validation libraries merely to match this skill.
 
 ## Core Rule
 

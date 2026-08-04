@@ -4,6 +4,16 @@
 
 ---
 
+## Stable runtime 기준
+
+2026-08-04 확인 기준 Hono는 4.13.0입니다. `@hono/node-server` 2.1.0은 Node `>=20`과 Hono `^4`를 요구하며 package manifest가 오래된 Hono Node guide 문구보다 엄격합니다. Installed package metadata와 선택한 runtime의 최신 공식 guide가 우선합니다.
+
+- Cloudflare/Deno/Bun runtime은 일반적으로 Fetch-compatible app entry를 제공하고 Node는 공식 adapter를 사용합니다.
+- `app.fetch` 또는 reusable Hono app을 process startup, listener, WebSocket server, static-file root, shutdown hook과 분리합니다.
+- Node raw request/response API, Cloudflare `executionCtx`/binding, provider-specific wait-until behavior를 adapter capability로 취급합니다.
+- 가능하면 startup에서 environment configuration을 검증합니다. Secret을 client-visible config, log, generated OpenAPI example에 넣지 않습니다.
+- Streaming, WebSocket, static file, raw API, execution context, provider binding을 사용하면 runtime adapter를 test합니다. `app.request()`만으로 충분하지 않습니다.
+- 명시적 scope와 provider-specific verification 없이 adapter, deployment manifest, compatibility date, runtime version을 바꾸지 않습니다.
 ## 규칙
 
 - runtime adapter 코드는 `src/index.ts`, `src/server.ts`, `src/worker.ts` 같은 entry 파일에 둡니다

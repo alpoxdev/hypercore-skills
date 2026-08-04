@@ -1,6 +1,24 @@
 # Hono Official Docs Summary
 
-Verified on: 2026-06-28
+Verified on: 2026-08-04
+
+## Stable package snapshot
+
+Verified from npm registry metadata on 2026-08-04. These are evidence snapshots, not automatic upgrade targets.
+
+| Package | Stable | Compatibility observed |
+|---|---:|---|
+| `hono` | 4.13.0 | Node engine `>=16.9.0` in the core package |
+| `@hono/node-server` | 2.1.0 | Node `>=20`, Hono `^4` |
+| `@hono/zod-validator` | 0.9.0 | Hono `>=4.11.2`, Zod `^3.25.0 || ^4.0.0` |
+| `@hono/standard-validator` | 0.3.0 | Hono `>=4.11.2`, Standard Schema `^1.0.0` |
+| `@hono/zod-openapi` | 1.5.1 | Hono `>=4.10.0`, Zod 4 |
+| `@hono/swagger-ui` | 0.6.1 | Hono `>=4.0.0` |
+| `hono-openapi` | 1.3.1 | Third-party; Hono `^4.11.2` plus Standard Schema peers |
+
+Sources: [npm registry: hono](https://registry.npmjs.org/hono), [Hono middleware repository](https://github.com/honojs/middleware), [`@hono/node-server`](https://github.com/honojs/node-server), [`hono-openapi`](https://github.com/rhinobase/hono-openapi)
+
+Installed manifests and lockfiles win for implementation. Re-check registry metadata before changing dependencies after the verification date.
 
 Use this reference when the core skill or rule files need an official-doc check.
 
@@ -47,6 +65,15 @@ Source: [OpenAPI Specification 3.1.0](https://spec.openapis.org/oas/v3.1.0.html)
 
 14. Hono environment bindings are typed through app generics and accessed with `c.env`. The Cloudflare Workers docs include D1 and other bindings as part of the `Bindings` model, and the Factory Helper docs show an `initApp` example that creates a Drizzle D1 database from `c.env` and stores it in typed `Variables`.
 Source: [Context API](https://hono.dev/docs/api/context), [Cloudflare Workers](https://hono.dev/docs/getting-started/cloudflare-workers), [Factory Helper](https://hono.dev/docs/helpers/factory)
+
+15. The root app provides `use`, `route`, `basePath`, `notFound`, and `onError`; `notFound` is called only from the top-level app, while route-level `onError` handlers take priority over a parent handler.
+Source: [App API](https://hono.dev/docs/api/hono)
+
+16. Middleware executes in registration order and typed variables accumulate across chained middleware. Shared middleware placement therefore affects both behavior and inferred context.
+Source: [Middleware Guide](https://hono.dev/docs/guides/middleware)
+
+17. Hono is Web-Standards based and supports multiple runtimes, while Node.js runs through `@hono/node-server`. A runtime-neutral app plus separate adapter entrypoint is a Hypercore portability convention grounded in those facts, not an official required folder layout.
+Source: [Hono repository](https://github.com/honojs/hono), [Node.js Guide](https://hono.dev/docs/getting-started/nodejs), [`@hono/node-server`](https://github.com/honojs/node-server)
 
 ## How this affects the skill
 

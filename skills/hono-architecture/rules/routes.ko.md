@@ -4,6 +4,15 @@
 
 ---
 
+## Stable Hono 4.13 기준
+
+Hono 공식 routing은 등록 순서를 따릅니다. `route()`는 호출 시점에 child app의 registered route를 parent에 복사하므로 grouping order가 behavior를 바꿀 수 있습니다. `basePath()`는 app 하나에 prefix를 적용하고, `mount()`는 다른 framework를 연결하는 API이므로 typed Hono sub-app composition의 대체물이 아닙니다.
+
+- Inferred type이 `AppType`, `testClient`, `hc`에 쓰이면 route definition과 `route()` call을 chaining합니다.
+- 넓은 parameter, wildcard, fallback, not-found behavior는 specific route 뒤에 등록합니다.
+- Hono strict mode 기본값은 `true`이므로 trailing-slash behavior를 명시적으로 결정합니다.
+- Host-based routing과 custom `getPath()`는 app/platform boundary에 둡니다.
+- Sub-app 이동 후 mount prefix와 order를 test합니다. 파일 배치만으로 동일 dispatch를 증명할 수 없습니다.
 ## 작은 구조
 
 ```text

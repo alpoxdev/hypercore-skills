@@ -3,6 +3,17 @@
 > Middleware rules for request boundaries and shared concerns
 
 ---
+## Stable Hono 4.13 Baseline
+
+Middleware executes onion-style in registration order: code before `await next()` runs outward-in and code after it runs inward-out. Middleware may early-return a `Response`. Chained `.use()` calls accumulate typed `Variables` for following handlers.
+
+Recommended order is an explicit project contract, commonly request ID/observability, CORS or security headers, authentication, authorization, validation, then handler. Place response mutation after `await next()` only when it is intended to wrap every downstream response.
+
+- Scope middleware with a path or sub-app; do not make feature-only authorization global.
+- Use typed `Variables` or `createMiddleware<Env>()` for guaranteed request-scoped values.
+- Use global `ContextVariableMap` augmentation only for values truly guaranteed across every consuming app; local typed chaining is safer.
+- Never store request state in module globals or reuse `Context` across requests.
+- Keep Hono core and middleware package versions compatible, especially for URL-import runtimes such as Deno.
 
 ## Core Rule
 

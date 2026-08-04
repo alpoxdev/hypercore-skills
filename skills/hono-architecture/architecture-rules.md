@@ -63,115 +63,19 @@ Repositories / External Clients / Database Boundary
 
 ---
 
-## Route Structure Rules
+## Project Structure and Scalability
 
-### Recommended small API structure
+Read [`rules/project-structure.md`](rules/project-structure.md) before creating folders, choosing a compact/product/workspace profile, changing ownership boundaries, moving a vertical slice, or designing a monorepo contract package.
 
-```text
-src/
-├── app.ts
-├── index.ts
-├── lib/
-│   └── create-app.ts
-├── middlewares/
-│   ├── auth.ts
-│   └── request-id.ts
-├── routes/
-│   ├── index.ts
-│   ├── health.ts
-│   └── users/
-│       ├── index.ts
-│       ├── handlers.ts
-│       ├── schemas.ts
-│       └── service.ts
-├── services/
-├── repositories/
-└── database/
-    ├── client.ts
-    └── schema.ts
-```
+Critical invariants remain here:
 
-Use this shape for small APIs and early projects. It keeps the mount table visible while leaving room for feature folders.
-
-### Recommended medium/large API structure
-
-```text
-src/
-├── app.ts
-├── index.ts
-├── lib/
-│   ├── create-app.ts
-│   ├── env.ts
-│   └── types.ts
-├── middlewares/
-│   ├── auth.ts
-│   ├── error-boundary.ts
-│   └── request-id.ts
-├── openapi/
-│   ├── components.ts
-│   ├── errors.ts
-│   └── registry.ts
-├── routes/
-│   ├── index.ts
-│   ├── health.ts
-│   └── users/
-│       ├── index.ts
-│       ├── handlers.ts
-│       ├── routes.ts
-│       ├── schemas.ts
-│       ├── service.ts
-│       └── tests/
-├── services/
-│   └── users/
-├── repositories/
-│   └── users/
-├── database/
-│   ├── client.ts
-│   ├── schema.ts
-│   └── types.ts
-├── drizzle/
-│   └── migrations/
-└── clients/
-```
-
-Use this shape when multiple feature areas, generated docs, typed clients, or runtime bindings are part of the app contract.
-
-### Feature growth thresholds
-
-| Size | Structure |
-|------|-----------|
-| Tiny operational endpoint | One file such as `routes/health.ts` is acceptable. |
-| Small feature | `routes/<feature>/index.ts` plus local `schemas.ts` or `handlers.ts`. |
-| Medium feature | Split `handlers.ts`, `schemas.ts`, and `service.ts`; mount the feature through `routes/index.ts` or `app.ts`. |
-| Large feature | Add local `routes.ts` / OpenAPI metadata, local middleware if needed, tests near the feature, and repository/service boundaries for persistence work. |
-
-### Rules
-
-- Keep one obvious app composition path
-- Prefer domain sub-apps mounted with `app.route()`
-- Allow single-file route modules only for small endpoints such as health checks
-- Name source folders and files in kebab-case unless a tool or external contract requires a fixed filename
-- Use route folders when a feature needs schemas, handlers, middleware, or service helpers
-- Keep runtime-specific bootstrap outside route modules
-- Keep database clients, ORM schema tables, and migrations outside route modules
-- For large APIs, keep `app.ts` / `routes/index.ts` as the mount table and avoid feature-to-feature route imports
-- Keep shared OpenAPI components outside feature folders, but keep feature operation metadata near the route it describes
-
-## Scalability Rules
-
-- Scale by feature boundaries first, not by controller classes.
-- Feature, route, service, repository, middleware, and database-support paths should remain kebab-case so large projects stay predictable across imports, tests, docs, and generated artifacts.
-- A route module should orchestrate transport, validation, service calls, and response shaping; it should not own persistence or third-party SDK details.
-- Shared middleware belongs in `middlewares/`; feature-only middleware can live under `routes/<feature>/`.
-- Shared schemas, error envelopes, and OpenAPI components should be centralized only when at least two features reuse them.
-- Database clients and ORM setup belong in `database/` or a runtime/platform factory, not in handlers.
-- Repositories hide query details and should not read Hono `Context`, headers, cookies, or request bodies.
-- Transaction boundaries belong in services/use-cases when multiple writes must commit or roll back together.
-- Drizzle schema and migration folders must match `drizzle.config.ts` and remain outside route folders.
-- Public DTOs should be mapped deliberately instead of exposing raw ORM rows.
-- Version prefixes such as `/api` or `/v1` belong at the composition boundary through `basePath()` or one mount table, not inside every handler.
-- When migrating a brownfield app, fix safety/type/validation issues in touched files immediately and record purely structural drift as backlog when a full split would be risky.
-- Large-app reviews must confirm that route composition, generated docs, and typed clients are all derived from the same exported app surface.
+- Keep one runtime-neutral app composition surface and one obvious mount table.
+- Dependencies flow from runtime entry to app composition, route, service/use case, repository/client, then database/external system.
+- Routes own transport orchestration, not ORM queries, migrations, provider SDK details, or runtime startup.
+- Lower layers do not import Hono `Context` or raw request/response concerns.
+- Grow structure only from observable ownership or dependency pressure; do not pre-create empty layers.
+- Preserve public paths, middleware order, `AppType`, OpenAPI output, and migration provenance during brownfield moves.
+- Keep generated files and configured source/schema/migration roots in their tool-owned locations.
 
 ---
 

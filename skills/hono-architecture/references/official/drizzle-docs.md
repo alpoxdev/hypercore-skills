@@ -1,6 +1,19 @@
 # Drizzle Official Docs Summary
 
-Verified on: 2026-06-28
+Verified on: 2026-08-04
+
+## Stable package snapshot
+
+Verified from npm registry metadata on 2026-08-04:
+
+| Package | Stable |
+|---|---:|
+| `drizzle-orm` | 0.45.2 |
+| `drizzle-kit` | 0.31.10 |
+
+Sources: [npm registry: drizzle-orm](https://registry.npmjs.org/drizzle-orm), [npm registry: drizzle-kit](https://registry.npmjs.org/drizzle-kit), [Drizzle releases](https://github.com/drizzle-team/drizzle-orm/releases)
+
+These versions are maintenance evidence, not permission to upgrade. The installed dialect driver, peer dependencies, config format, and generated migration format must be checked together.
 
 Use this reference when Hono architecture decisions depend on Drizzle ORM, `drizzle-kit`, runtime-specific database drivers, schema files, migrations, or transactions.
 

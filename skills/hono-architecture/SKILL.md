@@ -6,6 +6,7 @@ compatibility: Works best with repo inspection, official Hono docs verification,
 
 @architecture-rules.md
 @rules/conventions.md
+@rules/project-structure.md
 @rules/routes.md
 @rules/handlers.md
 @rules/middleware.md
@@ -150,6 +151,7 @@ rg -n "new Hono\\(|app\\.route\\(|basePath\\(|validator\\(|zValidator\\(|standar
 Read the detailed rules before editing:
 
 - `architecture-rules.md`
+- `rules/project-structure.md`
 - `rules/conventions.md`
 - `rules/routes.md`
 - `rules/handlers.md`
@@ -170,6 +172,7 @@ When the change depends on current framework behavior or you need to justify a r
 
 Use the next file based on the change you are making:
 
+- For project profiles, folder ownership, dependency direction, monorepos, or structural migration, read `rules/project-structure.md`
 - For route composition, mount order, fallback placement, or sub-app structure, read `rules/routes.md`
 - For handler extraction, `createFactory()`, `createHandlers()`, or typed context flow, read `rules/handlers.md`
 - For shared request boundaries, auth/logging/request-id flow, or `c.set()` / `c.get()` usage, read `rules/middleware.md`
@@ -203,7 +206,7 @@ Brownfield rule:
 
 Critical gates:
 
-- One obvious Hono app composition path; no scattered registration or early fallback routes.
+- One runtime-neutral Hono app and one obvious mount table; select the smallest justified structure profile and preserve dependency direction.
 - Touched route modules do not bypass services to import DB/ORM/schema/SDK/runtime adapter details directly.
 - Non-trivial params/query/json/form data uses validator middleware before domain logic.
 - Extracted handlers preserve typing with inline chaining or `createFactory()` / `createHandlers()`.
@@ -271,6 +274,7 @@ When changing Hono code, prefer this order:
 - Touched files and folders follow kebab-case naming
 - In `전체 수정` mode, the whole detected Hono source tree was scanned for kebab-case violations
 - Route composition is obvious and mountable
+- Project profile, folder ownership, and dependency direction are justified by repository evidence
 - Middleware order verified
 - Validation enforced on non-trivial inputs
 - Touched routes do not import DB/ORM clients, Drizzle schema tables, or migration helpers directly

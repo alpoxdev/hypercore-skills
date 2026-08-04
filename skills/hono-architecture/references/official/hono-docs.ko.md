@@ -1,6 +1,24 @@
 # Hono 공식 문서 요약
 
-검증일: 2026-06-28
+검증일: 2026-08-04
+
+## Stable package snapshot
+
+2026-08-04 npm registry metadata 확인 기준입니다. 이는 근거 snapshot이며 자동 upgrade target이 아닙니다.
+
+| Package | Stable | 확인된 compatibility |
+|---|---:|---|
+| `hono` | 4.13.0 | Core package의 Node engine `>=16.9.0` |
+| `@hono/node-server` | 2.1.0 | Node `>=20`, Hono `^4` |
+| `@hono/zod-validator` | 0.9.0 | Hono `>=4.11.2`, Zod `^3.25.0 || ^4.0.0` |
+| `@hono/standard-validator` | 0.3.0 | Hono `>=4.11.2`, Standard Schema `^1.0.0` |
+| `@hono/zod-openapi` | 1.5.1 | Hono `>=4.10.0`, Zod 4 |
+| `@hono/swagger-ui` | 0.6.1 | Hono `>=4.0.0` |
+| `hono-openapi` | 1.3.1 | Third-party; Hono `^4.11.2`와 Standard Schema peer |
+
+출처: [npm registry: hono](https://registry.npmjs.org/hono), [Hono middleware repository](https://github.com/honojs/middleware), [`@hono/node-server`](https://github.com/honojs/node-server), [`hono-openapi`](https://github.com/rhinobase/hono-openapi)
+
+구현 시 installed manifest와 lockfile이 우선합니다. 검증일 이후 dependency를 변경하기 전 registry metadata를 다시 확인합니다.
 
 코어 스킬이나 규칙 파일에서 공식 문서 재확인이 필요할 때 이 참조를 사용합니다.
 
@@ -47,6 +65,15 @@
 
 14. Hono environment binding은 app generics로 type 지정하고 `c.env`로 접근합니다. Cloudflare Workers 문서는 D1 등 binding을 `Bindings` 모델로 다루고, Factory Helper 문서는 `initApp`에서 `c.env`로 Drizzle D1 database를 만들고 typed `Variables`에 저장하는 예시를 제공합니다.
 출처: [Context API](https://hono.dev/docs/api/context), [Cloudflare Workers](https://hono.dev/docs/getting-started/cloudflare-workers), [Factory Helper](https://hono.dev/docs/helpers/factory)
+
+15. Root app은 `use`, `route`, `basePath`, `notFound`, `onError`를 제공합니다. `notFound`는 top-level app에서만 호출되고, route-level `onError`는 parent handler보다 우선합니다.
+출처: [App API](https://hono.dev/docs/api/hono)
+
+16. Middleware는 등록 순서로 실행되고 typed variable은 chained middleware를 거치며 누적됩니다. 따라서 shared middleware 위치는 behavior와 inferred context 모두에 영향을 줍니다.
+출처: [Middleware Guide](https://hono.dev/docs/guides/middleware)
+
+17. Hono는 Web Standards 기반으로 여러 runtime을 지원하며 Node.js에서는 `@hono/node-server`를 사용합니다. Runtime-neutral app과 별도 adapter entrypoint는 이 사실에 근거한 Hypercore portability convention이지, 공식 필수 folder layout은 아닙니다.
+출처: [Hono repository](https://github.com/honojs/hono), [Node.js Guide](https://hono.dev/docs/getting-started/nodejs), [`@hono/node-server`](https://github.com/honojs/node-server)
 
 ## 이 스킬에 미치는 영향
 

@@ -63,115 +63,19 @@ Repositories / External Clients / Database Boundary
 
 ---
 
-## Route Structure Rules
+## 프로젝트 구조와 확장성
 
-### 작은 API 권장 구조
+Folder 생성, compact/product/workspace profile 선택, ownership boundary 변경, vertical slice 이동 또는 monorepo contract package 설계 전에 [`rules/project-structure.ko.md`](rules/project-structure.ko.md)를 읽습니다.
 
-```text
-src/
-├── app.ts
-├── index.ts
-├── lib/
-│   └── create-app.ts
-├── middlewares/
-│   ├── auth.ts
-│   └── request-id.ts
-├── routes/
-│   ├── index.ts
-│   ├── health.ts
-│   └── users/
-│       ├── index.ts
-│       ├── handlers.ts
-│       ├── schemas.ts
-│       └── service.ts
-├── services/
-├── repositories/
-└── database/
-    ├── client.ts
-    └── schema.ts
-```
+핵심 invariant는 다음과 같습니다.
 
-작은 API와 초기 프로젝트에는 이 구조를 사용합니다. Mount table을 눈에 보이게 유지하면서 feature folder로 확장할 여지를 남깁니다.
-
-### 중간/대형 API 권장 구조
-
-```text
-src/
-├── app.ts
-├── index.ts
-├── lib/
-│   ├── create-app.ts
-│   ├── env.ts
-│   └── types.ts
-├── middlewares/
-│   ├── auth.ts
-│   ├── error-boundary.ts
-│   └── request-id.ts
-├── openapi/
-│   ├── components.ts
-│   ├── errors.ts
-│   └── registry.ts
-├── routes/
-│   ├── index.ts
-│   ├── health.ts
-│   └── users/
-│       ├── index.ts
-│       ├── handlers.ts
-│       ├── routes.ts
-│       ├── schemas.ts
-│       ├── service.ts
-│       └── tests/
-├── services/
-│   └── users/
-├── repositories/
-│   └── users/
-├── database/
-│   ├── client.ts
-│   ├── schema.ts
-│   └── types.ts
-├── drizzle/
-│   └── migrations/
-└── clients/
-```
-
-여러 feature area, generated docs, typed client, runtime binding이 app contract에 포함되면 이 구조를 사용합니다.
-
-### Feature 성장 기준
-
-| 규모 | 구조 |
-|------|------|
-| 아주 작은 운영 endpoint | `routes/health.ts` 같은 한 파일 허용 |
-| 작은 feature | `routes/<feature>/index.ts`와 local `schemas.ts` 또는 `handlers.ts` |
-| 중간 feature | `handlers.ts`, `schemas.ts`, `service.ts` 분리 후 `routes/index.ts` 또는 `app.ts`에서 mount |
-| 큰 feature | local `routes.ts` / OpenAPI metadata, 필요한 경우 local middleware, feature 근처 tests, persistence 작업을 위한 repository/service boundary를 둠 |
-
-### 규칙
-
-- 하나의 명확한 app composition path를 유지합니다.
-- Domain sub-app은 `app.route()`로 mount하는 방식을 선호합니다.
-- health check 같은 작은 endpoint에만 single-file route module을 허용합니다.
-- Tool 또는 external contract가 고정 filename을 요구하지 않는 한 source folder/file은 kebab-case로 짓습니다.
-- feature에 schemas, handlers, middleware, service helpers가 필요하면 route folders를 사용합니다.
-- Runtime-specific bootstrap은 route modules 밖에 둡니다.
-- Database client, ORM schema table, migration은 route modules 밖에 둡니다.
-- 큰 API에서는 `app.ts` / `routes/index.ts`를 mount table로 유지하고 feature끼리 route import를 하지 않습니다.
-- Shared OpenAPI components는 feature folder 밖에 두되, feature operation metadata는 설명하는 route 근처에 둡니다.
-
-## Scalability Rules
-
-- controller class가 아니라 feature boundary를 먼저 기준으로 확장합니다.
-- Feature, route, service, repository, middleware, database-support path는 kebab-case로 유지해 큰 프로젝트에서 import, test, docs, generated artifact가 예측 가능하게 합니다.
-- Route module은 transport, validation, service call, response shaping을 orchestration하고 persistence나 third-party SDK 세부사항을 소유하지 않습니다.
-- Shared middleware는 `middlewares/`에 두고, feature-only middleware는 `routes/<feature>/` 아래 둘 수 있습니다.
-- Shared schema, error envelope, OpenAPI component는 최소 두 feature가 재사용할 때만 중앙화합니다.
-- Database client와 ORM setup은 handler가 아니라 `database/` 또는 runtime/platform factory에 둡니다.
-- Repository는 query detail을 숨기고 Hono `Context`, headers, cookies, request body를 읽지 않습니다.
-- 여러 write가 함께 commit/rollback되어야 하면 transaction boundary는 service/use-case에 둡니다.
-- Drizzle schema와 migration folder는 `drizzle.config.ts`와 일치해야 하고 route folder 밖에 둡니다.
-- Public DTO는 raw ORM row를 그대로 노출하지 말고 의도적으로 mapping합니다.
-- `/api`, `/v1` 같은 version prefix는 handler마다 넣지 말고 `basePath()` 또는 하나의 mount table 같은 composition boundary에 둡니다.
-- Brownfield app을 이관할 때 touched file의 safety/type/validation 문제는 즉시 고치고, 전체 split이 위험한 순수 구조 drift는 backlog로 기록합니다.
-- 큰 app review는 route composition, generated docs, typed clients가 같은 exported app surface에서 파생되는지 확인해야 합니다.
+- Runtime-neutral app composition surface 하나와 명확한 mount table 하나를 유지합니다.
+- Dependency는 runtime entry에서 app composition, route, service/use case, repository/client, database/external system 방향으로 흐릅니다.
+- Route는 transport orchestration을 소유하고 ORM query, migration, provider SDK detail, runtime startup을 소유하지 않습니다.
+- 하위 layer는 Hono `Context` 또는 raw request/response concern을 import하지 않습니다.
+- 관찰 가능한 ownership/dependency 압력이 있을 때만 구조를 확장하며 빈 layer를 미리 만들지 않습니다.
+- Brownfield 이동 중 public path, middleware order, `AppType`, OpenAPI output, migration provenance를 보존합니다.
+- Generated file과 configured source/schema/migration root는 tool이 소유하는 위치에 유지합니다.
 
 ---
 

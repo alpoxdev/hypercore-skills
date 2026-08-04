@@ -4,6 +4,16 @@
 
 ---
 
+## Stable Hono 4.13 기준
+
+`app.notFound()`는 top-level app에서만 실행됩니다. Child route의 `onError` handler는 parent handler보다 우선합니다. `HTTPException.getResponse()`는 `Context`에 이미 누적된 header를 알지 못합니다.
+
+- Public error envelope 하나를 정의하고 expected domain failure를 literal HTTP status로 의도적으로 mapping합니다.
+- Stack trace, SQL, provider payload, secret, raw validation internal을 노출하지 않습니다.
+- Error response를 교체할 때 필요한 CORS, request ID, cache, authentication header를 보존합니다.
+- RPC는 global middleware나 `onError()` response를 자동 infer하지 않습니다. Shared global response가 client contract에 포함되면 `ApplyGlobalResponse`를 사용합니다.
+- Client가 infer해야 하는 RPC route의 typed 404 contract를 `c.notFound()`에만 맡기지 않습니다. Route-local typed JSON variant를 반환합니다.
+- Thrown `HTTPException`, unknown error, route-local error handler precedence, top-level 404, required header를 test합니다.
 ## 핵심 규칙
 
 - 예상 가능한 HTTP 실패는 `HTTPException` 또는 명시적 번역 레이어 사용

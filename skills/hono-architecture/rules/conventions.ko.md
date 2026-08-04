@@ -4,6 +4,16 @@
 
 ---
 
+## Stable compatibility 규칙
+
+Formatting과 import order는 project tooling이 소유합니다. Hono는 kebab-case path, arrow function 또는 하나의 universal import grouping을 요구하지 않습니다. 이는 Hypercore convention이므로 그렇게 구분해 보고합니다.
+
+- Style 강제 전 formatter, linter, TypeScript mode, module resolution, alias, generated file, runtime을 조사합니다.
+- Hono inferred route type을 보존하며 style preference만을 위해 broad annotation을 추가하지 않습니다.
+- Untrusted boundary에서는 `unknown`을 사용하고 validator 또는 explicit guard로 좁힙니다.
+- Compiler/linter가 요구하면 `import type`을 유지하고 type만을 위한 runtime import를 만들지 않습니다.
+- Owning tool과 repository workflow가 명시적으로 허용하지 않으면 generated route tree, declaration, OpenAPI artifact, migration을 손으로 편집하지 않습니다.
+- Path rename은 behavioral change입니다. Case-sensitive import/export, test, alias, package export, config, generated reference를 원자적으로 갱신합니다.
 ## 폴더와 파일 이름
 
 > camelCase와 PascalCase source path는 금지. Source folder와 file은 kebab-case 유지.

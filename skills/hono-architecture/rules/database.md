@@ -3,6 +3,17 @@
 > Keep persistence behind repositories and runtime-aware database clients
 
 ---
+## Stable Drizzle Baseline
+
+As verified on 2026-08-04, stable releases are `drizzle-orm` 0.45.2 and `drizzle-kit` 0.31.10. Drizzle supports many optional drivers; the presence of a peer does not make it valid for every Hono runtime.
+
+- Inspect `drizzle.config.ts`, installed driver, dialect, schema roots, migration output, credentials source, and runtime before changing persistence code.
+- Treat `generate` as SQL artifact creation, `migrate` as applying committed migrations, `push` as direct schema synchronization, and `pull` as introspection. Never substitute one workflow silently.
+- Do not use `push` as a production migration strategy unless the project explicitly owns that policy.
+- Keep schema and migration history as one provenance chain; never recreate or renumber history to make local state pass.
+- Select only required columns and map public DTOs. Validate pagination bounds and make ordering deterministic.
+- Test constraints, not-found/conflict mapping, rollback behavior, and runtime-specific connection lifecycle.
+- Do not upgrade Drizzle packages, drivers, or generated migration format merely because newer stable versions exist.
 
 ## Core Rule
 

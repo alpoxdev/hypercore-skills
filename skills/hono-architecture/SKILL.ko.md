@@ -1,5 +1,6 @@
 @architecture-rules.ko.md
 @rules/conventions.ko.md
+@rules/project-structure.ko.md
 @rules/routes.ko.md
 @rules/handlers.ko.md
 @rules/middleware.ko.md
@@ -144,6 +145,7 @@ rg -n "new Hono\\(|app\\.route\\(|basePath\\(|validator\\(|zValidator\\(|standar
 편집 전에 아래 파일들을 읽으세요:
 
 - `architecture-rules.md`
+- `rules/project-structure.ko.md`
 - `rules/conventions.md`
 - `rules/routes.md`
 - `rules/handlers.md`
@@ -162,6 +164,7 @@ rg -n "new Hono\\(|app\\.route\\(|basePath\\(|validator\\(|zValidator\\(|standar
 
 ### 작업별 규칙 라우팅
 
+- project profile, folder ownership, dependency direction, monorepo, structural migration은 `rules/project-structure.ko.md`를 읽습니다.
 - route composition, mount order, fallback 위치, sub-app structure는 `rules/routes.ko.md`를 읽습니다.
 - handler extraction, `createFactory()`, `createHandlers()`, typed context flow는 `rules/handlers.ko.md`를 읽습니다.
 - shared request boundaries, auth/logging/request-id flow, `c.set()` / `c.get()` 사용은 `rules/middleware.ko.md`를 읽습니다.
@@ -195,7 +198,7 @@ rg -n "new Hono\\(|app\\.route\\(|basePath\\(|validator\\(|zValidator\\(|standar
 
 핵심 gate:
 
-- Hono app composition path가 하나로 분명해야 하며, route registration이 흩어지거나 fallback route가 앞서 등록되면 안 됩니다.
+- Runtime-neutral Hono app 하나와 명확한 mount table 하나를 유지하고, 근거가 있는 가장 작은 structure profile과 dependency direction을 적용합니다.
 - Touched route module은 service를 우회해 DB/ORM/schema/SDK/runtime adapter 세부사항을 직접 import하지 않습니다.
 - 의미 있는 params/query/json/form 데이터는 domain logic 전에 validator middleware를 거칩니다.
 - 분리된 handler는 inline chaining 또는 `createFactory()` / `createHandlers()`로 typing을 유지합니다.
@@ -262,6 +265,7 @@ Hono 코드를 변경할 때는 아래 순서를 우선합니다.
 - touched file과 folder가 kebab-case 유지
 - `전체 수정` 모드에서는 감지된 Hono source tree 전체의 kebab-case 위반을 스캔함
 - route composition이 명확하고 mount 가능
+- Project profile, folder ownership, dependency direction이 저장소 근거로 정당화됨
 - middleware 순서 검증
 - 의미 있는 입력에 validation 적용
 - touched route가 DB/ORM client, Drizzle schema table, migration helper를 직접 import하지 않음

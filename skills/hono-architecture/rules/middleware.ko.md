@@ -4,6 +4,17 @@
 
 ---
 
+## Stable Hono 4.13 기준
+
+Middleware는 등록 순서에 따라 onion 방식으로 실행됩니다. `await next()` 전 코드는 바깥에서 안쪽으로, 이후 코드는 안쪽에서 바깥으로 실행되며 middleware는 `Response`를 early return할 수 있습니다. Chained `.use()`는 뒤 handler가 사용하는 typed `Variables`를 누적합니다.
+
+권장 순서는 명시적 project contract이며 보통 request ID/observability, CORS 또는 security header, authentication, authorization, validation, handler입니다. 모든 downstream response를 감쌀 의도가 있을 때만 `await next()` 뒤에서 response를 변경합니다.
+
+- Middleware를 path 또는 sub-app으로 scope하며 feature-only authorization을 global로 만들지 않습니다.
+- 보장된 request-scoped value에는 typed `Variables` 또는 `createMiddleware<Env>()`를 사용합니다.
+- Global `ContextVariableMap` augmentation은 모든 consuming app에서 실제 보장되는 값에만 사용합니다. Local typed chaining이 더 안전합니다.
+- Request state를 module global에 저장하거나 `Context`를 request 사이에서 재사용하지 않습니다.
+- 특히 Deno 같은 URL-import runtime에서는 Hono core와 middleware package version compatibility를 유지합니다.
 ## 핵심 규칙
 
 미들웨어는 auth, request ID, CORS, logging, context enrichment처럼 요청 전반의 관심사를 명시하는 경계입니다.

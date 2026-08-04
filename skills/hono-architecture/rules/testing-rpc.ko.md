@@ -4,6 +4,17 @@
 
 ---
 
+## Stable Hono 4.13 기준
+
+Hono RPC는 server와 client 모두 TypeScript `strict`를 요구합니다. Producer/consumer Hono version은 일치해야 하며 version skew는 excessively deep type instantiation을 일으킬 수 있습니다. 큰 contract는 editor performance도 저하시킬 수 있습니다.
+
+- 최종 chained route value에서 `AppType`을 export하며 나중에 mutate된 app이나 partial child에서 export하지 않습니다.
+- Package boundary에서는 declaration을 compile/consume하거나 project reference를 사용하고 server implementation을 deep import하지 않습니다.
+- Shared global error response typing에는 `ApplyGlobalResponse`를 사용합니다.
+- Client contract를 관찰 가능하게 만들 때 `parseResponse()`, `InferRequestType`, `InferResponseType`을 사용합니다.
+- `hc`는 path parameter value를 자동 URL-encode하지 않습니다. Slash를 허용하면 value를 encode하거나 명시적으로 test한 regexp route를 사용합니다.
+- Behavior에는 `app.request()`, server-side typed ergonomics에는 `testClient()`, serialization/base URL behavior가 중요할 때만 실제 `hc` boundary test를 사용합니다.
+- Runtime binding은 `app.request()`의 세 번째 argument로 전달하고 adapter-specific behavior는 별도로 test합니다.
 ## 핵심 규칙
 
 - 앱이 `testClient()` 또는 `hc`를 쓰면 route type inference를 보호

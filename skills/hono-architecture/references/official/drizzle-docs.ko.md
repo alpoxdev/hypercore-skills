@@ -1,6 +1,19 @@
 # Drizzle 공식 문서 요약
 
-검증일: 2026-06-28
+검증일: 2026-08-04
+
+## Stable package snapshot
+
+2026-08-04 npm registry metadata 확인 기준입니다.
+
+| Package | Stable |
+|---|---:|
+| `drizzle-orm` | 0.45.2 |
+| `drizzle-kit` | 0.31.10 |
+
+출처: [npm registry: drizzle-orm](https://registry.npmjs.org/drizzle-orm), [npm registry: drizzle-kit](https://registry.npmjs.org/drizzle-kit), [Drizzle releases](https://github.com/drizzle-team/drizzle-orm/releases)
+
+이 version은 유지보수 근거이지 upgrade 권한이 아닙니다. Installed dialect driver, peer dependency, config format, generated migration format을 함께 확인해야 합니다.
 
 Hono 아키텍처 결정이 Drizzle ORM, `drizzle-kit`, runtime-specific database driver, schema file, migration, transaction에 의존할 때 이 참조를 사용합니다.
 

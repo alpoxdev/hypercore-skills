@@ -4,6 +4,17 @@
 
 ---
 
+## Stable Drizzle 기준
+
+2026-08-04 확인 기준 stable release는 `drizzle-orm` 0.45.2와 `drizzle-kit` 0.31.10입니다. Drizzle은 많은 optional driver를 지원하며 peer가 존재한다고 모든 Hono runtime에 적합한 것은 아닙니다.
+
+- Persistence code 변경 전 `drizzle.config.ts`, installed driver, dialect, schema root, migration output, credential source, runtime을 조사합니다.
+- `generate`는 SQL artifact 생성, `migrate`는 committed migration 적용, `push`는 direct schema synchronization, `pull`은 introspection으로 구분합니다. Workflow를 조용히 대체하지 않습니다.
+- Project가 해당 policy를 명시적으로 소유하지 않으면 `push`를 production migration strategy로 사용하지 않습니다.
+- Schema와 migration history를 하나의 provenance chain으로 유지하고 local state를 통과시키려고 history를 재생성하거나 renumber하지 않습니다.
+- 필요한 column만 select하고 public DTO를 mapping합니다. Pagination bound를 검증하고 ordering을 deterministic하게 만듭니다.
+- Constraint, not-found/conflict mapping, rollback behavior, runtime-specific connection lifecycle을 test합니다.
+- 최신 stable이 있다는 이유만으로 Drizzle package, driver, generated migration format을 upgrade하지 않습니다.
 ## 핵심 규칙
 
 Route와 handler는 transport 관심사만 소유합니다: validation, service call, response shaping입니다. Service는 use-case orchestration을 소유합니다. Repository 또는 query module은 database access를 소유합니다. Database layer는 connection setup, ORM configuration, schema export, migration placement를 소유합니다.

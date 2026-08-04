@@ -3,6 +3,16 @@
 > Hono project coding rules
 
 ---
+## Stable Compatibility Rule
+
+Project tooling owns formatting and import order. Hono does not require kebab-case paths, arrow functions, or one universal import grouping; those are Hypercore conventions and must be reported as such.
+
+- Inspect the formatter, linter, TypeScript mode, module resolution, aliases, generated files, and runtime before enforcing style.
+- Preserve Hono's inferred route types; do not add broad annotations solely to satisfy a style preference.
+- Prefer `unknown` at untrusted boundaries and narrow through validators or explicit guards.
+- Keep `import type` when required by the compiler/linter and avoid runtime imports created only for types.
+- Never hand-edit generated route trees, declarations, OpenAPI artifacts, or migrations unless their owning tool and repository workflow explicitly permit it.
+- A path rename is behavioral: update case-sensitive imports, exports, tests, aliases, package exports, config, and generated references atomically.
 
 ## Folder And File Naming
 

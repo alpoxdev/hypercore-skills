@@ -4,6 +4,16 @@
 
 ---
 
+## Stable package 기준
+
+2026-08-04 확인 기준 `@hono/zod-openapi` 1.5.1은 Hono `>=4.10.0`과 Zod 4를 요구하고, `@hono/swagger-ui` 0.6.1은 Hono `>=4`를 요구합니다. Third-party `hono-openapi` 1.3.1은 Hono `^4.11.2`와 Standard Schema ecosystem peer를 요구합니다. 경로 선택 전 lockfile과 peer compatibility를 확인합니다.
+
+- Zod 4 route-first API에는 `@hono/zod-openapi`를 우선합니다.
+- 기존 `hono-openapi` surface를 incidental하게 migration하지 않고 보존합니다. 이 package는 official HonoJS package가 아닙니다.
+- Undocumented plain `Hono` child를 섞고 `OpenAPIHono`가 metadata를 발견할 것이라 기대하지 않습니다.
+- 실제 success/error status를 모두 schema화합니다. Central error envelope를 runtime 및 RPC global response type과 동기화합니다.
+- Deterministic check에서 document를 생성하고 reference와 unique `operationId`를 검증하며 committed artifact라면 diff를 확인합니다.
+- Spec/UI 노출을 별도로 gate합니다. UI를 숨겨도 public JSON spec이 private이 되지 않으며 Swagger UI는 spec을 생성하지 않습니다.
 ## 핵심 규칙
 
 Hono API가 OpenAPI/Swagger docs를 발행한다면, route 변경은 같은 변경 안에서 generated contract도 갱신해야 합니다. Contract는 runtime route가 실제로 지원하는 request, response, status code, security, example과 일치해야 합니다.

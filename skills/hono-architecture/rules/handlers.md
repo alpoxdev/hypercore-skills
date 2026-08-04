@@ -3,6 +3,15 @@
 > Keep extracted handlers type-safe and composition-friendly
 
 ---
+## Stable Hono 4.13 Baseline
+
+`createFactory<Env>()`, `factory.createApp()`, `factory.createHandlers()`, and `createMiddleware()` are official type-preserving helpers. Use one factory per compatible `Env` surface instead of restating bindings and variables in every file.
+
+- `createHandlers()` returns a handler tuple; spread it into the route call.
+- Keep validator middleware and the handler in the same typed chain when the handler reads `c.req.valid()`.
+- Return a `Response` on every terminal branch and use literal status arguments when RPC clients need status unions.
+- Pass transport-neutral primitives to services; do not pass `Context` through domain or repository layers.
+- Do not annotate handlers with a broad `Context` type that erases route input, output, or variable inference.
 
 ## Core Rule
 

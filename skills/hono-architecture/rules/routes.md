@@ -3,6 +3,15 @@
 > Hono route composition rules
 
 ---
+## Stable Hono 4.13 Baseline
+
+Official Hono routing is registration-ordered. `route()` copies the child app's registered routes into the parent at the call site; grouping order can therefore change behavior. `basePath()` prefixes one app, while `mount()` adapts another framework and is not a substitute for typed Hono sub-app composition.
+
+- Chain route definitions and `route()` calls when their inferred type feeds `AppType`, `testClient`, or `hc`.
+- Register broad parameter, wildcard, fallback, and not-found behavior after specific routes.
+- Decide trailing-slash behavior explicitly: Hono strict mode defaults to `true`.
+- Keep host-based routing and custom `getPath()` at the app/platform boundary.
+- Test mount prefixes and order after moving a sub-app; visual file layout is not proof of equivalent dispatch.
 
 ## Preferred Small Structure
 
