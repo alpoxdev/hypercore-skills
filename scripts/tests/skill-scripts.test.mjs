@@ -81,6 +81,14 @@ function writeFakeGit(fixture, source) {
   return { ...process.env, PATH: bin };
 }
 
+/** Kill a fixture child recorded in a PID file, ignoring processes that already exited. @param {string} pidFile */
+function killRecordedPid(pidFile) {
+  if (!existsSync(pidFile)) return;
+  const pid = Number(readFileSync(pidFile, "utf8").trim());
+  if (!Number.isInteger(pid) || pid <= 1) return;
+  try { process.kill(pid, "SIGKILL"); } catch {}
+}
+
 
 test("manifest closes over exactly the approved 30 MJS paths and policy metadata", () => {
   const manifest = /** @type {{ scripts: { path: string, family: string, legacyOrigin: string, usage: string, behavior: string }[], forbiddenDetectorReferences: { records: { literal: string, allowedLocations: { file: string, jsonPath: string }[] }[] }, versionUpdateDetectorAbsentCorrection: { detectorRestored: boolean, legacyFiles: { legacyPath: string, sha256: string, gitMode: string, finalPath: string }[], restoreOrder: string[] } }} */ (JSON.parse(readFileSync(manifestPath, "utf8")));
@@ -514,9 +522,13 @@ for (const signal of ["SIGTERM", "SIGINT"]) {
   });
 }
 writeFileSync(readyFile, String(process.pid));
-await new Promise(() => {});
+const startedAt = Date.now();
+while (process.ppid > 1 && Date.now() - startedAt < 90_000) await Bun.sleep(25);
+process.exit(99);
 `);
   chmodSync(finderFixture, 0o755);
+  /** @type {(() => void) | null} */
+  let reapChildren = null;
   try {
     for (const [signal, exitCode] of /** @type {const} */ ([["SIGTERM", 143], ["SIGINT", 130]])) {
       const readyFile = join(fixture, `ready-${signal}`);
@@ -528,6 +540,10 @@ await new Promise(() => {});
         stdout: "pipe",
         stderr: "pipe",
       });
+      reapChildren = () => {
+        try { child.kill("SIGKILL"); } catch {}
+        killRecordedPid(readyFile);
+      };
       for (let attempt = 0; attempt < 200 && !existsSync(readyFile); attempt++) await Bun.sleep(10);
       expect(existsSync(readyFile)).toBe(true);
       const discoveryPid = Number(readFileSync(readyFile, "utf8"));
@@ -539,6 +555,7 @@ await new Promise(() => {});
       expect(discoveryAlive).toBe(false);
     }
   } finally {
+    reapChildren?.();
     rmSync(fixture, { recursive: true, force: true });
   }
 });
@@ -629,12 +646,20 @@ process.on("SIGTERM", () => { writeFileSync(\`${"${root}"}/${role}.signal\`, "SI
 writeSync(1, Buffer.alloc(2 * 1024 * 1024, "o"));
 writeSync(2, Buffer.alloc(2 * 1024 * 1024, "e"));
 writeFileSync(\`${"${root}"}/${role}.emitted\`, "done");
-await new Promise(() => {});
+const startedAt = Date.now();
+while (process.ppid > 1 && Date.now() - startedAt < 90_000) await new Promise((tick) => setTimeout(tick, 25));
+process.exit(99);
 `;
     writeFileSync(join(scripts, "lint-check.mjs"), childSource("lint"));
     writeFileSync(join(scripts, "build-run.mjs"), childSource("build"));
+    /** @type {(() => void) | null} */
+    let reapChildren = null;
     try {
       const child = Bun.spawn({ cmd: [process.execPath, join(scripts, "deploy-check.mjs"), mode], cwd: fixture, env: { ...process.env, PROBE_ROOT: fixture }, stdout: "pipe", stderr: "pipe" });
+      reapChildren = () => {
+        try { child.kill("SIGKILL"); } catch {}
+        for (const role of ["lint", "build"]) killRecordedPid(join(fixture, `${role}.ready`));
+      };
       const output = Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text()]).then(([stdout, stderr]) => `${stdout}${stderr}`);
       for (let attempt = 0; attempt < 1000 && !existsSync(join(fixture, "lint.ready")); attempt++) await Bun.sleep(10);
       if (!existsSync(join(fixture, "lint.ready"))) {
@@ -657,6 +682,7 @@ await new Promise(() => {});
       if (mode === "--parallel") expect(readFileSync(join(fixture, "build.signal"), "utf8")).toBe("SIGTERM");
       else expect(existsSync(join(fixture, "build.signal"))).toBe(false);
     } finally {
+      reapChildren?.();
       rmSync(fixture, { recursive: true, force: true });
     }
   }
@@ -699,12 +725,18 @@ if (args.join(" ") === "rev-parse --show-toplevel") {
     for (let attempt = 0; attempt < 1_000 && !existsSync(join(root, "repo-b.ready")); attempt++) await Bun.sleep(10);
     process.stderr.write("intentional worker failure\\n");
     process.exitCode = 97;
-  } else await new Promise(() => {});
+  } else {
+    const startedAt = Date.now();
+    while (process.ppid > 1 && Date.now() - startedAt < 90_000) await Bun.sleep(25);
+    process.exit(99);
+  }
 } else {
   process.stderr.write(\`unexpected git invocation: \${args.join(" ")}\\n\`);
   process.exitCode = 98;
 }
 `;
+    /** @type {(() => void) | null} */
+    let reapChildren = null;
     try {
       const env = { ...writeFakeGit(fixture, fakeGit), PROBE_ROOT: fixture, MODE: mode };
       const child = Bun.spawn({
@@ -714,6 +746,10 @@ if (args.join(" ") === "rev-parse --show-toplevel") {
         stdout: "pipe",
         stderr: "pipe",
       });
+      reapChildren = () => {
+        try { child.kill("SIGKILL"); } catch {}
+        for (const repository of repositories) killRecordedPid(join(fixture, `${repository}.ready`));
+      };
       const output = Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text()]);
       for (let attempt = 0; attempt < 1_000 && (!existsSync(join(fixture, "repo-a.ready")) || !existsSync(join(fixture, "repo-b.ready"))); attempt++) await Bun.sleep(10);
       expect(existsSync(join(fixture, "repo-a.ready"))).toBe(true);
@@ -745,6 +781,7 @@ if (args.join(" ") === "rev-parse --show-toplevel") {
         expect(alive).toBe(false);
       }
     } finally {
+      reapChildren?.();
       rmSync(fixture, { recursive: true, force: true });
     }
   }
