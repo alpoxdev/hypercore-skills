@@ -5,6 +5,7 @@ const activeChildren = new Set();
 
 /** @param {string[]} args @param {"inherit" | "pipe"} [output] @returns {Promise<{ exitCode: number, stdout: string, stderr: string }>} */
 async function git(args, output = "inherit") {
+  if (receivedSignal) return { exitCode: 130, stdout: "", stderr: "Interrupted by signal" };
   const piped = output === "pipe";
   const child = Bun.spawn({ cmd: ["git", ...args], cwd: process.cwd(), env: process.env, stdout: output, stderr: output });
   activeChildren.add(child);
@@ -18,6 +19,7 @@ async function git(args, output = "inherit") {
   }
 }
 
+/** @type {string | undefined} */
 let receivedSignal;
 const signalHandlers = new Map();
 for (const signal of ["SIGINT", "SIGTERM"]) {

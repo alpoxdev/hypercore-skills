@@ -7,6 +7,7 @@ import { basename, dirname, resolve } from "node:path";
 
 const SEMVER = "(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)";
 const activeChildren = new Set();
+/** @type {string | undefined} */
 let receivedSignal;
 const signalHandlers = new Map();
 for (const signal of ["SIGINT", "SIGTERM"]) {
@@ -33,6 +34,10 @@ if (!new RegExp(`^${SEMVER}$`).test(newVersion)) {
 let files = providedFiles;
 if (!files.length) {
   const finder = resolve(dirname(fileURLToPath(import.meta.url)), "version-find.mjs");
+  if (receivedSignal) {
+    console.error("Error: Interrupted by signal");
+    throw new Error("Interrupted by signal");
+  }
   const child = Bun.spawn({ cmd: [process.execPath, finder, "--plain"], cwd: process.cwd(), env: process.env, stdout: "pipe", stderr: "pipe" });
   activeChildren.add(child);
   const stdout = new Response(child.stdout).text();

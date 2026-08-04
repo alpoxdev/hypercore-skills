@@ -17,6 +17,7 @@ function createGitRunner() {
   process.on("SIGINT", forward); process.on("SIGTERM", forward);
   /** @param {string[]} args @param {string} cwd @returns {Promise<GitResult>} */
   async function git(args, cwd) {
+    if (receivedSignal) return { exitCode: 130, stdout: "", stderr: "Interrupted by signal" };
     const child = Bun.spawn({ cmd: ["git", ...args], cwd, env: process.env, stdout: "pipe", stderr: "pipe" }); children.add(child);
     try { const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()]); return { exitCode, stdout, stderr }; }
     finally { children.delete(child); }

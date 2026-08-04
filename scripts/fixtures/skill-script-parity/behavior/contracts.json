@@ -6706,8 +6706,8 @@
             },
             "stderr": {
               "contains": [
-                "143 |   if (!existsSync(file)) throw new Error(`Error: Version file not found: ${file}`);",
-                "146 |   if (!update) throw new Error(`Error: Unsupported version file: ${file}`);",
+                "148 |   if (!existsSync(file)) throw new Error(`Error: Version file not found: ${file}`);",
+                "151 |   if (!update) throw new Error(`Error: Unsupported version file: ${file}`);",
                 "error: Error: Unsupported version file: VERSION"
               ]
             },
@@ -6763,7 +6763,7 @@
             "stderr": {
               "contains": [
                 "Error: Invalid version format: 01.2.3 (expected x.y.z)",
-                "29 |   console.error(`Error: Invalid version format: ${newVersion} (expected x.y.z)`);",
+                "30 |   console.error(`Error: Invalid version format: ${newVersion} (expected x.y.z)`);",
                 "error: Invalid version"
               ]
             },
@@ -6818,7 +6818,7 @@
             "stderr": {
               "contains": [
                 "Error: No version files found",
-                "53 |   console.error(\"Error: No version files found\");",
+                "58 |   console.error(\"Error: No version files found\");",
                 "error: No version files found"
               ]
             },
