@@ -1,5 +1,5 @@
 ---
-name: agentmd-maker
+name: agent-md-maker
 description: "[Hyper] 사용자가 저장소의 AGENTS.md 생성·리팩터링, 범위가 지정된 중첩 AGENTS.md 추가, 또는 명시적으로 요청한 CLAUDE.md 동반 파일과 AGENTS.md의 조정을 요구할 때 사용한다. 모든 규칙과 명령은 실제 프로젝트에 근거해야 한다. README, 일반 문서, 단독 프롬프트, AGENTS.md와 무관한 런타임 설정에는 사용하지 않는다."
 compatibility: 프로젝트 조사와 로컬 검증을 위해 저장소 범위의 read, search, edit, command-execution 역량이 있을 때 가장 잘 동작한다.
 ---
@@ -14,9 +14,17 @@ compatibility: 프로젝트 조사와 로컬 검증을 위해 저장소 범위�
 
 <output_language>
 
-사용자에게 보이는 리포트, 계획, 요약, 인수인계 메모, 검증 메모는 기본적으로 한국어로 작성한다.
+독자가 둘이고 언어도 둘이다. 섞지 않는다.
 
-생성하는 `AGENTS.md`와 `CLAUDE.md`는 사용자가 요청한 언어로 작성한다. 별도 요청이 없으면 기존 저장소 지침의 언어를 따르고, 기존 지침이 없으면 본문을 한국어로 작성한다. 코드 식별자, 명령, 경로, 스키마 키, 패키지명, 인용한 원문은 필요한 언어 또는 원문 그대로 유지한다.
+**생성하는 지침 산출물 — 영어.** `AGENTS.md`, 중첩 `AGENTS.md`, `CLAUDE.md`는 기본적으로 영어로 작성한다. 이 파일들은 여러 런타임의 에이전트가 읽으며, 영어로 쓰면 모호함이 줄고 이 파일들이 담는 벤더 용어와도 일관된다. 사용자가 다른 언어를 명시적으로 요청했거나 기존 저장소 지침이 이미 다른 언어로 확립된 경우에만 예외로 한다.
+
+**사용자와의 대화 — 한국어.** 질문, 확인 요청, 설명, 계획, 진행 보고, 검증 메모, 인수인계, 완료 보고는 모두 한국어로 전달한다. 작업 중간의 질문과 보고하는 공백·caveat·blocker도 포함한다.
+
+**한국어 미러 — 필수.** `AGENTS.md`를 만들거나 실질적으로 바꿀 때마다 `AGENTS.ko.md`도 함께 작성한다. 사용자가 직접 읽을 수 있도록 같은 계약을 완전히 한국어로 옮긴 판이다. 헤딩, 표, 설명까지 전부 번역하고 언어가 섞인 문장을 남기지 않는다. 중첩 `AGENTS.md`에는 사용자가 요청할 때만 같은 규칙을 적용한다.
+
+`AGENTS.ko.md`는 사람이 읽는 미러이지 지침 표면이 아니다. 어떤 런타임도 이 파일명을 탐색하지 않으므로 에이전트 context 비용이 없다. 다만 `AGENTS.md`와 의미가 같아야 한다. 둘이 어긋나면 번역 뉘앙스가 아니라 결함이다.
+
+코드 식별자, 명령, 경로, 스키마 키, 패키지명, 환경 변수, 인용한 원문은 모든 언어에서 원문 그대로 유지한다.
 
 </output_language>
 
@@ -31,7 +39,7 @@ compatibility: 프로젝트 조사와 로컬 검증을 위해 저장소 범위�
 
 <routing_rule>
 
-주요 산출물이 `AGENTS.md`, 중첩 `AGENTS.md`, 또는 `AGENTS.md`를 기준으로 한 `CLAUDE.md` 동반 파일일 때 `agentmd-maker`를 사용한다.
+주요 산출물이 `AGENTS.md`, 중첩 `AGENTS.md`, 또는 `AGENTS.md`를 기준으로 한 `CLAUDE.md` 동반 파일일 때 `agent-md-maker`를 사용한다.
 
 다음 경우에는 인접 workflow를 사용한다.
 
@@ -42,6 +50,8 @@ compatibility: 프로젝트 조사와 로컬 검증을 위해 저장소 범위�
 - 사용자가 독립적인 prompt만 원함: `prompt-maker`
 
 도움이 될 수 있다는 이유만으로 `CLAUDE.md`, 중첩 지침, 런타임별 파일을 만들지 않는다. 명시적 요청이나 대상 계약에 포함된다는 저장소 근거가 필요하다.
+
+단 한 가지 예외는 재량이 아니다. Claude Code는 `AGENTS.md`가 아니라 `CLAUDE.md`를 읽는다. Claude Code가 명시된 대상 런타임이면 `AGENTS.md`만 있는 결과는 요구사항 미충족이다. `AGENTS.md`를 정본으로 두고 `CLAUDE.md`는 기본적으로 그것을 가리키는 심볼릭 링크로 만든다. git 저장소라면 링크를 stage하고 mode `120000`으로 기록됐는지 확인한다. 심볼릭 링크가 checkout에서 살아남지 못할 때만 `@AGENTS.md` import stub으로, 검증된 Claude 전용 규칙이 있을 때만 얇은 adapter로 대체한다.
 
 </routing_rule>
 
@@ -89,10 +99,12 @@ Boundary examples:
 
 | Target | Default handling |
 |---|---|
-| Root `AGENTS.md` | 정본 shared project contract와 loading map |
-| Nested `AGENTS.md` | 루트에서 명확히 표현할 수 없는 subtree-specific delta만 포함 |
+| Root `AGENTS.md` | 정본 shared project contract와 loading map. 영어로 작성 |
+| `AGENTS.ko.md` | 사용자를 위한 필수 한국어 미러. 완전 번역, 의미 동일, 에이전트가 로드하는 표면이 아님 |
+| Nested `AGENTS.md` | merge와 nearest-wins 양쪽에서 옳은 자기 완결적 subtree delta |
 | Existing `AGENTS.md` | 유효한 local intent는 보존하고 stale/duplicated rule은 제거하며 command를 검증 |
-| `CLAUDE.md` companion | 명시적으로 요청됐거나 runtime 관례가 확립된 adapter. shared rule의 정본은 `AGENTS.md`에 유지 |
+| `CLAUDE.md` companion | Claude Code가 대상 런타임이면 필수. 그 외에는 명시적 요청 시. 기본값은 `AGENTS.md`로의 심볼릭 링크이며 git mode `120000`으로 커밋. shared rule의 정본은 `AGENTS.md`에 유지 |
+| `CLAUDE.local.md` | 개인 선호 전용, gitignore 대상. 공유 프로젝트 규칙은 절대 넣지 않음 |
 
 </supported_targets>
 
@@ -112,7 +124,8 @@ Boundary examples:
 1. 초안 전에 `rules/project-discovery.md`를 읽어 저장소 evidence map과 candidate instruction scope를 만든다.
 2. root/nested placement 선택, 계약 작성, `CLAUDE.md` 조정 시 `rules/instruction-design.md`를 읽는다.
 3. 수정 전과 완료 전에 `rules/validation.md`를 읽어 risk-matched gate를 정의하고 실행한다.
-4. 이 skill의 trigger, routing, workflow, safety behavior를 변경할 때 `assets/evals/agentmd-maker-cases.jsonl`을 사용한다. 기존 case를 보존하고 관찰된 실패를 regression으로 추가한다.
+4. 규칙의 근거가 필요하거나, 벤더 주장을 재검증해야 하거나, 대상 런타임이 `rules/instruction-design.ko.md`에 없을 때 [`instructions/agents-md/AGENTS_MD.ko.md`](../../instructions/agents-md/AGENTS_MD.ko.md)를 읽는다. `instructions/agents-md/references/`는 필요한 관심사만 로드한다 — 로딩 동작은 `discovery-and-precedence.ko.md`, admission 판단은 `content-contract.ko.md`, 두 파일 조율은 `claude-md-adapter.ko.md`, 측정된 것과 권고의 구분은 `evidence-and-evaluation.ko.md`.
+5. 이 skill의 trigger, routing, workflow, safety behavior를 변경할 때 `assets/evals/agent-md-maker-cases.jsonl`을 사용한다. 기존 case를 보존하고 관찰된 실패를 regression으로 추가한다.
 
 </support_file_read_order>
 
@@ -133,6 +146,10 @@ Boundary examples:
 <required>
 
 - 첫 화면만으로 scope, project shape, essential commands, critical restrictions를 파악할 수 있게 한다.
+- 모든 줄에 admission test를 적용한다 — 비자명, 하중 있음, 지속적, 권고 산문에 적합. 기본 결론은 삭제다.
+- 매번 반드시 일어나야 하는 것은 산문으로 요청하지 말고 hook, CI 검사, lint 규칙, schema로 보낸다.
+- 비대한 root가 nested file을 절단하지 않도록 32 KiB 합산 예산에서 여유를 남긴다.
+- `AGENTS.md`를 정본으로 유지하고 `CLAUDE.md`는 기본적으로 그것을 가리키는 심볼릭 링크로 만든다. `git add`가 링크로 기록했다고 가정하지 말고 git mode를 확인한다.
 - project fact와 generic agent advice를 분리하고 이 저장소에서 동작을 바꾸는 규칙만 포함한다.
 - 모든 command, path, package-manager choice, architecture claim을 조사한 파일에 매핑한다.
 - 적용 scope와 precedence를 명시하고 nested file은 root contract 복사본이 아니라 delta를 담는다.
@@ -146,6 +163,9 @@ Boundary examples:
 <forbidden>
 
 - 어떤 저장소에도 그대로 붙일 수 있는 generic boilerplate.
+- 부모 규칙을 부정하는 nested file("루트와 달리 …"). 올바른 규칙을 온전히 재진술해야 한다.
+- 단일 중첩 방식 가정. "가장 가까운 파일이 이긴다"를 보편적 사실로 취급.
+- Claude Code가 대상 런타임인데 `AGENTS.md`만 있는 결과를 보고 없이 내보내는 것.
 - 지어낸 scripts, paths, tools, package managers, environment variables, architecture.
 - 같은 shared rule을 root `AGENTS.md`, nested `AGENTS.md`, `CLAUDE.md`에 복사.
 - runtime이 읽지 않을 수 있는 파일에 essential scope, authority, safety, stop rule을 숨김.
@@ -162,8 +182,16 @@ Must-pass gates:
 - [ ] Mode와 정확한 output files가 기록됐다.
 - [ ] 존재한다면 현재 적용 지침, manifest/task definitions, lockfile, CI 또는 test configuration, 대표 source structure를 조사했다.
 - [ ] 생성한 모든 command와 path가 저장소 근거에 기반한다.
+- [ ] 모든 줄이 admission test를 통과하고, 보장이 필요한 것이 산문에 남아 있지 않다.
 - [ ] root/nested scope가 명시적이고 중복되지 않는다.
-- [ ] `CLAUDE.md`는 요청되거나 로컬에서 요구되지 않으면 없다. 존재할 때 shared ownership이 분명하고 duplication이 최소화됐다.
+- [ ] nested file이 부정이 아니라 재진술로 override하며 merge와 nearest-wins 양쪽에서 옳은 자기 완결적 delta다.
+- [ ] `CLAUDE.md`는 Claude Code가 대상 런타임이거나 요청됐을 때 존재하고 그 외에는 없다. 존재할 때 shared ownership이 분명하고 duplication이 최소화됐다.
+- [ ] 명시된 사유로 import stub이나 얇은 adapter를 고른 경우가 아니면 `CLAUDE.md`가 `AGENTS.md`로의 심볼릭 링크다.
+- [ ] git 저장소에서 심볼릭 링크가 stage됐고 `git ls-files -s CLAUDE.md`가 mode `120000`을 보고한다. gitignore되었거나 stage되지 않은 `CLAUDE.md`는 공유된다고 가정하지 않고 로컬 전용으로 보고한다.
+- [ ] `@path` import가 4 hop 이내이며 import한 파일 기준 상대 경로로 해석된다.
+- [ ] 32 KiB 합산 예산에서 root file이 nested file 몫을 남긴다.
+- [ ] 생성한 `AGENTS.md`와 `CLAUDE.md`가 영어이고, 사용자 질문·설명·보고가 한국어다.
+- [ ] `AGENTS.ko.md`가 존재하고, 언어가 섞이지 않은 완전한 한국어이며, `AGENTS.md`와 같은 계약을 담는다.
 - [ ] 새 파일은 standard depth로 normal, missing-context/tool-failure, boundary, adversarial retrieval, unsafe-action, regression behavior를 다룬다.
 - [ ] local links와 Markdown fences가 유효하고 참조한 파일이 존재한다.
 - [ ] credentials, external publication, deployment, destructive, production action을 암묵적으로 허용하지 않는다.
@@ -173,9 +201,9 @@ Must-pass gates:
 이 저장소의 skill package에 대해 다음을 실행한다.
 
 ```bash
-node skills/skill-tester/scripts/validate-skills-corpus.mjs --root skills --only agentmd-maker --json
+node skills/skill-tester/scripts/validate-skills-corpus.mjs --root skills --only agent-md-maker --json
 ```
 
-이 skill이 실질적으로 변경되면 `assets/evals/agentmd-maker-cases.jsonl`을 JSONL로 parse하고 trigger/routing/safety coverage를 검사한다.
+이 skill이 실질적으로 변경되면 `assets/evals/agent-md-maker-cases.jsonl`을 JSONL로 parse하고 trigger/routing/safety coverage를 검사한다.
 
 </validation>

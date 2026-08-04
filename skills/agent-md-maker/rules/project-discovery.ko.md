@@ -11,6 +11,7 @@
 - 각 candidate instruction file이 적용되는 directory
 - 명시적으로 제외된 file과 action
 - output language와 `CLAUDE.md`가 명시적으로 요청됐는지 또는 로컬에서 요구되는지
+- **저장소가 대상으로 하는 에이전트 런타임** — 필수 산출 파일을 결정한다
 
 실제 scope 차이의 근거 없이 루트 `AGENTS.md` 하나를 nested/runtime-specific file로 확장하지 않는다.
 
@@ -40,8 +41,25 @@
 | Generated 또는 forbidden file | Generator header, ignore file, docs | confirmed / ambiguous | 근거가 있을 때만 금지 추가 |
 | Architecture boundary | Imports, configs, local docs | confirmed / contested | conflict를 보존하거나 unsupported claim 생략 |
 | Nested scope 필요성 | Subtree별 command/convention 차이 | justified / unjustified | 정당할 때만 nested file 생성 |
+| 대상 런타임 | 기존 instruction file, CI agent job, 에디터/도구 설정, 사용자 진술 | confirmed / assumed | Claude Code가 대상이면 `CLAUDE.md` 경로 필요 |
 
 Package manager의 일반적인 default만으로 command를 추론하지 않는다.
+
+## 3a. 대상 런타임 판별
+
+어떤 런타임을 지원하는지가 필수 산출물 집합을 바꾸므로, `AGENTS.md` 하나로 기본 가정하지 말고 초안 전에 확정한다.
+
+근거 신호:
+
+| 신호 | 의미 |
+|---|---|
+| 기존 `CLAUDE.md`, `.claude/`, Claude plugin manifest | Claude Code가 대상 |
+| 기존 `AGENTS.md`, `.agents/skills`, `AGENTS.override.md`, 문서의 `~/.codex` 관례 | Codex가 대상 |
+| `.github/copilot-instructions.md` 또는 `.github/instructions/*.instructions.md` | Copilot이 대상. `AGENTS.md`보다 우선함에 유의 |
+| `.cursor/rules` | Cursor가 대상 |
+| `GEMINI.md` 또는 `context.fileName` 설정 | Gemini CLI가 대상. 거기서 `AGENTS.md` 지원은 opt-in |
+
+각각을 confirmed 또는 assumed로 기록한다. Claude Code가 confirmed인데 `AGENTS.md`만 요청되었다면 그 공백을 알리고 심볼릭 링크, `@AGENTS.md` import stub, 얇은 adapter 중 하나를 제안한다. `AGENTS.md`만 있는 결과를 조용히 내보내지 않는다. 런타임을 판별할 수 없으면 runtime-specific 파일을 지어내지 말고 가정을 명시한다.
 
 ## 4. 기존 지침 감사
 
@@ -72,3 +90,4 @@ Package manager의 일반적인 default만으로 command를 추론하지 않는�
 - [ ] 대표 source/test structure를 조사했다.
 - [ ] 각 candidate rule에 evidence, uncertainty, explicit omission 중 하나가 있다.
 - [ ] nested file과 `CLAUDE.md`에 입증된 placement reason이 있다.
+- [ ] 대상 런타임이 confirmed 또는 assumed로 기록되었고, Claude Code가 대상이면 `CLAUDE.md` 경로가 결정되었다.

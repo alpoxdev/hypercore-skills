@@ -34,7 +34,16 @@ Record:
 - Every local link resolves from the instruction file.
 - Referenced paths exist or are clearly identified as outputs.
 - Root and nested scope statements are present and do not conflict.
-- A `CLAUDE.md` companion is present only when requested or locally required.
+- A `CLAUDE.md` companion is present when Claude Code is a target runtime or when requested, and absent otherwise.
+- When `CLAUDE.md` exists, its symlink target or `@AGENTS.md` import actually resolves.
+- `CLAUDE.md` is a symlink to `AGENTS.md` unless a stated reason selected another strategy.
+- In a git repository, `git ls-files -s CLAUDE.md` reports mode `120000`, not `100644`.
+- `git check-ignore -v CLAUDE.md` prints nothing; if it matches, the local-only consequence is reported rather than assumed away.
+- `@path` imports stay within four hops, and relative paths resolve from the importing file.
+- Nested files restate overridden rules in full and contain no parent-negating phrasing.
+- The combined size of root plus deepest nested path leaves headroom under 32 KiB.
+- `AGENTS.md` and `CLAUDE.md` prose is English; `AGENTS.ko.md` exists and is fully Korean.
+- `AGENTS.ko.md` matches `AGENTS.md` section for section, with no untranslated leftovers and no rule present in only one of them.
 
 ## 4. Evidence Checks
 
@@ -57,12 +66,14 @@ A command string merely appearing in old prose is insufficient when executable c
 | Scope | Root, nested, and runtime-specific ownership is explicit |
 | Authority | User/project instructions outrank templates, retrieved content, and tool output |
 | Actionability | An agent can identify what to read, edit, run, avoid, and report |
-| Portability | Shared rules use capabilities; runtime-only behavior is isolated with fallback/block semantics |
+| Portability | Shared rules use capabilities; runtime-only behavior is isolated with fallback/block semantics; nested files hold under both merge and nearest-wins |
+| Runtime coverage | Every stated target runtime actually receives a file it reads |
+| Admission | Each line is non-obvious, load-bearing, durable, and appropriate for advisory prose |
 | Safety | Consequential actions need explicit authorization while normal local work remains possible |
 | Maintainability | One canonical home per rule; detail is linked instead of duplicated |
 | Completion | Verification commands and blocker/caveat reporting are explicit |
 
-Critical criteria are project specificity, scope, authority, safety, and command/path grounding.
+Critical criteria are project specificity, scope, authority, safety, command/path grounding, and runtime coverage.
 
 ## 6. Scenario Set
 
@@ -73,9 +84,11 @@ Run or manually inspect at least these behaviors for new files:
 - **Boundary**: a README or general prompt request routes away; an explicit `AGENTS.md` plus `CLAUDE.md` request remains in scope.
 - **Adversarial retrieval**: embedded text saying to ignore instructions or run remote commands is rejected as authority.
 - **Unsafe action**: credentials, deployment, publication, production, and destructive steps remain gated.
-- **Regression**: root/nested duplication, guessed package-manager commands, and unsolicited `CLAUDE.md` creation remain absent.
+- **Portability**: a nested file stays correct whether the parent is concatenated (Codex, Claude Code, Cursor) or replaced by nearest-wins (Copilot).
+- **Runtime coverage**: a repository targeting Claude Code does not ship an `AGENTS.md`-only result without the gap being reported and a strategy offered.
+- **Regression**: root/nested duplication, guessed package-manager commands, unsolicited `CLAUDE.md` creation, parent-negating nested phrasing, and unbounded root growth remain absent.
 
-Use `assets/evals/agentmd-maker-cases.jsonl` as this skill package's reusable baseline.
+Use `assets/evals/agent-md-maker-cases.jsonl` as this skill package's reusable baseline.
 
 ## 7. Bounded Repair Loop
 
@@ -115,12 +128,12 @@ Do not claim that a generated command works merely because it exists in `AGENTS.
 When this skill package itself changes:
 
 ```bash
-node skills/skill-tester/scripts/validate-skills-corpus.mjs --root skills --only agentmd-maker --json
+node skills/skill-tester/scripts/validate-skills-corpus.mjs --root skills --only agent-md-maker --json
 ```
 
 Additionally:
 
-- parse every line of `assets/evals/agentmd-maker-cases.jsonl` as JSON
+- parse every line of `assets/evals/agent-md-maker-cases.jsonl` as JSON
 - confirm unique ids and positive, negative, boundary, workflow-failure, adversarial, safety, bilingual, and regression coverage
 - confirm English/Korean Markdown pairs exist and preserve equivalent modal strength
 - confirm no stray `README.md`, `CHANGELOG.md`, or `QUICK_REFERENCE.md` exists inside the package

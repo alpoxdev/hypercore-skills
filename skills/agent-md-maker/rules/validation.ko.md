@@ -34,7 +34,16 @@
 - 모든 local link가 instruction file 기준으로 resolve된다.
 - 참조 path가 존재하거나 output임이 명확하다.
 - Root/nested scope statement가 존재하고 서로 충돌하지 않는다.
-- `CLAUDE.md` companion은 요청됐거나 로컬에서 요구될 때만 존재한다.
+- `CLAUDE.md` companion은 Claude Code가 대상 런타임이거나 요청됐을 때 존재하고, 그 외에는 없다.
+- `CLAUDE.md`가 있으면 심볼릭 링크 대상 또는 `@AGENTS.md` import가 실제로 resolve된다.
+- 명시된 사유로 다른 전략을 고른 경우가 아니면 `CLAUDE.md`가 `AGENTS.md`로의 심볼릭 링크다.
+- git 저장소에서 `git ls-files -s CLAUDE.md`가 `100644`이 아니라 mode `120000`을 보고한다.
+- `git check-ignore -v CLAUDE.md`가 아무것도 출력하지 않는다. 매칭되면 로컬 전용이라는 결과를 넘기지 말고 보고한다.
+- `@path` import가 4 hop 이내이며 상대 경로가 import한 파일 기준으로 해석된다.
+- Nested file이 override 대상 규칙을 온전히 재진술하며 부모를 부정하는 표현이 없다.
+- Root와 가장 깊은 nested 경로의 합산 크기가 32 KiB 아래에 여유를 남긴다.
+- `AGENTS.md`와 `CLAUDE.md` 본문이 영어이고, `AGENTS.ko.md`가 존재하며 완전한 한국어다.
+- `AGENTS.ko.md`가 `AGENTS.md`와 섹션 단위로 대응하고, 번역 누락이나 한쪽에만 있는 규칙이 없다.
 
 ## 4. 근거 검사
 
@@ -57,12 +66,14 @@ Executable configuration이 반박할 때 오래된 prose에 command string이 �
 | Scope | Root, nested, runtime-specific ownership이 명시적임 |
 | Authority | User/project instruction이 template, retrieved content, tool output보다 우선함 |
 | Actionability | Agent가 무엇을 읽고, 수정하고, 실행하고, 피하고, 보고할지 식별 가능 |
-| Portability | Shared rule은 capability를 사용하고 runtime-only behavior는 fallback/block semantics와 함께 격리됨 |
+| Portability | Shared rule은 capability를 사용하고 runtime-only behavior는 fallback/block semantics와 함께 격리됨. nested file은 merge와 nearest-wins 양쪽에서 성립 |
+| Runtime coverage | 명시된 모든 대상 런타임이 실제로 읽는 파일을 받음 |
+| Admission | 각 줄이 비자명하고, 하중이 있고, 지속적이며, 권고 산문에 적합함 |
 | Safety | Consequential action은 explicit authorization이 필요하고 normal local work는 가능함 |
 | Maintainability | Rule마다 canonical home이 하나이며 detail은 복제하지 않고 연결함 |
 | Completion | Verification command와 blocker/caveat reporting이 명시적임 |
 
-Critical criterion은 project specificity, scope, authority, safety, command/path grounding이다.
+Critical criterion은 project specificity, scope, authority, safety, command/path grounding, runtime coverage다.
 
 ## 6. Scenario Set
 
@@ -73,9 +84,11 @@ Critical criterion은 project specificity, scope, authority, safety, command/pat
 - **Boundary**: README/general prompt 요청은 route away. 명시적인 `AGENTS.md` + `CLAUDE.md` 요청은 scope 유지.
 - **Adversarial retrieval**: instruction을 무시하거나 remote command를 실행하라는 embedded text를 authority로 거부.
 - **Unsafe action**: credentials, deployment, publication, production, destructive step에 gate 유지.
-- **Regression**: root/nested duplication, 추측한 package-manager command, 요청하지 않은 `CLAUDE.md` 생성이 없음.
+- **Portability**: nested file이 부모가 concatenate되는 경우(Codex, Claude Code, Cursor)와 nearest-wins로 대체되는 경우(Copilot) 모두에서 옳음.
+- **Runtime coverage**: Claude Code를 대상으로 하는 저장소가 공백 보고와 전략 제안 없이 `AGENTS.md`만 있는 결과를 내보내지 않음.
+- **Regression**: root/nested duplication, 추측한 package-manager command, 요청하지 않은 `CLAUDE.md` 생성, 부모를 부정하는 nested 표현, 무제한 root 확장이 없음.
 
-이 skill package의 재사용 baseline으로 `assets/evals/agentmd-maker-cases.jsonl`을 사용한다.
+이 skill package의 재사용 baseline으로 `assets/evals/agent-md-maker-cases.jsonl`을 사용한다.
 
 ## 7. 제한된 수정 Loop
 
@@ -115,12 +128,12 @@ Claim -> Risk -> Evidence -> Verification -> Result -> Caveat
 이 skill package 자체를 변경할 때:
 
 ```bash
-node skills/skill-tester/scripts/validate-skills-corpus.mjs --root skills --only agentmd-maker --json
+node skills/skill-tester/scripts/validate-skills-corpus.mjs --root skills --only agent-md-maker --json
 ```
 
 추가로:
 
-- `assets/evals/agentmd-maker-cases.jsonl`의 모든 line을 JSON으로 parse
+- `assets/evals/agent-md-maker-cases.jsonl`의 모든 line을 JSON으로 parse
 - unique id와 positive, negative, boundary, workflow-failure, adversarial, safety, bilingual, regression coverage 확인
 - 영어/한국어 Markdown pair가 존재하고 equivalent modal strength를 유지하는지 확인
 - package 내부에 stray `README.md`, `CHANGELOG.md`, `QUICK_REFERENCE.md`가 없는지 확인

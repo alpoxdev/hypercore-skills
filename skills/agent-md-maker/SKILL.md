@@ -1,5 +1,5 @@
 ---
-name: agentmd-maker
+name: agent-md-maker
 description: "[Hyper] Use this skill when the user asks to create or refactor a repository AGENTS.md, add scoped nested AGENTS.md files, or coordinate AGENTS.md with an explicitly requested CLAUDE.md companion. Ground every rule and command in the actual project. Do not use for README files, general documentation, standalone prompts, or unrelated runtime configuration."
 compatibility: Works best with repository-scoped read, search, edit, and command-execution capabilities for project discovery and local validation.
 ---
@@ -14,9 +14,17 @@ compatibility: Works best with repository-scoped read, search, edit, and command
 
 <output_language>
 
-Default user-facing reports, plans, summaries, handoff notes, and validation notes to Korean.
+Two audiences, two languages. Do not mix them.
 
-Write generated `AGENTS.md` and `CLAUDE.md` in the language requested by the user. Otherwise follow an existing repository instruction language; when none exists, default their prose to Korean. Preserve code identifiers, commands, paths, schema keys, package names, and quoted source text in their required or original language.
+**Generated instruction artifacts — English.** Write `AGENTS.md`, nested `AGENTS.md`, and `CLAUDE.md` in English by default. These files are read by agents across runtimes, and English keeps them unambiguous and consistent with the vendor terminology they encode. Override only when the user explicitly requests another language or an existing repository instruction file is already established in one.
+
+**User-facing communication — Korean.** Every question, clarification, explanation, plan, progress note, validation note, handoff, and completion report goes to the user in Korean. This includes anything asked mid-task and any reported gap, caveat, or blocker.
+
+**Korean mirror — required.** Whenever `AGENTS.md` is created or materially changed, also write `AGENTS.ko.md`: a fully Korean rendering of the same contract so the user can read it directly. Translate the prose completely — headings, tables, and explanations — rather than leaving mixed-language text. Apply the same rule to a nested `AGENTS.md` only when the user asks for it.
+
+`AGENTS.ko.md` is a human-readable mirror, not an instruction surface. No runtime discovers that filename, so it costs agents no context — but it must stay semantically equal to `AGENTS.md`. If the two disagree, that is a defect, not a translation nuance.
+
+Preserve code identifiers, commands, paths, schema keys, package names, environment variables, and quoted source text in their original form in every language.
 
 </output_language>
 
@@ -31,7 +39,7 @@ Write generated `AGENTS.md` and `CLAUDE.md` in the language requested by the use
 
 <routing_rule>
 
-Use `agentmd-maker` when the primary output is `AGENTS.md`, a nested `AGENTS.md`, or an `AGENTS.md`-anchored `CLAUDE.md` companion.
+Use `agent-md-maker` when the primary output is `AGENTS.md`, a nested `AGENTS.md`, or an `AGENTS.md`-anchored `CLAUDE.md` companion.
 
 Use neighboring workflows instead when:
 
@@ -42,6 +50,8 @@ Use neighboring workflows instead when:
 - the user wants only a standalone prompt: use `prompt-maker`
 
 Do not create `CLAUDE.md`, nested instructions, or runtime-specific files merely because they might be useful. They require an explicit request or repository evidence that makes them part of the target contract.
+
+One exception is not discretionary: Claude Code reads `CLAUDE.md`, not `AGENTS.md`. When Claude Code is a stated target runtime, an `AGENTS.md`-only result is an unmet requirement. `AGENTS.md` stays canonical and `CLAUDE.md` defaults to a symlink to it; in a git repository, stage the link and verify it recorded as mode `120000`. Fall back to an `@AGENTS.md` import stub only when a symlink cannot survive checkout, and to a thin adapter only when verified Claude-only rules exist.
 
 </routing_rule>
 
@@ -89,10 +99,12 @@ Boundary examples:
 
 | Target | Default handling |
 |---|---|
-| Root `AGENTS.md` | Canonical shared project contract and loading map |
-| Nested `AGENTS.md` | Only subtree-specific deltas whose scope cannot be expressed clearly at root |
+| Root `AGENTS.md` | Canonical shared project contract and loading map. Written in English |
+| `AGENTS.ko.md` | Required Korean mirror of the root contract for the user. Fully translated, semantically equal, not an agent-loaded surface |
+| Nested `AGENTS.md` | Self-contained subtree deltas, correct under both merge and nearest-wins semantics |
 | Existing `AGENTS.md` | Preserve valid local intent, remove stale or duplicated rules, and verify commands |
-| `CLAUDE.md` companion | Explicitly requested/runtime-established adapter; shared rules remain canonical in `AGENTS.md` |
+| `CLAUDE.md` companion | Required when Claude Code is a target runtime; otherwise explicitly requested. Defaults to a symlink to `AGENTS.md`, committed at git mode `120000`. Shared rules stay canonical in `AGENTS.md` |
+| `CLAUDE.local.md` | Personal preferences only, gitignored. Never shared project rules |
 
 </supported_targets>
 
@@ -112,7 +124,8 @@ Boundary examples:
 1. Read `rules/project-discovery.md` before drafting to build the repository evidence map and candidate instruction scope.
 2. Read `rules/instruction-design.md` when selecting root versus nested placement, writing the contract, or coordinating `CLAUDE.md`.
 3. Read `rules/validation.md` before editing and again before completion to define and execute the risk-matched gate.
-4. Use `assets/evals/agentmd-maker-cases.jsonl` when changing this skill's trigger, routing, workflow, or safety behavior; preserve existing cases and add observed failures as regressions.
+4. Read [`instructions/agents-md/AGENTS_MD.md`](../../instructions/agents-md/AGENTS_MD.md) when a rule needs justification, a vendor claim must be re-verified, or the target runtime is not covered by `rules/instruction-design.md`. Load `instructions/agents-md/references/` only for the specific concern — `discovery-and-precedence.md` for loading mechanics, `content-contract.md` for admission decisions, `claude-md-adapter.md` for two-file coordination, `evidence-and-evaluation.md` for what is measured versus prescribed.
+5. Use `assets/evals/agent-md-maker-cases.jsonl` when changing this skill's trigger, routing, workflow, or safety behavior; preserve existing cases and add observed failures as regressions.
 
 </support_file_read_order>
 
@@ -133,6 +146,10 @@ Boundary examples:
 <required>
 
 - Keep the first screen sufficient to identify scope, project shape, essential commands, and critical restrictions.
+- Apply the admission test to every line: non-obvious, load-bearing, durable, and appropriate for advisory prose. Deletion is the default outcome.
+- Route anything that must happen every time to a hook, CI check, lint rule, or schema instead of asking for it in prose.
+- Leave headroom under a 32 KiB combined budget so nested files are not truncated by a bloated root.
+- Keep `AGENTS.md` canonical and make `CLAUDE.md` a symlink to it by default; verify the git mode rather than assuming `git add` recorded a link.
 - Separate project facts from generic agent advice; include only rules that change behavior in this repository.
 - Map every command, path, package-manager choice, and architecture claim to an inspected file.
 - State applicable scope and precedence; nested files contain deltas rather than copies of the root contract.
@@ -146,6 +163,9 @@ Boundary examples:
 <forbidden>
 
 - Generic boilerplate that could be pasted into any repository unchanged.
+- Nested files that negate a parent rule ("unlike the root, ...") instead of restating the correct rule in full.
+- Assuming a single nesting semantics; treating "closest file wins" as universally true.
+- Leaving an `AGENTS.md`-only result unreported when Claude Code is a stated target runtime.
 - Invented scripts, paths, tools, package managers, environment variables, or architecture.
 - Copying the same shared rules into root `AGENTS.md`, nested `AGENTS.md`, and `CLAUDE.md`.
 - Hiding essential scope, authority, safety, or stop rules in a file the runtime may not load.
@@ -162,8 +182,16 @@ Must-pass gates:
 - [ ] Mode and exact output files are recorded.
 - [ ] At least the current applicable instructions, manifest/task definitions, lockfile, CI or test configuration, and representative source structure were inspected when present.
 - [ ] Every generated command and path is grounded in repository evidence.
+- [ ] Every line passes the admission test; nothing requiring a guarantee is left to prose.
 - [ ] Root and nested scopes are explicit and non-duplicative.
-- [ ] `CLAUDE.md` is absent unless requested or locally required; when present, shared ownership remains clear and duplication is minimized.
+- [ ] Nested files are self-contained deltas that override by restating, correct under both merge and nearest-wins semantics.
+- [ ] `CLAUDE.md` is present when Claude Code is a target runtime, or when requested; otherwise absent. When present, shared ownership remains clear and duplication is minimized.
+- [ ] `CLAUDE.md` is a symlink to `AGENTS.md` unless a stated reason selects the import stub or thin adapter.
+- [ ] In a git repository, the symlink is staged and `git ls-files -s CLAUDE.md` reports mode `120000`; a gitignored or unstaged `CLAUDE.md` is reported as local-only rather than assumed shared.
+- [ ] `@path` imports stay within four hops and resolve relative to the importing file.
+- [ ] The root file leaves headroom for nested files under a 32 KiB combined budget.
+- [ ] Generated `AGENTS.md` and `CLAUDE.md` are in English; user-facing questions, explanations, and reports are in Korean.
+- [ ] `AGENTS.ko.md` exists, is fully Korean with no mixed-language leftovers, and carries the same contract as `AGENTS.md`.
 - [ ] Normal, missing-context/tool-failure, boundary, adversarial retrieval, unsafe-action, and regression behavior are covered at standard depth for new files.
 - [ ] Local links and Markdown fences are valid, and referenced files exist.
 - [ ] No credentials, external publication, deployment, destructive, or production action is authorized implicitly.
@@ -173,9 +201,9 @@ Must-pass gates:
 For this repository skill package, run:
 
 ```bash
-node skills/skill-tester/scripts/validate-skills-corpus.mjs --root skills --only agentmd-maker --json
+node skills/skill-tester/scripts/validate-skills-corpus.mjs --root skills --only agent-md-maker --json
 ```
 
-Also parse `assets/evals/agentmd-maker-cases.jsonl` as JSONL and inspect its trigger/routing/safety coverage when this skill changes materially.
+Also parse `assets/evals/agent-md-maker-cases.jsonl` as JSONL and inspect its trigger/routing/safety coverage when this skill changes materially.
 
 </validation>

@@ -11,6 +11,7 @@ Record:
 - directories covered by each candidate instruction file
 - files and actions explicitly excluded
 - output language and whether `CLAUDE.md` was explicitly requested or locally required
+- **which agent runtimes the repository targets**, since this decides required output files
 
 Do not expand from one root `AGENTS.md` into nested or runtime-specific files without evidence of a real scope difference.
 
@@ -40,8 +41,25 @@ For every proposed instruction, record the supporting path and status:
 | Generated or forbidden files | Generator header, ignore file, docs | confirmed / ambiguous | Add a prohibition only when evidenced |
 | Architecture boundary | Imports, configs, local docs | confirmed / contested | Preserve conflict or omit unsupported claim |
 | Nested scope need | Different subtree commands/conventions | justified / unjustified | Create nested file only when justified |
+| Target runtimes | Existing instruction files, CI agent jobs, editor/tool config, user statement | confirmed / assumed | Claude Code target requires a `CLAUDE.md` path |
 
 Never infer a command solely from a package manager's conventional defaults.
+
+## 3a. Target Runtime Detection
+
+Which runtimes the repository serves changes the required output set, so establish it before drafting rather than defaulting to `AGENTS.md` alone.
+
+Evidence signals:
+
+| Signal | Indicates |
+|---|---|
+| Existing `CLAUDE.md`, `.claude/`, or Claude plugin manifests | Claude Code is a target |
+| Existing `AGENTS.md`, `.agents/skills`, `AGENTS.override.md`, `~/.codex` conventions in docs | Codex is a target |
+| `.github/copilot-instructions.md` or `.github/instructions/*.instructions.md` | Copilot is a target; note it outranks `AGENTS.md` |
+| `.cursor/rules` | Cursor is a target |
+| `GEMINI.md` or a `context.fileName` setting | Gemini CLI is a target; `AGENTS.md` support is opt-in there |
+
+Record each as confirmed or assumed. When Claude Code is confirmed and only `AGENTS.md` is requested, surface the gap and propose a symlink, `@AGENTS.md` import stub, or thin adapter — do not silently ship an `AGENTS.md`-only result. When no runtime is determinable, state the assumption instead of inventing runtime-specific files.
 
 ## 4. Existing Instruction Audit
 
@@ -72,3 +90,4 @@ Preserve restrictive safety and scope rules until their replacement is proven at
 - [ ] Representative source/test structure was inspected.
 - [ ] Each candidate rule has evidence, uncertainty, or an explicit omission.
 - [ ] Nested files and `CLAUDE.md` have a demonstrated placement reason.
+- [ ] Target runtimes are recorded as confirmed or assumed, and a Claude Code target has a `CLAUDE.md` path decided.
