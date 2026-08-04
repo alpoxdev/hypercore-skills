@@ -11,6 +11,7 @@
 | Context Engineering | [`context-engineering/CONTEXT_ENGINEERING.ko.md`](context-engineering/CONTEXT_ENGINEERING.ko.md) | 프롬프트/컨텍스트/도구 지시를 런타임 중립적으로 설계 |
 | CLI Runtime Profiles | [`cli/README.ko.md`](cli/README.ko.md) | skill이 Claude Code, Codex, GJC, Hermes Agent, OpenClaw, OpenCode의 질문·승인·도구 기능을 안전하게 선택 |
 | Prompt Authoring | [`context-engineering/references/prompt-authoring.ko.md`](context-engineering/references/prompt-authoring.ko.md) | 역할 수행 프롬프트를 실행 계약으로 작성하는 실전 템플릿 |
+| AGENTS.md / CLAUDE.md | [`agents-md/AGENTS_MD.ko.md`](agents-md/AGENTS_MD.ko.md) | 저장소 에이전트 instruction 파일을 작고 근거 있고 이식 가능한 계약으로 작성 |
 | Skill Authoring | [`skill/SKILL_AUTHORING.ko.md`](skill/SKILL_AUTHORING.ko.md) | 재사용 가능한 skill 폴더를 트리거·구조·검증 가능한 실행 패키지로 설계 |
 | Skill Prompt/Loop/Eval | [`skill/references/prompt-loop-eval.ko.md`](skill/references/prompt-loop-eval.ko.md) | skill을 단일 프롬프트가 아니라 반복·검증 가능한 작은 프로그램으로 설계 |
 | Autoresearch | [`autoresearch/AUTORESEARCH.ko.md`](autoresearch/AUTORESEARCH.ko.md) | 목표·범위·측정·검증·가드·로그·rollback 기반 자율 반복 하네스 설계 |
@@ -58,6 +59,8 @@ bash scripts/check-sources.sh --self-test # 검사 자체가 실패를 잡는지
 ```
 
 작업 언어가 영어면 `.ko.md` 대신 `.md`를 로드한다. 둘을 함께 로드하지 않는다 — 같은 계약이므로 컨텍스트만 두 배로 쓴다.
+
+저장소의 `AGENTS.md`나 `CLAUDE.md`를 만들거나 리팩터링하거나 리뷰할 때는 [`agents-md/AGENTS_MD.ko.md`](agents-md/AGENTS_MD.ko.md)를 읽고, 필요에 따라 `agents-md/references/` 아래 문서를 읽는다 — 런타임 로딩 동작은 `discovery-and-precedence.ko.md`, 어떤 줄이 자격을 얻는지는 `content-contract.ko.md`, 두 파일의 조율은 `claude-md-adapter.ko.md`, 실제로 측정된 것은 `evidence-and-evaluation.ko.md`다.
 
 작업이 특정 런타임에 묶이면 [`context-engineering/references/runtime-profiles.ko.md`](context-engineering/references/runtime-profiles.ko.md)를 추가로 읽는다. 병렬 작업, subagent, background agent, agent team을 사용할 때는 [`context-engineering/references/parallel-workflows.ko.md`](context-engineering/references/parallel-workflows.ko.md)를 함께 읽는다. CLI별 질문·승인·도구 기능을 skill에서 사용하려면 [`cli/README.ko.md`](cli/README.ko.md)와 해당 하위 런타임 프로필을 함께 읽는다.
 
